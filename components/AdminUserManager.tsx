@@ -2,7 +2,7 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../App';
 import { User } from '../types';
-import { Search, Plus, Edit, Lock, Unlock, UserX, RotateCcw, ShieldCheck, User as UserIcon, Filter, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Plus, Edit, Lock, Unlock, UserX, RotateCcw, ShieldCheck, User as UserIcon, Filter, CheckCircle, XCircle, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 const AdminUserManager: React.FC = () => {
     const { managedUsers, adminActions } = useContext(AppContext);
@@ -13,6 +13,13 @@ const AdminUserManager: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [formData, setFormData] = useState<Partial<User>>({});
+    
+    // 新增：上分/下分模态框状态
+    const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+    const [balanceOperation, setBalanceOperation] = useState<'add' | 'deduct'>('add');
+    const [balanceAmount, setBalanceAmount] = useState('');
+    const [balanceRemark, setBalanceRemark] = useState('');
+    const [operatingUser, setOperatingUser] = useState<User | null>(null);
 
     const filteredUsers = managedUsers.filter(u => {
         const matchesSearch = 
@@ -44,6 +51,35 @@ const AdminUserManager: React.FC = () => {
             });
         }
         setIsModalOpen(true);
+    };
+    
+    // 新增：打开上分/下分模态框
+    const handleOpenBalanceModal = (user: User, operation: 'add' | 'deduct') => {
+        setOperatingUser(user);
+        setBalanceOperation(operation);
+        setBalanceAmount('');
+        setBalanceRemark('');
+        setIsBalanceModalOpen(true);
+    };
+    
+    // 新增：处理上分/下分操作
+    const handleBalanceOperation = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!operatingUser || !balanceAmount) return;
+        
+        const amount = Number(balanceAmount);
+        if (isNaN(amount) || amount <= 0) {
+            alert('请输入有效的金额');
+            return;
+        }
+        
+        if (balanceOperation === 'add') {
+            adminActions.addUserBalance(operatingUser.id, amount, balanceRemark);
+        } else {
+            adminActions.deductUserBalance(operatingUser.id, amount, balanceRemark);
+        }
+        
+        setIsBalanceModalOpen(false);
     };
 
     const handleSave = (e: React.FormEvent) => {
@@ -210,6 +246,26 @@ const AdminUserManager: React.FC = () => {
                                             >
                                                 <RotateCcw className="w-4 h-4" />
                                             </button>
+                                            {/* 新增：上分按钮（仅对投资者显示） */}
+                                            {u.userType === 2 && (
+                                                <button 
+                                                    onClick={() => handleOpenBalanceModal(u, 'add')}
+                                                    className="p-1.5 hover:bg-green-100 text-green-600 rounded" 
+                                                    title="上分"
+                                                >
+                                                    <ArrowUpCircle className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {/* 新增：下分按钮（仅对投资者显示） */}
+                                            {u.userType === 2 && (
+                                                <button 
+                                                    onClick={() => handleOpenBalanceModal(u, 'deduct')}
+                                                    className="p-1.5 hover:bg-red-100 text-red-600 rounded" 
+                                                    title="下分"
+                                                >
+                                                    <ArrowDownCircle className="w-4 h-4" />
+                                                </button>
+                                            )}
                                             {/* Only allow delete if not self */}
                                             {u.username !== 'admin' && (
                                                 <button 
@@ -358,6 +414,69 @@ const AdminUserManager: React.FC = () => {
                             <div className="flex gap-3 pt-4 border-t border-gray-100">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">取消</button>
                                 <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700">保存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* 新增：上分/下分模态框 */}
+            {isBalanceModalOpen && operatingUser && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">
+                            {balanceOperation === 'add' ? '用户上分' : '用户下分'}
+                        </h3>
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="text-sm text-gray-600">用户: {operatingUser.realName} ({operatingUser.username})</div>
+                            <div className="text-sm text-gray-600">当前余额: ¥{operatingUser.accountBalance.toLocaleString()}</div>
+                        </div>
+                        <form onSubmit={handleBalanceOperation} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    {balanceOperation === 'add' ? '上分金额' : '下分金额'}
+                                </label>
+                                <input 
+                                    type="number" 
+                                    value={balanceAmount} 
+                                    onChange={e => setBalanceAmount(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                                    placeholder="请输入金额"
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">备注</label>
+                                <input 
+                                    type="text" 
+                                    value={balanceRemark} 
+                                    onChange={e => setBalanceRemark(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                                    placeholder="请输入备注信息（可选）"
+                                />
+                            </div>
+                            
+                            <div className="flex gap-3 pt-4 border-t border-gray-100">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsBalanceModalOpen(false)} 
+                                    className="flex-1 py-2 border border-gray-300 rounded-lg text-sm text-gray-600"
+                                >
+                                    取消
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    className={`flex-1 py-2 text-white rounded-lg text-sm font-bold hover:opacity-90 ${
+                                        balanceOperation === 'add' 
+                                            ? 'bg-green-600' 
+                                            : 'bg-red-600'
+                                    }`}
+                                >
+                                    {balanceOperation === 'add' ? '确认上分' : '确认下分'}
+                                </button>
                             </div>
                         </form>
                     </div>

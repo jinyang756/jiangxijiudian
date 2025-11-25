@@ -14,6 +14,7 @@ const FundMarket = lazy(() => import('./components/FundMarket'));
 const Portfolio = lazy(() => import('./components/Portfolio'));
 const OfficialSite = lazy(() => import('./components/OfficialSite'));
 const Login = lazy(() => import('./components/Login'));
+const AdminLogin = lazy(() => import('./components/AdminLogin'));
 const QualifiedInvestor = lazy(() => import('./components/QualifiedInvestor'));
 const Tools = lazy(() => import('./components/Tools'));
 
@@ -281,6 +282,7 @@ const AppLayout: React.FC<{ children: React.ReactNode, user: User }> = ({ childr
                 </main>
                 <MobileNav isAdmin={isAdmin} />
             </div>
+            {/* 恢复专属财务挂件，仅对非管理员用户显示 */}
             {!isAdmin && <CustomerService />}
         </div>
     );
@@ -420,18 +422,19 @@ const App: React.FC = () => {
     useEffect(() => { localStorage.setItem('jucai_logs', JSON.stringify(operationLogs)); }, [operationLogs]);
     useEffect(() => { localStorage.setItem('jucai_chats', JSON.stringify(chatSessions)); }, [chatSessions]);
 
-    const login = (phone: string, isAdmin: boolean = false) => {
+    const login = (credential: string, isAdmin: boolean = false) => {
         if (isAdmin) {
              setUser(prev => ({ 
                  ...prev, 
                  userType: 1, 
                  realName: '系统管理员',
-                 extJson: { ...prev.extJson, phone: 'admin' } 
+                 extJson: { ...prev.extJson, phone: credential } 
              }));
              logOperation('LOGIN', 'System', '管理员登录成功');
         } else {
              // Find in managed users or create dummy
-             const found = managedUsers.find(u => u.extJson?.phone === phone);
+             // 只支持通过邮箱查找用户（这里我们使用username字段存储邮箱）
+             const found = managedUsers.find(u => u.username === credential);
              if (found) {
                  setUser(found);
              } else {
@@ -439,7 +442,10 @@ const App: React.FC = () => {
                     ...prev, 
                     userType: 2,
                     realName: '尊贵客户',
-                    extJson: { ...prev.extJson, phone } 
+                    username: credential, // 设置用户名为邮箱
+                    extJson: { 
+                        ...prev.extJson
+                    } 
                 }));
              }
         }
@@ -554,6 +560,27 @@ const App: React.FC = () => {
                  return { ...s, unreadByAdmin: false };
              }
              return s;
+        }));
+    };
+    
+    // 新增：发送财务服务提醒消息
+    const sendFinancialServiceReminder = (sessionId: string) => {
+        const reminderMessage = "【财务服务提醒】尊敬的客户，您的专属财务顾问已上线，可为您办理充值、提现、合同签署等业务。请详细说明您的需求，我们将为您提供专业服务。";
+        setChatSessions(prev => prev.map(s => {
+            if (s.sessionId === sessionId) {
+                return {
+                    ...s,
+                    messages: [...s.messages, {
+                        id: `m_${Date.now()}_financial`,
+                        sender: 'agent',
+                        text: reminderMessage,
+                        timestamp: new Date().toISOString()
+                    }],
+                    unreadByUser: true,
+                    lastActiveTime: new Date().toISOString()
+                };
+            }
+            return s;
         }));
     };
 
@@ -1109,6 +1136,34 @@ const App: React.FC = () => {
         alert("密码已重置为默认密码: 123456");
     };
 
+    // 新增：用户资金上分功能
+    const adminAddUserBalance = (id: number, amount: number, remark: string = '') => {
+        setManagedUsers(prev => prev.map(u => {
+            if (u.id === id) {
+                const newBalance = u.accountBalance + amount;
+                logOperation('ADD_BALANCE', String(id), `上分 ${amount} 元，余额: ${u.accountBalance} → ${newBalance}，备注: ${remark}`);
+                return { ...u, accountBalance: newBalance };
+            }
+            return u;
+        }));
+    };
+
+    // 新增：用户资金下分功能
+    const adminDeductUserBalance = (id: number, amount: number, remark: string = '') => {
+        setManagedUsers(prev => prev.map(u => {
+            if (u.id === id) {
+                const newBalance = u.accountBalance - amount;
+                if (newBalance < 0) {
+                    alert("余额不足，无法完成下分操作");
+                    return u;
+                }
+                logOperation('DEDUCT_BALANCE', String(id), `下分 ${amount} 元，余额: ${u.accountBalance} → ${newBalance}，备注: ${remark}`);
+                return { ...u, accountBalance: newBalance };
+            }
+            return u;
+        }));
+    };
+
     return (
         <AppContext.Provider value={{ 
             user, managedUsers, holdings, transactions, funds, navLogs, sysConfig, dividendRecords, operationLogs, backtestTasks, chatSessions,
@@ -1129,11 +1184,14 @@ const App: React.FC = () => {
                 generateMockTransactions,
                 sendAdminMessage,
                 markSessionRead,
+                sendFinancialServiceReminder, // 新增财务服务提醒功能
                 addUser: adminAddUser,
                 updateUser: adminUpdateUser,
                 deleteUser: adminDeleteUser,
                 toggleUserStatus: adminToggleUserStatus,
-                resetUserPassword: adminResetUserPassword
+                resetUserPassword: adminResetUserPassword,
+                addUserBalance: adminAddUserBalance,
+                deductUserBalance: adminDeductUserBalance
             }
         }}>
             <Router>
@@ -1141,6 +1199,7 @@ const App: React.FC = () => {
                     <Routes>
                         <Route path="/website" element={<OfficialSite />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/admin/login" element={<AdminLogin />} />
                         <Route path="/*" element={
                             user.extJson?.phone ? (
                                 <AppLayout user={user}>
@@ -1171,7 +1230,7 @@ const App: React.FC = () => {
                                     </Routes>
                                 </AppLayout>
                             ) : (
-                                <Navigate to="/website" replace />
+                                <Navigate to="/login" replace />
                             )
                         } />
                     </Routes>

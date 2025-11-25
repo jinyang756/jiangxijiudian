@@ -58,7 +58,7 @@
                 "name": "phone",
                 "type": "text",
                 "required": false,
-                "unique": false,
+                "unique": true,
                 "options": { "min": null, "max": null, "pattern": "" }
             },
             {

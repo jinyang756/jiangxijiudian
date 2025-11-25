@@ -1,23 +1,17 @@
-
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Phone, ArrowRight, ShieldCheck, FileText, CheckCircle, Shield, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, FileText, CheckCircle, Shield, Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
     const { login, user } = useContext(AppContext);
     const navigate = useNavigate();
     const [isRegister, setIsRegister] = useState(false);
-    const [phone, setPhone] = useState('');
-    const [code, setCode] = useState(''); // Serves as password
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState(''); // 改为密码字段
     const [loading, setLoading] = useState(false);
     const [isAdminMode, setIsAdminMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
-    // Captcha State
-    const [captchaCode, setCaptchaCode] = useState('');
-    const [captchaInput, setCaptchaInput] = useState('');
-    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     // Legal Modal State
     const [showLegalModal, setShowLegalModal] = useState(false);
@@ -31,7 +25,6 @@ const Login: React.FC = () => {
         if (skipLegal !== 'true') {
             setShowLegalModal(true);
         }
-        refreshCaptcha();
     }, []);
 
     // Check if user is already logged in
@@ -41,84 +34,6 @@ const Login: React.FC = () => {
         }
     }, [user, navigate]);
 
-    // --- Captcha Logic ---
-    const generateRandomString = (length: number) => {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Remove confusing chars like I, 1, 0, O
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    };
-
-    const refreshCaptcha = () => {
-        const newCode = generateRandomString(4);
-        setCaptchaCode(newCode);
-        // Use setTimeout to ensure canvas is rendered if toggling modes
-        setTimeout(() => drawCaptcha(newCode), 0);
-        setCaptchaInput('');
-    };
-
-    const drawCaptcha = (text: string) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        // Clear
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Background
-        ctx.fillStyle = '#f9fafb';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Text
-        ctx.font = 'bold 24px sans-serif';
-        ctx.textBaseline = 'middle';
-        for (let i = 0; i < text.length; i++) {
-            const x = 20 + i * 20;
-            const y = canvas.height / 2;
-            const angle = (Math.random() - 0.5) * 0.4; // Random rotation
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle);
-            ctx.fillStyle = `rgb(${Math.random()*100}, ${Math.random()*100}, ${Math.random()*100})`;
-            ctx.fillText(text[i], -8, 0);
-            ctx.restore();
-        }
-
-        // Noise Lines
-        for (let i = 0; i < 5; i++) {
-            ctx.beginPath();
-            ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-            ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-            ctx.strokeStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.5)`;
-            ctx.stroke();
-        }
-
-        // Noise Dots
-        for (let i = 0; i < 30; i++) {
-            ctx.fillStyle = `rgba(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200}, 0.6)`;
-            ctx.beginPath();
-            ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-    };
-
-    // --- Phone Formatting ---
-    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let val = e.target.value.replace(/\D/g, ''); // Remove non-digits
-        if (val.length > 11) val = val.slice(0, 11);
-        
-        // Format 3-4-4 (e.g., 138 0000 0000)
-        if (val.length > 3 && val.length <= 7) {
-            val = `${val.slice(0, 3)} ${val.slice(3)}`;
-        } else if (val.length > 7) {
-            val = `${val.slice(0, 3)} ${val.slice(3, 7)} ${val.slice(7)}`;
-        }
-        setPhone(val);
-    };
-
     const handleLegalConfirm = () => {
         if (!legalAgreed) return;
         if (dontRemind) {
@@ -127,55 +42,6 @@ const Login: React.FC = () => {
             localStorage.removeItem('jucai_skip_legal_modal');
         }
         setShowLegalModal(false);
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const skipLegal = localStorage.getItem('jucai_skip_legal_modal');
-        if (!skipLegal && showLegalModal) return;
-
-        const cleanPhone = phone.replace(/\s/g, '');
-
-        // Basic Validation
-        if (!cleanPhone) {
-            alert(isAdminMode ? "请输入管理员账号" : "请输入手机号码");
-            return;
-        }
-        if (!code) {
-            alert("请输入密码");
-            return;
-        }
-        
-        if (!isAdminMode && cleanPhone.length !== 11) {
-            alert("请输入有效的11位手机号码");
-            return;
-        }
-
-        // Captcha Validation
-        if (captchaInput.toUpperCase() !== captchaCode) {
-            alert("图形验证码错误，请重新输入");
-            refreshCaptcha();
-            return;
-        }
-        
-        setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            if (isAdminMode) {
-                // Mock admin credential check
-                if (cleanPhone === 'admin' && code === 'admin') {
-                     login('admin', true);
-                     navigate('/admin/dashboard');
-                } else {
-                    alert('管理员账号或密码错误 (默认账号: admin / admin)');
-                    refreshCaptcha();
-                }
-            } else {
-                login(cleanPhone, false);
-                navigate('/');
-            }
-            setLoading(false);
-        }, 1000);
     };
 
     // --- Legal Texts ---
@@ -267,6 +133,47 @@ const Login: React.FC = () => {
         </div>
     );
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const skipLegal = localStorage.getItem('jucai_skip_legal_modal');
+        if (!skipLegal && showLegalModal) return;
+
+        // Basic Validation
+        if (!email) {
+            alert(isAdminMode ? "请输入管理员邮箱" : "请输入邮箱地址");
+            return;
+        }
+        
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert("请输入有效的邮箱地址");
+            return;
+        }
+
+        if (!password) {
+            alert("请输入密码");
+            return;
+        }
+        
+        setLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            if (isAdminMode) {
+                // Mock admin credential check
+                if (email === 'admin@jucaifund.com' && password === 'admin123456') {
+                     login(email, true);
+                     navigate('/');
+                } else {
+                    alert('管理员账号或密码错误');
+                }
+            } else {
+                // 普通用户登录，使用邮箱作为凭证
+                login(email, false);
+                navigate('/');
+            }
+            setLoading(false);
+        }, 1000);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
             
@@ -287,27 +194,27 @@ const Login: React.FC = () => {
                 <div className={`bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border-t-4 ${isAdminMode ? 'border-gray-800' : 'border-blue-600'}`}>
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                                {isAdminMode ? '管理员账号' : '手机号码'}
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                {isAdminMode ? '管理员邮箱' : '邮箱地址'}
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Phone className="h-5 w-5 text-gray-400" />
+                                    <Mail className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
-                                    id="phone"
-                                    type="text"
+                                    id="email"
+                                    type="email"
                                     required
-                                    value={phone}
-                                    onChange={handlePhoneChange}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2.5 border"
-                                    placeholder={isAdminMode ? "admin" : "请输入11位手机号"}
+                                    placeholder={isAdminMode ? "admin@jucaifund.com" : "your@email.com"}
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 {isAdminMode ? '密码' : (isRegister ? '设置密码' : '登录密码')}
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
@@ -315,11 +222,11 @@ const Login: React.FC = () => {
                                     <Lock className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
-                                    id="code"
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
                                     required
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value)}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-10 sm:text-sm border-gray-300 rounded-md py-2.5 border"
                                     placeholder={isAdminMode ? "请输入密码" : "请输入登录密码"}
                                 />
@@ -330,29 +237,6 @@ const Login: React.FC = () => {
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="captcha" className="block text-sm font-medium text-gray-700">
-                                图形验证码
-                            </label>
-                            <div className="mt-1 flex gap-3">
-                                <input
-                                    id="captcha"
-                                    type="text"
-                                    required
-                                    value={captchaInput}
-                                    onChange={(e) => setCaptchaInput(e.target.value)}
-                                    className="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2.5 border px-3"
-                                    placeholder="不区分大小写"
-                                />
-                                <div className="relative shrink-0 group cursor-pointer select-none" onClick={refreshCaptcha} title="点击刷新">
-                                    <canvas ref={canvasRef} width="100" height="42" className="rounded-md border border-gray-200 bg-gray-50"></canvas>
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/10 rounded-md transition-opacity">
-                                        <RefreshCw className="w-4 h-4 text-gray-700" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -407,13 +291,13 @@ const Login: React.FC = () => {
                             {!isAdminMode ? (
                                 <>
                                     <button
-                                        onClick={() => { setIsRegister(!isRegister); refreshCaptcha(); }}
+                                        onClick={() => { setIsRegister(!isRegister); }}
                                         className="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                                     >
                                         {isRegister ? '去登录' : '注册新账户'} <ArrowRight className="ml-2 h-4 w-4" />
                                     </button>
                                     <button
-                                        onClick={() => { setIsAdminMode(true); refreshCaptcha(); }}
+                                        onClick={() => { setIsAdminMode(true); }}
                                         className="mt-2 text-xs text-center text-gray-400 hover:text-gray-600 hover:underline"
                                     >
                                         管理员入口
@@ -421,7 +305,7 @@ const Login: React.FC = () => {
                                 </>
                             ) : (
                                 <button
-                                    onClick={() => { setIsAdminMode(false); refreshCaptcha(); }}
+                                    onClick={() => { setIsAdminMode(false); }}
                                     className="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                                 >
                                     返回投资者登录

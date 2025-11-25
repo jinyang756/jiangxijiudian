@@ -7,11 +7,41 @@ import { FundProduct, FundNav, User, TransactionRecord, UserPosition, FundViewMo
 export const ApiService = {
     // --- 认证模块 ---
     auth: {
-        login: async (phoneOrEmail: string, password: string) => {
-            // PocketBase 默认使用 email/username 登录
-            // 如果这里是手机号，您需要在 PB 中将 phone 设为 username 或使用 filter 查找
-            // 这里假设用户使用 email 或 username 登录
-            const authData = await pb.collection('users').authWithPassword(phoneOrEmail, password);
+        login: async (credential: string, password: string) => {
+            // PocketBase 支持通过邮箱或用户名登录
+            // 如果是手机号，我们需要先通过过滤器找到对应的用户
+            let authData;
+            
+            // 判断是否为邮箱格式
+            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credential)) {
+                // 邮箱登录
+                authData = await pb.collection('users').authWithPassword(credential, password);
+            } else if (/^1[3-9]\d{9}$/.test(credential)) {
+                // 手机号登录 - 先通过手机号查找用户，然后使用用户名/邮箱登录
+                try {
+                    // 在 PocketBase 中通过手机号查找用户
+                    const users = await pb.collection('users').getList(1, 1, {
+                        filter: `phone = "${credential}"`
+                    });
+                    
+                    if (users.items && users.items.length > 0) {
+                        // 使用找到的用户的用户名或邮箱进行登录
+                        const user = users.items[0];
+                        const loginCredential = user.email || user.username || credential;
+                        authData = await pb.collection('users').authWithPassword(loginCredential, password);
+                    } else {
+                        // 如果没找到，直接抛出错误
+                        throw new Error('用户不存在');
+                    }
+                } catch (error) {
+                    // 如果通过手机号查找失败，尝试直接使用凭证登录（兼容现有数据）
+                    authData = await pb.collection('users').authWithPassword(credential, password);
+                }
+            } else {
+                // 其他情况（如用户名）直接登录
+                authData = await pb.collection('users').authWithPassword(credential, password);
+            }
+            
             return { 
                 token: authData.token, 
                 user: mapPbUserToLocal(authData.record) 

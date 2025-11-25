@@ -248,6 +248,8 @@ export interface AppContextType {
         // Chat Actions
         sendAdminMessage: (sessionId: string, text: string) => void;
         markSessionRead: (sessionId: string) => void;
+        // 新增财务服务提醒功能
+        sendFinancialServiceReminder: (sessionId: string) => void;
 
         // User Management Actions
         addUser: (u: User) => void;
@@ -255,5 +257,8 @@ export interface AppContextType {
         deleteUser: (id: number) => void;
         toggleUserStatus: (id: number, status: 1 | 2 | 3) => void;
         resetUserPassword: (id: number) => void;
+        // 新增资金管理功能
+        addUserBalance: (id: number, amount: number, remark?: string) => void;
+        deductUserBalance: (id: number, amount: number, remark?: string) => void;
     }
 }

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { MessageCircleMore, X, Send, User, Loader2, Image as ImageIcon, Headphones } from 'lucide-react';
+import { MessageCircleMore, X, Send, User, Loader2, Image as ImageIcon, Headphones, CreditCard } from 'lucide-react';
 import { AppContext } from '../App';
 
 const CustomerService: React.FC = () => {
@@ -55,13 +55,20 @@ const CustomerService: React.FC = () => {
 
     // Suggested questions (FAQ Chips)
     const faqChips = [
-        "如何充值?", "提现多久到账?", "风险等级说明", "忘记密码"
+        "充值流程咨询", "提现到账时间", "签订电子合同", "资金安全保障"
     ];
 
     const handleChipClick = (q: string) => {
         if (!user.id) return;
         sendUserMessage(q);
     };
+    
+    // 新增：专属财务服务介绍
+    const financialServiceIntro = [
+        "您好，我是您的专属财务顾问",
+        "可为您办理充值、提现、合同签署等业务",
+        "请详细说明您的需求，我将为您提供专业服务"
+    ];
     
     if (!user.id) return null; // Don't show if not logged in
 
@@ -70,12 +77,12 @@ const CustomerService: React.FC = () => {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110 flex items-center gap-2 group border-4 border-white/50 hover:border-white/80 relative"
-                    title="联系客服"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110 flex items-center gap-2 group border-4 border-white/50 hover:border-white/80 relative"
+                    title="联系专属财务"
                 >
-                    <MessageCircleMore className="w-7 h-7" />
+                    <CreditCard className="w-7 h-7" />
                     <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 font-semibold whitespace-nowrap pl-0 group-hover:pl-2">
-                        专属顾问
+                        专属财务
                     </span>
                     {hasUnread && (
                         <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white"></span>
@@ -86,13 +93,13 @@ const CustomerService: React.FC = () => {
             {isOpen && (
                 <div className="bg-white rounded-2xl shadow-2xl w-80 md:w-96 flex flex-col h-[600px] border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-300 ring-1 ring-black/5">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white p-5 flex justify-between items-center shrink-0 shadow-sm">
+                    <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-5 flex justify-between items-center shrink-0 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="bg-white/10 p-2 rounded-full backdrop-blur-sm border border-white/10">
-                                <Headphones className="w-5 h-5" />
+                                <CreditCard className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-base">VIP 专属顾问</h3>
+                                <h3 className="font-bold text-base">VIP 专属财务顾问</h3>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.5)]"></span>
                                     <p className="text-xs opacity-90 font-light">在线为您服务</p>
@@ -109,10 +116,13 @@ const CustomerService: React.FC = () => {
                         {messages.length === 0 ? (
                              <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm space-y-3">
                                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                                     <MessageCircleMore className="w-8 h-8 text-gray-300" />
+                                     <CreditCard className="w-8 h-8 text-gray-300" />
                                  </div>
-                                 <p>您好，我是您的专属理财顾问。</p>
-                                 <p className="text-xs bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">请问有什么可以帮您？</p>
+                                 {financialServiceIntro.map((line, index) => (
+                                     <p key={index} className={index === 0 ? "font-medium text-gray-600" : "text-gray-500"}>
+                                         {line}
+                                     </p>
+                                 ))}
                              </div>
                         ) : (
                             <div className="space-y-5">

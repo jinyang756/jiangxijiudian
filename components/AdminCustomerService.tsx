@@ -1,7 +1,7 @@
 
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Search, MessageSquare, User, Send, Clock, Circle, TrendingUp, ShieldCheck, History, CreditCard } from 'lucide-react';
+import { Search, MessageSquare, User, Send, Clock, Circle, TrendingUp, ShieldCheck, History, CreditCard, Wallet } from 'lucide-react';
 
 const AdminCustomerService: React.FC = () => {
     const { chatSessions, adminActions, managedUsers, transactions } = useContext(AppContext);
@@ -41,6 +41,12 @@ const AdminCustomerService: React.FC = () => {
         adminActions.sendAdminMessage(selectedSessionId, replyText);
         setReplyText('');
     };
+    
+    // 新增：发送财务服务提醒
+    const handleSendFinancialReminder = () => {
+        if (!selectedSessionId) return;
+        adminActions.sendFinancialServiceReminder(selectedSessionId);
+    };
 
     // Canned responses
     const quickReplies = [
@@ -56,7 +62,7 @@ const AdminCustomerService: React.FC = () => {
             <div className="w-72 border-r border-gray-200 flex flex-col bg-gray-50 shrink-0">
                 <div className="p-4 border-b border-gray-200 bg-white">
                     <h2 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
-                        <MessageSquare className="w-5 h-5 text-blue-600" /> 客服会话
+                        <Wallet className="w-5 h-5 text-blue-600" /> 专属财务会话管理
                     </h2>
                     <div className="relative">
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
@@ -165,6 +171,13 @@ const AdminCustomerService: React.FC = () => {
                                         {reply}
                                     </button>
                                 ))}
+                                {/* 新增：财务服务提醒按钮 */}
+                                <button 
+                                    onClick={handleSendFinancialReminder}
+                                    className="text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-3 py-1 rounded-full hover:opacity-90 transition-all whitespace-nowrap flex items-center gap-1"
+                                >
+                                    <Wallet className="w-3 h-3" /> 财务服务提醒
+                                </button>
                             </div>
                             <div className="flex gap-2">
                                 <input 
@@ -200,8 +213,8 @@ const AdminCustomerService: React.FC = () => {
                     
                     <div className="mb-6 space-y-3">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                                <User className="w-6 h-6" />
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600">
+                                <Wallet className="w-6 h-6" />
                             </div>
                             <div>
                                 <p className="font-bold text-gray-900">{activeUser.realName}</p>
@@ -209,14 +222,14 @@ const AdminCustomerService: React.FC = () => {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mt-2">
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                                <p className="text-[10px] text-gray-400">风险等级</p>
-                                <p className={`text-sm font-bold ${activeUser.riskLevel ? 'text-blue-600' : 'text-gray-400'}`}>
+                            <div className="bg-blue-50 p-2 rounded text-center border border-blue-100">
+                                <p className="text-[10px] text-blue-500">风险等级</p>
+                                <p className={`text-sm font-bold ${activeUser.riskLevel ? 'text-blue-700' : 'text-gray-400'}`}>
                                     {activeUser.riskLevelLabel?.split(' ')[0] || '未测评'}
                                 </p>
                             </div>
-                            <div className="bg-gray-50 p-2 rounded text-center">
-                                <p className="text-[10px] text-gray-400">投资者认证</p>
+                            <div className="bg-blue-50 p-2 rounded text-center border border-blue-100">
+                                <p className="text-[10px] text-blue-500">投资者认证</p>
                                 <p className={`text-sm font-bold ${activeUser.extJson?.isQualifiedInvestor ? 'text-green-600' : 'text-gray-400'}`}>
                                     {activeUser.extJson?.isQualifiedInvestor ? '已认证' : '未认证'}
                                 </p>
