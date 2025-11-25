@@ -41,33 +41,33 @@ const ShoppingBagIcon = () => (
 
 const BottomBar: React.FC<BottomBarProps> = ({ cartCount, onOpenMenu, onOpenSearch, onOpenCart, onOpenInfo, onOpenService }) => {
   return (
-    <div className="h-16 bg-wood border-t border-stone-800 flex items-center justify-between text-stone-400 px-4 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
-      <button onClick={onOpenMenu} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-14">
+    <div className="h-16 bg-wood border-t border-stone-800 flex items-center justify-between text-stone-400 px-2 sm:px-4 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
+      <button onClick={onOpenMenu} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-12 sm:w-14">
         <MenuIcon />
         <span className="text-[10px] font-serif tracking-widest leading-none">分类</span>
-        <span className="text-[8px] uppercase transform scale-90 text-stone-500">Menu</span>
+        <span className="text-[8px] uppercase transform scale-90 text-stone-500 hidden sm:block">Menu</span>
       </button>
 
-      <button onClick={onOpenSearch} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-14">
+      <button onClick={onOpenSearch} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-12 sm:w-14">
         <SearchIcon />
         <span className="text-[10px] font-serif tracking-widest leading-none">搜索</span>
-        <span className="text-[8px] uppercase transform scale-90 text-stone-500">Search</span>
+        <span className="text-[8px] uppercase transform scale-90 text-stone-500 hidden sm:block">Search</span>
       </button>
 
-      <button onClick={onOpenService} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-14 group">
+      <button onClick={onOpenService} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-12 sm:w-14 group">
         <div className="group-active:animate-ping absolute opacity-20 bg-gold rounded-full w-6 h-6 pointer-events-none"></div>
         <BellIcon />
         <span className="text-[10px] font-serif tracking-widest leading-none">服务</span>
-        <span className="text-[8px] uppercase transform scale-90 text-stone-500">Service</span>
+        <span className="text-[8px] uppercase transform scale-90 text-stone-500 hidden sm:block">Service</span>
       </button>
 
-      <button onClick={onOpenInfo} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-14">
+      <button onClick={onOpenInfo} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors w-12 sm:w-14">
         <InformationIcon />
         <span className="text-[10px] font-serif tracking-widest leading-none">关于</span>
-        <span className="text-[8px] uppercase transform scale-90 text-stone-500">About</span>
+        <span className="text-[8px] uppercase transform scale-90 text-stone-500 hidden sm:block">About</span>
       </button>
 
-      <button onClick={onOpenCart} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors relative group w-14">
+      <button onClick={onOpenCart} className="flex flex-col items-center justify-center gap-0.5 p-1 active:text-gold transition-colors relative group w-12 sm:w-14">
         <div className="relative">
             <ShoppingBagIcon />
             {cartCount > 0 && (
@@ -77,7 +77,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ cartCount, onOpenMenu, onOpenSear
             )}
         </div>
         <span className="text-[10px] font-serif tracking-widest leading-none">订单</span>
-        <span className="text-[8px] uppercase transform scale-90 text-stone-500">Order</span>
+        <span className="text-[8px] uppercase transform scale-90 text-stone-500 hidden sm:block">Order</span>
       </button>
     </div>
   );

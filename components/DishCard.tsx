@@ -89,10 +89,10 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
                     e.stopPropagation();
                     onAdd(item);
                 }}
-                className="bg-gold/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-cinnabar hover:scale-110 pointer-events-auto backdrop-blur-sm"
+                className="bg-gold/90 text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-cinnabar hover:scale-110 pointer-events-auto backdrop-blur-sm"
                 title="Quick Add"
                 >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 </button>
@@ -103,7 +103,7 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
       {/* Info */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="mb-1">
-          <h3 className={`text-sm font-bold leading-tight line-clamp-1 ${isSoldOut ? 'text-stone-400 decoration-slice' : 'text-ink'}`}>{item.zh}</h3>
+          <h3 className={`text-sm font-bold leading-tight line-clamp-1 ${isSoldOut ? 'text-stone-400' : 'text-ink'}`}>{item.zh}</h3>
           <p className="text-[10px] text-stone-500 leading-tight mt-0.5 line-clamp-2 h-6 overflow-hidden">{item.en}</p>
         </div>
 

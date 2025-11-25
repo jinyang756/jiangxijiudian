@@ -12,6 +12,7 @@ import SectionHeader from './components/SectionHeader';
 import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import { api } from './services/api';
 import { safeLocalStorageGet, safeLocalStorageSet, safeSessionStorageGet, safeSessionStorageSet } from './src/lib/storage';
+import TestSuite from './src/components/TestSuite';
 
 // Types for our Page system
 type PageType = 'cover' | 'content' | 'back';
@@ -74,6 +75,8 @@ const ITEMS_PER_PAGE = 6;
 const App: React.FC = () => {
   // Check for Admin Mode
   const isAdminMode = new URLSearchParams(window.location.search).get('mode') === 'admin';
+  // Check for Test Mode
+  const isTestMode = new URLSearchParams(window.location.search).get('mode') === 'test';
 
   // Data State
   const [menuData, setMenuData] = useState<MenuCategory[]>([]);
@@ -503,6 +506,15 @@ const App: React.FC = () => {
   if (isAdminMode) {
     return <AdminQRCodeGenerator />;
   }
+  
+  // --- Test Mode Render ---
+  if (isTestMode) {
+    return (
+      <div className="w-full h-screen bg-gray-100 p-4">
+        <TestSuite />
+      </div>
+    );
+  }
 
   // Loading & Error Screens
   if (isLoading) {
@@ -554,6 +566,28 @@ const App: React.FC = () => {
         <div className="absolute inset-y-0 right-0 w-8 z-20 cursor-pointer" onClick={goToNextCategory}></div>
       </div>
 
+      {/* 移动端导航按钮 - 在小屏幕上显示 */}
+      <div className="flex md:hidden h-12 items-center justify-between px-4 text-stone-light/50 bg-wood border-t border-stone-800">
+        <button 
+          onClick={goToPrevCategory}
+          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
+          title="Previous Category"
+        >
+          <ChevronLeft />
+        </button>
+        <div className="flex flex-col items-center">
+           <span className="text-xs tracking-widest text-gold truncate max-w-[120px]">{activePage.categoryTitleZh || '首页 Home'}</span>
+        </div>
+        <button 
+          onClick={goToNextCategory}
+          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
+          title="Next Category"
+        >
+          <ChevronRight />
+        </button>
+      </div>
+
+      {/* 桌面端导航按钮 - 仅在中等及以上屏幕上显示 */}
       <div className="hidden md:flex h-12 items-center justify-between px-6 text-stone-light/50 bg-wood">
         <button 
           onClick={goToPrevCategory}
