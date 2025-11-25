@@ -5,7 +5,7 @@
 ### 前端部署
 - **平台**: Vercel
 - **源码**: GitHub仓库
-- **域名**: jcstjj.top
+- **域名**: jiangxijiudian.vercel.app
 - **特性**: 全球CDN加速、自动HTTPS、自动部署
 
 ### 后端部署
@@ -13,7 +13,6 @@
 - **服务**: PocketBase
 - **HTTP端口**: 8090
 - **HTTPS端口**: 8443
-- **域名**: jcstjj.top
 - **证书**: Let's Encrypt SSL证书
 
 ## 部署状态
@@ -27,7 +26,6 @@
 
 ### 前端部署状态
 - [x] 项目构建测试完成
-- [x] 自定义域名已配置
 - [x] API连接测试通过
 
 ## 部署计划
@@ -75,20 +73,20 @@
 ## 重要配置信息
 
 ### 后端访问地址
-- **管理面板**: https://jcstjj.top:8443/_/
-- **API接口**: https://jcstjj.top:8443/api/
+- **管理面板**: https://154.221.19.68:8443/_/
+- **API接口**: https://154.221.19.68:8443/api/
 - **HTTP备用**: http://154.221.19.68:8090
 
 ### 环境变量
 ```bash
 # 前端环境变量
-NEXT_PUBLIC_API_URL=https://jcstjj.top:8443/api
-NEXT_PUBLIC_ADMIN_URL=https://jcstjj.top:8443/_
+NEXT_PUBLIC_API_URL=https://154.221.19.68:8443/api
+NEXT_PUBLIC_ADMIN_URL=https://154.221.19.68:8443/_
 
 # 后端环境变量
 PB_HTTPS_CERT=/opt/projects/jiangxijiudian/ssl/cert.pem
 PB_HTTPS_KEY=/opt/projects/jiangxijiudian/ssl/key.pem
-PB_CORS_ORIGINS=https://jcstjj.top,https://www.jcstjj.top,https://jiangxijiudian.vercel.app
+PB_CORS_ORIGINS=https://jiangxijiudian.vercel.app
 ```
 
 ## 维护命令
