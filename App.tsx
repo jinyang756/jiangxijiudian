@@ -11,6 +11,7 @@ import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
 import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import { api } from './services/api';
+import { safeLocalStorageGet, safeLocalStorageSet, safeSessionStorageGet, safeSessionStorageSet } from './src/lib/storage';
 
 // Types for our Page system
 type PageType = 'cover' | 'content' | 'back';
@@ -84,12 +85,7 @@ const App: React.FC = () => {
   
   // App States for Ordering & Nav
   const [cart, setCart] = useState<CartItems>(() => {
-    try {
-      const saved = localStorage.getItem('cart');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      return {};
-    }
+    return safeLocalStorageGet('cart', {});
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -110,10 +106,10 @@ const App: React.FC = () => {
 
     if (urlTableId) {
         setTableId(urlTableId);
-        sessionStorage.setItem('tableId', urlTableId);
+        safeSessionStorageSet('tableId', urlTableId);
     } else {
         // 2. Try Session Storage (Persist on Refresh)
-        const savedTableId = sessionStorage.getItem('tableId');
+        const savedTableId = safeSessionStorageGet('tableId');
         if (savedTableId) {
             setTableId(savedTableId);
         }
@@ -161,7 +157,7 @@ const App: React.FC = () => {
 
   // Save cart to localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    safeLocalStorageSet('cart', cart);
   }, [cart]);
 
   // Play Sound on Flip
@@ -170,7 +166,7 @@ const App: React.FC = () => {
        const audio = document.getElementById('page-flip-sound') as HTMLAudioElement;
        if (audio) {
            audio.currentTime = 0;
-           audio.play().catch(e => console.log("Audio interaction needed first"));
+           audio.play().catch(() => console.log("Audio interaction needed first"));
        }
     }
   }, [transition]);
