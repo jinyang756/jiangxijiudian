@@ -3,11 +3,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://jcstjj.top:8443/api/$1"
+      "dest": "https://154.221.19.68:8443/api/$1"
     },
     {
       "src": "/_/(.*)",
-      "dest": "https://jcstjj.top:8443/_/$1"
+      "dest": "https://154.221.19.68:8443/_/$1"
     },
     {
       "src": "/(.*)",
