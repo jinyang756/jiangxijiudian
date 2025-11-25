@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Utilities moved from inline HTML styles */
+@layer utilities {
+  .perspective-1500 {
+    perspective: 1500px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* Global resets */
+body {
+  overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
+  -webkit-tap-highlight-color: transparent;
+}

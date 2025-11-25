@@ -1,1243 +1,647 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { MenuItem, CartItems, MenuCategory } from './types';
+import DishCard from './components/DishCard';
+import BottomBar from './components/BottomBar';
+import CategoryNav from './components/CategoryNav';
+import SearchOverlay from './components/SearchOverlay';
+import CartModal from './components/CartModal';
+import InfoModal from './components/InfoModal';
+import DishDetailModal from './components/DishDetailModal';
+import ServiceModal from './components/ServiceModal';
+import SectionHeader from './components/SectionHeader';
+import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
+import { api } from './services/api';
 
-import React, { useState, createContext, Suspense, lazy, useEffect, useContext } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, PieChart, Wallet, Building2, Calculator, Home, Menu, User as UserIcon, Database, FileCheck, Users, LogOut, TrendingUp, Coins, Settings, ShieldCheck, Activity, BarChart3, Headphones, UserCog } from 'lucide-react';
+// Types for our Page system
+type PageType = 'cover' | 'content' | 'back';
 
-import { AppContextType, User, UserPosition, TransactionRecord, FundViewModel, FundNav, SysConfig, DividendRecord, OperationLog, BacktestTask, ChatSession, ChatMessage } from './types';
-import CustomerService from './components/CustomerService';
-import { generateMockHistory } from './services/simulationService';
-// import { ApiService } from './api/services'; // Disable API for Mock Mode
+interface PageData {
+  type: PageType;
+  id: string;
+  categoryKey: string;
+  items?: MenuItem[];
+  categoryTitleZh?: string;
+  categoryTitleEn?: string;
+  pageNumber?: number;
+  totalPages?: number;
+  categoryIndex?: number;
+}
 
-// Lazy Load Components
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const FundMarket = lazy(() => import('./components/FundMarket'));
-const Portfolio = lazy(() => import('./components/Portfolio'));
-const OfficialSite = lazy(() => import('./components/OfficialSite'));
-const Login = lazy(() => import('./components/Login'));
-const AdminLogin = lazy(() => import('./components/AdminLogin'));
-const QualifiedInvestor = lazy(() => import('./components/QualifiedInvestor'));
-const Tools = lazy(() => import('./components/Tools'));
+type TransitionType = 'flip-next' | 'flip-prev' | 'slide-up' | 'slide-down' | null;
 
-// Admin Components
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const AdminFundManager = lazy(() => import('./components/AdminFundManager'));
-const AdminTransactionAudit = lazy(() => import('./components/AdminTransactionAudit'));
-const AdminNavManager = lazy(() => import('./components/AdminNavManager'));
-const AdminAssetManager = lazy(() => import('./components/AdminAssetManager'));
-const AdminReports = lazy(() => import('./components/AdminReports'));
-const AdminSettings = lazy(() => import('./components/AdminSettings'));
-const AdminSecurity = lazy(() => import('./components/AdminSecurity'));
-const AdminSimulation = lazy(() => import('./components/AdminSimulation'));
-const AdminCustomerService = lazy(() => import('./components/AdminCustomerService'));
-const AdminUserManager = lazy(() => import('./components/AdminUserManager')); // New
-
-// Initial Mock State
-const initialUser: User = {
-    id: 1,
-    username: 'u001',
-    realName: '尊贵客户',
-    userType: 2, // 投资者
-    virtualAccount: 'JC888888',
-    accountBalance: 500000,
-    unsettledCash: 0,
-    status: 1, // 正常
-    riskLevel: 5, // Default to C5
-    riskLevelLabel: 'C5 (激进型)',
-    extJson: {
-        isQualifiedInvestor: false,
-        phone: ''
-    },
-    createTime: new Date().toISOString()
-};
-
-const initialSysConfig: SysConfig = {
-    largeTxThreshold: 100000,
-    defaultSubFee: 0.015,
-    defaultRedeemFee: 0.005,
-    platformName: '聚财众发交易系统',
-    enableAutoAudit: false,
-    navUpdateFreq: 'daily',
-    riskAlertThreshold: 10,
-    features: {
-        enableSIP: true,
-        enableDividend: true
-    }
-};
-
-// Initial Funds Data (Lifted from FundMarket)
-const initialFunds: FundViewModel[] = [
-    { 
-        id: 1, fundName: '聚财稳健增长混合A', fundCode: 'JC001', fundType: 3, fundTypeLabel: '混合型',
-        riskLevel: 3, riskLevelLabel: '中风险 (C3)', 
-        nav: 1.5420, navAccumulated: 2.1420, dailyReturnRate: 1.25, 
-        yearToDate: 12.45, maxDrawdown: -8.5, sharpeRatio: 1.8, issueDate: '2018-05-20',
-        lockupPeriod: 7, navInitial: 1.0, subscriptionFeeRate: 0.0015, redemptionFeeRate: 0.005,
-        managementFeeRate: 0.015, status: 2, statusLabel: '存续期', simulateSettlementDays: 3,
-        extJson: { manager: '王强', strategy: '主观多头', description: '聚焦蓝筹白马，追求长期稳健增值。' },
-        createTime: '', updateTime: ''
-    },
-    { 
-        id: 2, fundName: '聚财科技先锋股票', fundCode: 'JC002', fundType: 1, fundTypeLabel: '股票型',
-        riskLevel: 4, riskLevelLabel: '中高风险 (C4)', 
-        nav: 2.1050, navAccumulated: 2.1050, dailyReturnRate: -0.85, 
-        yearToDate: 25.60, maxDrawdown: -15.2, sharpeRatio: 1.2, issueDate: '2020-03-15',
-        lockupPeriod: 30, navInitial: 1.0, subscriptionFeeRate: 0.0015, redemptionFeeRate: 0.005,
-        managementFeeRate: 0.015, status: 2, statusLabel: '存续期', simulateSettlementDays: 3,
-        extJson: { manager: '李明', strategy: '行业轮动', description: '布局人工智能、新能源等高成长赛道。' },
-        createTime: '', updateTime: ''
-    },
-    { 
-        id: 3, fundName: '聚财纯债债券C', fundCode: 'JC003', fundType: 2, fundTypeLabel: '债券型',
-        riskLevel: 2, riskLevelLabel: '中低风险 (C2)', 
-        nav: 1.0580, navAccumulated: 1.3580, dailyReturnRate: 0.05, 
-        yearToDate: 4.20, maxDrawdown: -1.2, sharpeRatio: 2.5, issueDate: '2019-01-10',
-        lockupPeriod: 1, navInitial: 1.0, subscriptionFeeRate: 0, redemptionFeeRate: 0.001,
-        managementFeeRate: 0.008, status: 2, statusLabel: '存续期', simulateSettlementDays: 1,
-        extJson: { manager: '张华', strategy: '债券策略', description: '主投国债金融债，低风险稳健理财。' },
-        createTime: '', updateTime: ''
-    },
-    { 
-        id: 4, fundName: '聚财激进回报专户', fundCode: 'JC004', fundType: 5, fundTypeLabel: '期货型',
-        riskLevel: 5, riskLevelLabel: '高风险 (C5)', 
-        nav: 3.4200, navAccumulated: 4.5000, dailyReturnRate: 2.15, 
-        yearToDate: 35.80, maxDrawdown: -22.5, sharpeRatio: 1.1, issueDate: '2021-06-01',
-        lockupPeriod: 180, navInitial: 1.0, subscriptionFeeRate: 0.01, redemptionFeeRate: 0.01,
-        managementFeeRate: 0.02, status: 2, statusLabel: '存续期', simulateSettlementDays: 5,
-        extJson: { manager: '赵雷', strategy: '管理期货', description: '杠杆策略，追求超额收益，高风险。' },
-        createTime: '', updateTime: ''
-    },
-    { 
-        id: 5, fundName: '聚财量化中性一号', fundCode: 'JC005', fundType: 3, fundTypeLabel: '混合型',
-        riskLevel: 3, riskLevelLabel: '中风险 (C3)', 
-        nav: 1.1200, navAccumulated: 1.1200, dailyReturnRate: 0.12, 
-        yearToDate: 8.50, maxDrawdown: -3.5, sharpeRatio: 2.1, issueDate: '2022-09-01',
-        lockupPeriod: 90, navInitial: 1.0, subscriptionFeeRate: 0.0015, redemptionFeeRate: 0.005,
-        managementFeeRate: 0.015, status: 2, statusLabel: '存续期', simulateSettlementDays: 7,
-        extJson: { manager: 'System', strategy: '量化中性', description: '完全对冲市场风险，追求绝对收益。' },
-        createTime: '', updateTime: ''
-    }
-];
-
-// Create Context
-export const AppContext = createContext<AppContextType>({} as AppContextType);
-
-// Sidebar Component
-const Sidebar = ({ isAdmin }: { isAdmin: boolean }) => {
-    const location = useLocation();
-    const { logout, chatSessions } = useContext(AppContext);
-    
-    // Count unread messages for admin
-    const unreadCount = chatSessions.reduce((acc, session) => acc + (session.unreadByAdmin ? 1 : 0), 0);
-    
-    type NavItem = {
-        path: string;
-        icon: React.ElementType;
-        label: string;
-        badge?: number;
-    };
-
-    const userNavItems: NavItem[] = [
-        { path: '/', icon: LayoutDashboard, label: '账户总览' },
-        { path: '/market', icon: ShoppingCart, label: '基金超市' },
-        { path: '/portfolio', icon: PieChart, label: '我的持仓' },
-        { path: '/tools', icon: Calculator, label: '投资工具' },
-    ];
-
-    const adminNavItems: NavItem[] = [
-        { path: '/admin/dashboard', icon: LayoutDashboard, label: '管理总览' },
-        { path: '/admin/reports', icon: BarChart3, label: '数据报表' },
-        { path: '/admin/users', icon: UserCog, label: '用户管理' }, // New
-        { path: '/admin/funds', icon: Database, label: '产品发行' },
-        { path: '/admin/assets', icon: Coins, label: '持仓分红' },
-        { path: '/admin/nav', icon: TrendingUp, label: '净值管理' },
-        { path: '/admin/transactions', icon: FileCheck, label: '交易清算' },
-        { path: '/admin/service', icon: Headphones, label: '在线客服', badge: unreadCount },
-        { path: '/admin/simulation', icon: Activity, label: '系统沙箱' },
-        { path: '/admin/settings', icon: Settings, label: '系统配置' },
-        { path: '/admin/security', icon: ShieldCheck, label: '安全权限' },
-    ];
-
-    const navItems = isAdmin ? adminNavItems : userNavItems;
-
-    return (
-        <div className={`w-64 border-r h-screen hidden md:flex flex-col sticky top-0 z-20 ${isAdmin ? 'bg-gray-900 border-gray-800 text-white' : 'bg-white border-gray-200'}`}>
-            <div className={`p-6 border-b ${isAdmin ? 'border-gray-800' : 'border-gray-100'}`}>
-                <div className={`flex items-center gap-2 ${isAdmin ? 'text-white' : 'text-blue-700'}`}>
-                    <Wallet className="w-8 h-8" />
-                    <div>
-                        <h1 className="font-bold text-lg leading-tight">聚财众发</h1>
-                        <p className={`text-xs ${isAdmin ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {isAdmin ? '基金管理后台' : '专业交易系统'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto no-scrollbar">
-                {navItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    const activeClass = isAdmin 
-                        ? 'bg-gray-800 text-white font-medium shadow-sm border border-gray-700' 
-                        : 'bg-blue-50 text-blue-700 font-medium';
-                    const inactiveClass = isAdmin
-                        ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700';
-
-                    return (
-                        <Link 
-                            key={item.path} 
-                            to={item.path}
-                            className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-                                isActive ? activeClass : inactiveClass
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <item.icon className="w-5 h-5" />
-                                {item.label}
-                            </div>
-                            {item.badge !== undefined && item.badge > 0 && (
-                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                    {item.badge}
-                                </span>
-                            )}
-                        </Link>
-                    );
-                })}
-                
-                <div className={`pt-4 mt-4 border-t ${isAdmin ? 'border-gray-800' : 'border-gray-100'}`}>
-                    <button 
-                        onClick={logout}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${isAdmin ? 'text-red-400 hover:bg-gray-800 hover:text-red-300' : 'text-red-500 hover:bg-red-50'}`}
-                    >
-                        <LogOut className="w-5 h-5" />
-                        退出登录
-                    </button>
-                    <Link to="/website" className={`flex items-center gap-3 px-4 py-3 rounded-xl mt-2 ${isAdmin ? 'text-gray-500 hover:text-white hover:bg-gray-800' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}>
-                        <Building2 className="w-5 h-5" /> 返回官网
-                    </Link>
-                </div>
-            </nav>
-        </div>
-    );
-};
-
-// Mobile Bottom Navigation
-const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
-    const location = useLocation();
-    
-    const userNavItems = [
-        { path: '/', icon: Home, label: '首页' },
-        { path: '/market', icon: ShoppingCart, label: '基金超市' },
-        { path: '/portfolio', icon: PieChart, label: '持仓' },
-        { path: '/tools', icon: Calculator, label: '投资工具' },
-    ];
-    
-    const adminNavItems = [
-        { path: '/admin/dashboard', icon: Home, label: '概览' },
-        { path: '/admin/reports', icon: BarChart3, label: '报表' },
-        { path: '/admin/service', icon: Headphones, label: '客服' },
-        { path: '/admin/simulation', icon: Activity, label: '沙箱' },
-    ];
-
-    const navItems = isAdmin ? adminNavItems : userNavItems;
-
-    return (
-        <div className={`fixed bottom-0 left-0 right-0 border-t flex justify-around items-center p-2 pb- safe-area-pb z-50 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] ${isAdmin ? 'bg-gray-900 border-gray-800 text-gray-400' : 'bg-white border-gray-200'}`}>
-            {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                    <Link 
-                        key={item.path} 
-                        to={item.path}
-                        className={`flex flex-col items-center p-2 rounded-lg w-full ${
-                            isActive ? (isAdmin ? 'text-white' : 'text-blue-600') : ''
-                        }`}
-                    >
-                        <item.icon className={`w-6 h-6 mb-1 ${isActive ? 'fill-current' : ''}`} />
-                        <span className="text-[10px] font-medium">{item.label}</span>
-                    </Link>
-                );
-            })}
-        </div>
-    );
-};
-
-// Main Layout
-const AppLayout: React.FC<{ children: React.ReactNode, user: User }> = ({ children, user }) => {
-    // Determine admin status based on userType from state (which is restored from localStorage)
-    const isAdmin = user.userType === 1; 
-    return (
-        <div className={`flex min-h-screen font-sans ${isAdmin ? 'bg-gray-100' : 'bg-gray-50'} text-gray-900`}>
-            <Sidebar isAdmin={isAdmin} />
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <div className={`md:hidden p-4 border-b flex justify-between items-center shrink-0 z-20 ${isAdmin ? 'bg-gray-900 text-white border-gray-800' : 'bg-white'}`}>
-                    <div className="flex items-center gap-2">
-                        <Wallet className="w-6 h-6" />
-                        <h1 className="font-bold">{isAdmin ? '管理后台' : '聚财交易'}</h1>
-                    </div>
-                    <Link to="/website" className="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">官网</Link>
-                </div>
-                
-                <main className="flex-1 overflow-y-auto scroll-smooth pb-20 md:pb-0">
-                    {children}
-                </main>
-                <MobileNav isAdmin={isAdmin} />
-            </div>
-            {/* 恢复专属财务挂件，仅对非管理员用户显示 */}
-            {!isAdmin && <CustomerService />}
-        </div>
-    );
-};
-
-const PageLoader = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-    </div>
+// Icons
+const ChevronLeft = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+  </svg>
 );
 
+const ChevronRight = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
+const PhoneIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+  </svg>
+);
+
+const TelegramIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+  </svg>
+);
+
+// --- Constants ---
+const ITEMS_PER_PAGE = 6;
+
 const App: React.FC = () => {
-    // 1. Initialize State with localStorage check
-    const [user, setUser] = useState<User>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_user');
-            if (stored) {
-                const parsedUser = JSON.parse(stored);
-                // Deep merge to ensure nested objects like extJson are preserved correctly even if stored data is partial
-                return { 
-                    ...initialUser, 
-                    ...parsedUser,
-                    riskLevel: parsedUser.riskLevel || 5, // Force 5 if missing
-                    riskLevelLabel: parsedUser.riskLevelLabel || 'C5 (激进型)',
-                    extJson: { 
-                        ...initialUser.extJson, 
-                        ...(parsedUser.extJson || {}) 
-                    }
-                };
-            }
-            return initialUser;
-        } catch(e) { 
-            console.error("Failed to restore user session:", e);
-            return initialUser; 
+  // Check for Admin Mode
+  const isAdminMode = new URLSearchParams(window.location.search).get('mode') === 'admin';
+
+  // Data State
+  const [menuData, setMenuData] = useState<MenuCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [transition, setTransition] = useState<TransitionType>(null);
+  
+  // App States for Ordering & Nav
+  const [cart, setCart] = useState<CartItems>(() => {
+    try {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isServiceOpen, setIsServiceOpen] = useState(false);
+  
+  const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+
+  // --- Location / Table Persistence Logic ---
+  const [tableId, setTableId] = useState<string>('A01');
+
+  useEffect(() => {
+    // 1. Try URL Param
+    const params = new URLSearchParams(window.location.search);
+    const urlTableId = params.get('table');
+
+    if (urlTableId) {
+        setTableId(urlTableId);
+        sessionStorage.setItem('tableId', urlTableId);
+    } else {
+        // 2. Try Session Storage (Persist on Refresh)
+        const savedTableId = sessionStorage.getItem('tableId');
+        if (savedTableId) {
+            setTableId(savedTableId);
         }
+    }
+  }, []);
+
+  // Derived Location Label
+  const locationLabel = useMemo(() => {
+    const id = tableId;
+    if (id.startsWith('RM-')) {
+        return `房间 Room ${id.replace('RM-', '')}`;
+    } else if (id.startsWith('KTV-')) {
+        return `KTV包厢 Box ${id.replace('KTV-', '')}`;
+    } else if (id.startsWith('T-')) {
+        return `桌号 Table ${id.replace('T-', '')}`;
+    }
+    return `Table ${id}`;
+  }, [tableId]);
+
+  // Fetch Data Function
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.getMenu();
+      if (response.data) {
+        setMenuData(response.data);
+      } else {
+        setError('No data received');
+      }
+    } catch (e) {
+      console.error("Failed to fetch menu", e);
+      setError('Failed to load menu. Please check your connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial Load
+  useEffect(() => {
+    if (!isAdminMode) {
+      fetchData();
+    }
+  }, [isAdminMode]);
+
+  // Save cart to localStorage
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Play Sound on Flip
+  useEffect(() => {
+    if (transition === 'flip-next' || transition === 'flip-prev') {
+       const audio = document.getElementById('page-flip-sound') as HTMLAudioElement;
+       if (audio) {
+           audio.currentTime = 0;
+           audio.play().catch(e => console.log("Audio interaction needed first"));
+       }
+    }
+  }, [transition]);
+
+  // Derived State: Total Cart Count
+  const cartCount = useMemo(() => Object.values(cart).reduce((a: number, b: number) => a + b, 0), [cart]);
+
+  // Derived State: Map for quick item lookup
+  const itemsMap = useMemo(() => {
+    const map = new Map<string, MenuItem>();
+    menuData.forEach(cat => {
+        cat.items.forEach(item => map.set(item.id, item));
     });
+    return map;
+  }, [menuData]);
 
-    const [managedUsers, setManagedUsers] = useState<User[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_managed_users');
-            return stored ? JSON.parse(stored) : [
-                { ...initialUser, id: 1001, username: 'admin', realName: '系统管理员', userType: 1, permissions: ['all'], extJson: { roleName: '超级管理员', phone: 'admin' } },
-                { ...initialUser, id: 1002, username: 'investor1', realName: '王小明', userType: 2, accountBalance: 500000, extJson: { isQualifiedInvestor: true, phone: '13800138000' } },
-                { ...initialUser, id: 1003, username: 'investor2', realName: '李华', userType: 2, accountBalance: 100000, extJson: { isQualifiedInvestor: false, phone: '13900139000' } }
-            ];
-        } catch(e) { return []; }
+  // Actions
+  const addToCart = (item: MenuItem) => {
+    setCart(prev => ({
+      ...prev,
+      [item.id]: (prev[item.id] || 0) + 1
+    }));
+  };
+
+  const removeFromCart = (item: MenuItem) => {
+    setCart(prev => {
+      const current = prev[item.id] || 0;
+      if (current <= 1) {
+        const { [item.id]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [item.id]: current - 1 };
     });
+  };
 
-    const [sysConfig, setSysConfig] = useState<SysConfig>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_sysconfig');
-            return stored ? { ...initialSysConfig, ...JSON.parse(stored) } : initialSysConfig;
-        } catch(e) { return initialSysConfig; }
-    });
+  const updateCartQuantity = (item: MenuItem, quantity: number) => {
+    if (quantity <= 0) {
+      setCart(prev => {
+        const { [item.id]: _, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      setCart(prev => ({
+        ...prev,
+        [item.id]: quantity
+      }));
+    }
+  };
 
-    const [funds, setFunds] = useState<FundViewModel[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_funds');
-            return stored ? JSON.parse(stored) : initialFunds;
-        } catch(e) { return initialFunds; }
-    });
+  const clearCart = () => setCart({});
 
-    const [holdings, setHoldings] = useState<UserPosition[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_holdings');
-            return stored ? JSON.parse(stored) : [];
-        } catch(e) { return []; }
-    });
+  const handleDishClick = (item: MenuItem) => {
+    setSelectedDish(item);
+  };
 
-    const [transactions, setTransactions] = useState<TransactionRecord[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_transactions');
-            return stored ? JSON.parse(stored) : [];
-        } catch(e) { return []; }
-    });
+  // Generate Pages & Category Mapping
+  const { pages, categoryPageMap, categoryKeys } = useMemo(() => {
+    const generatedPages: PageData[] = [];
+    const catMap: {[key: string]: number} = {};
+    const keys: string[] = ['cover'];
 
-    const [dividendRecords, setDividendRecords] = useState<DividendRecord[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_dividends');
-            return stored ? JSON.parse(stored) : [];
-        } catch(e) { return []; }
-    });
+    // 1. Cover Page
+    generatedPages.push({ type: 'cover', id: 'cover', categoryKey: 'cover' });
+    catMap['cover'] = 0;
 
-    const [operationLogs, setOperationLogs] = useState<OperationLog[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_logs');
-            return stored ? JSON.parse(stored) : [];
-        } catch(e) { return []; }
-    });
+    // 2. Content Pages
+    if (menuData.length > 0) {
+      let globalPageCount = 1;
+      menuData.forEach((category) => {
+        keys.push(category.key);
+        catMap[category.key] = generatedPages.length;
 
-    const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_chats');
-            return stored ? JSON.parse(stored) : [];
-        } catch(e) { return []; }
-    });
+        const items = category.items;
+        const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
 
-    const [backtestTasks, setBacktestTasks] = useState<BacktestTask[]>([]); // Non-persistent for demo
+        for (let i = 0; i < totalCatPages; i++) {
+          const start = i * ITEMS_PER_PAGE;
+          const end = start + ITEMS_PER_PAGE;
+          const pageItems = items.slice(start, end);
 
-    const [navLogs, setNavLogs] = useState<Record<number, FundNav[]>>(() => {
-        try {
-            const stored = localStorage.getItem('jucai_navlogs');
-            if (stored) return JSON.parse(stored);
-            
-            const initialLogs: Record<number, FundNav[]> = {};
-            initialFunds.forEach(f => {
-                const chartPoints = generateMockHistory(f, 30);
-                initialLogs[f.id] = chartPoints.map((p, idx) => ({
-                    id: Date.now() + idx,
-                    fundId: f.id,
-                    navDate: p.time,
-                    nav: p.value,
-                    navAccumulated: p.value,
-                    dailyReturnRate: 0,
-                    createTime: new Date().toISOString()
-                })).reverse();
-                
-                for (let i = 1; i < initialLogs[f.id].length; i++) {
-                    const prev = initialLogs[f.id][i-1].nav;
-                    const curr = initialLogs[f.id][i].nav;
-                    initialLogs[f.id][i].dailyReturnRate = ((curr - prev) / prev) * 100;
-                }
-            });
-            return initialLogs;
-        } catch(e) { return {}; }
-    });
-
-    // 2. Persistence Effects
-    useEffect(() => { localStorage.setItem('jucai_user', JSON.stringify(user)); }, [user]);
-    useEffect(() => { localStorage.setItem('jucai_managed_users', JSON.stringify(managedUsers)); }, [managedUsers]);
-    useEffect(() => { localStorage.setItem('jucai_funds', JSON.stringify(funds)); }, [funds]);
-    useEffect(() => { localStorage.setItem('jucai_holdings', JSON.stringify(holdings)); }, [holdings]);
-    useEffect(() => { localStorage.setItem('jucai_transactions', JSON.stringify(transactions)); }, [transactions]);
-    useEffect(() => { localStorage.setItem('jucai_navlogs', JSON.stringify(navLogs)); }, [navLogs]);
-    useEffect(() => { localStorage.setItem('jucai_dividends', JSON.stringify(dividendRecords)); }, [dividendRecords]);
-    useEffect(() => { localStorage.setItem('jucai_sysconfig', JSON.stringify(sysConfig)); }, [sysConfig]);
-    useEffect(() => { localStorage.setItem('jucai_logs', JSON.stringify(operationLogs)); }, [operationLogs]);
-    useEffect(() => { localStorage.setItem('jucai_chats', JSON.stringify(chatSessions)); }, [chatSessions]);
-
-    const login = (credential: string, isAdmin: boolean = false) => {
-        if (isAdmin) {
-             setUser(prev => ({ 
-                 ...prev, 
-                 userType: 1, 
-                 realName: '系统管理员',
-                 extJson: { ...prev.extJson, phone: credential } 
-             }));
-             logOperation('LOGIN', 'System', '管理员登录成功');
-        } else {
-             // Find in managed users or create dummy
-             // 只支持通过邮箱查找用户（这里我们使用username字段存储邮箱）
-             const found = managedUsers.find(u => u.username === credential);
-             if (found) {
-                 setUser(found);
-             } else {
-                 setUser(prev => ({ 
-                    ...prev, 
-                    userType: 2,
-                    realName: '尊贵客户',
-                    username: credential, // 设置用户名为邮箱
-                    extJson: { 
-                        ...prev.extJson
-                    } 
-                }));
-             }
+          generatedPages.push({
+            type: 'content',
+            id: `${category.key}-${i}`,
+            categoryKey: category.key,
+            items: pageItems,
+            categoryTitleZh: category.titleZh,
+            categoryTitleEn: category.titleEn,
+            pageNumber: globalPageCount++,
+            totalPages: totalCatPages,
+            categoryIndex: i + 1
+          });
         }
-    };
+      });
+    }
 
-    const logout = () => {
-        logOperation('LOGOUT', 'System', '用户/管理员退出登录');
-        const resetUser = { ...initialUser };
-        setUser(resetUser);
+    // 3. Back Cover
+    keys.push('back');
+    catMap['back'] = generatedPages.length;
+    generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
+
+    return { pages: generatedPages, categoryPageMap: catMap, categoryKeys: keys };
+  }, [menuData]);
+
+  const totalPages = pages.length;
+  const activePage = pages[currentPage] || pages[0];
+
+  // Navigation Logic
+  const goToNextCategory = () => {
+    const currentCatKey = activePage.categoryKey;
+    const currentCatIndex = categoryKeys.indexOf(currentCatKey);
+    if (currentCatIndex < categoryKeys.length - 1) {
+      const nextCatKey = categoryKeys[currentCatIndex + 1];
+      setTransition('flip-next');
+      setCurrentPage(categoryPageMap[nextCatKey]);
+    }
+  };
+
+  const goToPrevCategory = () => {
+    const currentCatKey = activePage.categoryKey;
+    const currentCatIndex = categoryKeys.indexOf(currentCatKey);
+    if (currentCatIndex > 0) {
+      const prevCatKey = categoryKeys[currentCatIndex - 1];
+      setTransition('flip-prev');
+      setCurrentPage(categoryPageMap[prevCatKey]);
+    }
+  };
+
+  const goToNextPageInCat = () => {
+    if (currentPage < totalPages - 1) {
+      const nextPage = pages[currentPage + 1];
+      if (nextPage.categoryKey === activePage.categoryKey) {
+        setTransition('slide-up');
+        setCurrentPage(currentPage + 1);
+      }
+    }
+  };
+
+  const goToPrevPageInCat = () => {
+    if (currentPage > 0) {
+      const prevPage = pages[currentPage - 1];
+      if (prevPage.categoryKey === activePage.categoryKey) {
+        setTransition('slide-down');
+        setCurrentPage(currentPage - 1);
+      }
+    }
+  };
+
+  const jumpToCategory = (key: string) => {
+    const pageIndex = categoryPageMap[key];
+    if (pageIndex !== undefined) {
+        const targetPage = pages[pageIndex];
+        const currentKey = activePage.categoryKey;
+        const targetCatIndex = categoryKeys.indexOf(targetPage.categoryKey);
+        const currentCatIndex = categoryKeys.indexOf(currentKey);
         
-        // Clear all persistent data on logout to simulate full session clear
-        // In a real app, you might want to keep some non-sensitive data
-        setHoldings([]);
-        setTransactions([]);
-        
-        localStorage.removeItem('jucai_user');
-        localStorage.removeItem('jucai_holdings');
-        localStorage.removeItem('jucai_transactions');
-        localStorage.removeItem('jucai_dividends');
-        localStorage.removeItem('jucai_logs');
-        localStorage.removeItem('token'); // Clear auth token if exists
-    };
+        setTransition(targetCatIndex > currentCatIndex ? 'flip-next' : 'flip-prev');
+        setCurrentPage(pageIndex);
+        setIsMenuOpen(false);
+    }
+  };
 
-    const certifyInvestor = () => {
-        setUser(prev => ({ 
-            ...prev, 
-            extJson: { ...prev.extJson, isQualifiedInvestor: true } 
-        }));
-    };
+  // Touch / Swipe Logic
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
 
-    const updateUserRisk = (score: number, level: number, label: string) => {
-        setUser(prev => ({ 
-            ...prev, 
-            riskLevel: level,
-            riskLevelLabel: label,
-            extJson: { ...prev.extJson, riskScore: score }
-        }));
-    };
-
-    const logOperation = (action: string, target: string, content: string) => {
-        const newLog: OperationLog = {
-            id: Date.now(),
-            operatorId: user.id,
-            operatorName: user.realName || user.username,
-            actionType: action,
-            targetObject: target,
-            content: content,
-            ipAddress: '192.168.1.1', // Mock
-            createTime: new Date().toISOString()
-        };
-        setOperationLogs(prev => [newLog, ...prev]);
-    };
-
-    // Chat Logic
-    const sendUserMessage = (text: string, image?: string) => {
-        if (!user.id) return;
-        const sessionId = `s_${user.id}`;
-        
-        setChatSessions(prev => {
-            const existing = prev.find(s => s.sessionId === sessionId);
-            const newMessage: ChatMessage = {
-                id: `m_${Date.now()}`,
-                sender: 'user',
-                text,
-                image,
-                timestamp: new Date().toISOString()
-            };
-
-            if (existing) {
-                return prev.map(s => s.sessionId === sessionId ? {
-                    ...s,
-                    messages: [...s.messages, newMessage],
-                    unreadByAdmin: true,
-                    lastActiveTime: new Date().toISOString()
-                } : s);
-            } else {
-                return [...prev, {
-                    sessionId,
-                    userId: user.id,
-                    userName: user.realName || `User ${user.id}`,
-                    messages: [newMessage],
-                    unreadByAdmin: true,
-                    unreadByUser: false,
-                    lastActiveTime: new Date().toISOString()
-                }];
-            }
-        });
-    };
-
-    const sendAdminMessage = (sessionId: string, text: string) => {
-        setChatSessions(prev => prev.map(s => {
-            if (s.sessionId === sessionId) {
-                return {
-                    ...s,
-                    messages: [...s.messages, {
-                        id: `m_${Date.now()}`,
-                        sender: 'agent',
-                        text,
-                        timestamp: new Date().toISOString()
-                    }],
-                    unreadByUser: true,
-                    lastActiveTime: new Date().toISOString()
-                };
-            }
-            return s;
-        }));
-    };
-
-    const markSessionRead = (sessionId: string) => {
-        setChatSessions(prev => prev.map(s => {
-             if (s.sessionId === sessionId) {
-                 return { ...s, unreadByAdmin: false };
-             }
-             return s;
-        }));
-    };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
     
-    // 新增：发送财务服务提醒消息
-    const sendFinancialServiceReminder = (sessionId: string) => {
-        const reminderMessage = "【财务服务提醒】尊敬的客户，您的专属财务顾问已上线，可为您办理充值、提现、合同签署等业务。请详细说明您的需求，我们将为您提供专业服务。";
-        setChatSessions(prev => prev.map(s => {
-            if (s.sessionId === sessionId) {
-                return {
-                    ...s,
-                    messages: [...s.messages, {
-                        id: `m_${Date.now()}_financial`,
-                        sender: 'agent',
-                        text: reminderMessage,
-                        timestamp: new Date().toISOString()
-                    }],
-                    unreadByUser: true,
-                    lastActiveTime: new Date().toISOString()
-                };
-            }
-            return s;
-        }));
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const diffX = touchStartX.current - touchEndX;
+    const diffY = touchStartY.current - touchEndY;
+    
+    const absDiffX = Math.abs(diffX);
+    const absDiffY = Math.abs(diffY);
+
+    if (absDiffX > absDiffY) {
+      if (absDiffX > 50) {
+        if (diffX > 0) goToNextCategory();
+        else goToPrevCategory();
+      }
+    } else {
+      if (absDiffY > 50) {
+        if (diffY > 0) goToNextPageInCat();
+        else goToPrevPageInCat();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isAdminMode || isSearchOpen || isMenuOpen || isCartOpen || isInfoOpen || isServiceOpen || selectedDish || isLoading) return; 
+      if (e.key === 'ArrowRight') goToNextCategory();
+      if (e.key === 'ArrowLeft') goToPrevCategory();
+      if (e.key === 'ArrowDown') goToNextPageInCat();
+      if (e.key === 'ArrowUp') goToPrevPageInCat();
     };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, isSearchOpen, isMenuOpen, isCartOpen, isInfoOpen, isServiceOpen, activePage, selectedDish, isLoading, isAdminMode]);
 
-    const buyFund = async (fund: FundViewModel, amount: number, signature: string): Promise<{ success: boolean; message: string }> => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                if (user.accountBalance < amount) {
-                    resolve({ success: false, message: '账户余额不足' });
-                    return;
-                }
+  // --- Render Page Types ---
 
-                const feeRate = fund.subscriptionFeeRate || sysConfig.defaultSubFee;
-                const netAmount = amount / (1 + feeRate);
-                const fee = amount - netAmount;
-                const nav = fund.nav || fund.navInitial || 1.0;
-                const shares = netAmount / nav;
+  const renderCover = () => (
+    <div className="h-full flex flex-col items-center justify-center p-6 border-4 border-double border-gold/40 outline outline-2 outline-offset-4 outline-gold/20 relative bg-paper bg-texture shadow-[inset_20px_0_20px_-10px_rgba(0,0,0,0.1)]">
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none z-10"></div>
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-5"></div>
+      
+      <div className="w-24 h-24 border-2 border-gold rounded-sm flex items-center justify-center rotate-45 mb-12 shadow-lg bg-paper">
+        <div className="w-16 h-16 bg-cinnabar -rotate-45 flex items-center justify-center text-white font-bold text-4xl shadow-inner">
+          食
+        </div>
+      </div>
 
-                setUser(prev => ({ ...prev, accountBalance: prev.accountBalance - amount }));
+      <h1 className="text-3xl md:text-4xl font-bold tracking-[0.1em] text-ink font-serif mb-4 text-center leading-relaxed">
+        江西大酒店<br/>四楼会所
+      </h1>
+      <div className="h-px w-20 bg-gold my-6"></div>
+      <p className="text-gold font-serif tracking-widest text-lg uppercase mb-12 text-center">Jinjiang Star Hotel</p>
+      <div className="text-center text-sm text-gold font-bold border-2 border-gold/30 px-6 py-2 rounded-sm shadow-sm bg-paper/50 backdrop-blur-sm">
+        <span className="text-xs text-stone-400 block mb-1 font-sans">当前位置 Location</span>
+        <span className="text-cinnabar">{locationLabel}</span>
+      </div>
 
-                const now = new Date();
-                const coolingOffDeadline = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      <div className="mt-auto mb-12 text-center animate-pulse space-y-2">
+        <div>
+            <p className="text-stone-400 text-sm tracking-widest">← 左右滑动切换分类 →</p>
+            <p className="text-[10px] text-stone-300 uppercase">Swipe Horizontal for Categories</p>
+        </div>
+      </div>
+    </div>
+  );
 
-                const newTx: TransactionRecord = {
-                    id: Date.now(),
-                    tradeNo: 'TX' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                    userId: user.id,
-                    fundId: fund.id,
-                    tradeType: 1, // 申购
-                    tradeTypeLabel: '申购',
-                    tradeAmount: amount,
-                    tradeShares: shares,
-                    navDate: new Date().toISOString().split('T')[0],
-                    nav: nav,
-                    feeAmount: fee,
-                    actualAmount: amount,
-                    tradeStatus: 5, // 冷静期
-                    tradeStatusLabel: '冷静期',
-                    applyTime: now.toISOString(),
-                    coolingOffDeadline: coolingOffDeadline,
-                    contractSignTime: now.toISOString(),
-                    signature: signature,
-                    fundInfo: {
-                        fundCode: fund.fundCode,
-                        fundName: fund.fundName
-                    }
-                };
-                setTransactions(prev => [...prev, newTx]);
+  const renderContent = (page: PageData) => (
+    <div className="h-full flex flex-col p-2 md:p-6 bg-paper bg-texture relative shadow-inner">
+      <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-stone-400/20 to-transparent pointer-events-none z-10"></div>
 
-                // Auto-create holding logic (duplicated for mock simplicity)
-                setHoldings(prev => {
-                    const existing = prev.find(h => h.fundId === fund.id);
-                    if (existing) {
-                        const newShares = existing.holdShares + shares;
-                        const newTotalCost = (existing.averageCost * existing.holdShares) + amount; 
-                        return prev.map(h => h.fundId === fund.id ? {
-                            ...h,
-                            holdShares: newShares,
-                            averageCost: newTotalCost / newShares,
-                            totalAsset: newShares * nav,
-                            latestNav: nav,
-                            profitAmount: (newShares * nav) - (newTotalCost / newShares * newShares), 
-                            profitRate: 0 
-                        } : h);
-                    } else {
-                        return [...prev, {
-                            id: Date.now(),
-                            userId: user.id,
-                            fundId: fund.id,
-                            holdShares: shares,
-                            averageCost: nav, 
-                            holdDays: 0,
-                            latestNav: nav,
-                            totalAsset: netAmount, 
-                            profitAmount: 0,
-                            profitRate: 0,
-                            fundInfo: {
-                                fundCode: fund.fundCode,
-                                fundName: fund.fundName,
-                                fundTypeLabel: fund.fundTypeLabel,
-                                simulateSettlementDays: fund.simulateSettlementDays
-                            }
-                        }];
-                    }
-                });
+      <SectionHeader 
+        zh={page.categoryTitleZh || ''} 
+        en={page.categoryTitleEn || ''} 
+        pageIndex={page.categoryIndex}
+        totalPages={page.totalPages}
+      />
 
-                resolve({ success: true, message: '合同签署成功，交易已进入冷静期' });
-            }, 1000);
-        });
-    };
+      <div className="flex-1 grid grid-cols-2 gap-3 content-start pl-2">
+        {page.items?.map((item) => (
+          <DishCard 
+            key={item.id} 
+            item={item} 
+            quantity={cart[item.id] || 0}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+            onClick={handleDishClick}
+          />
+        ))}
+      </div>
 
-    const redeemFund = async (fundId: number, shares: number): Promise<{ success: boolean; message: string }> => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const holding = holdings.find(h => h.fundId === fundId);
-                if (!holding || holding.holdShares < shares) {
-                    resolve({ success: false, message: '持有份额不足' });
-                    return;
-                }
+      <div className="mt-2 pt-2 border-t border-stone-100 flex justify-between items-end pl-4">
+        <span className="text-[10px] text-stone-300 italic">江西大酒店四楼会所</span>
+        <span className="font-serif text-stone-400 text-sm">- {page.pageNumber} -</span>
+      </div>
+    </div>
+  );
 
-                const nav = holding.latestNav;
-                const grossAmount = shares * nav;
-                const feeRate = sysConfig.defaultRedeemFee; 
-                const fee = grossAmount * feeRate;
-                const netAmount = grossAmount - fee;
-                const cycle = holding.fundInfo.simulateSettlementDays || 3;
-                const arrivalDate = new Date();
-                arrivalDate.setDate(arrivalDate.getDate() + cycle);
-
-                setUser(prev => ({ 
-                    ...prev, 
-                    unsettledCash: (prev.unsettledCash || 0) + netAmount 
-                }));
-
-                const newTx: TransactionRecord = {
-                    id: Date.now(),
-                    tradeNo: 'TX' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                    userId: user.id,
-                    fundId: fundId,
-                    tradeType: 2, // 赎回
-                    tradeTypeLabel: '赎回',
-                    tradeAmount: netAmount,
-                    tradeShares: shares,
-                    navDate: new Date().toISOString().split('T')[0],
-                    nav: nav,
-                    feeAmount: fee,
-                    actualAmount: netAmount,
-                    tradeStatus: 3, // 清算中
-                    tradeStatusLabel: '清算中',
-                    applyTime: new Date().toISOString(),
-                    settleTime: arrivalDate.toISOString(),
-                    fundInfo: {
-                        fundCode: holding.fundInfo.fundCode,
-                        fundName: holding.fundInfo.fundName
-                    }
-                };
-                setTransactions(prev => [...prev, newTx]);
-
-                setHoldings(prev => {
-                    const remainingShares = holding.holdShares - shares;
-                    if (remainingShares < 0.0001) {
-                        return prev.filter(h => h.fundId !== fundId);
-                    }
-                    return prev.map(h => h.fundId === fundId ? {
-                        ...h,
-                        holdShares: remainingShares,
-                        totalAsset: remainingShares * nav
-                    } : h);
-                });
-
-                resolve({ success: true, message: `赎回申请已提交 (预计T+${cycle}日到账)` });
-            }, 800);
-        });
-    };
-
-    const depositCash = (amount: number) => {
-        setUser(prev => ({ ...prev, accountBalance: prev.accountBalance + amount }));
-        const newTx: TransactionRecord = {
-            id: Date.now(),
-            tradeNo: 'DEP' + Date.now(),
-            userId: user.id,
-            fundId: 0,
-            tradeType: 3,
-            tradeTypeLabel: '充值',
-            tradeAmount: amount,
-            nav: 1,
-            navDate: new Date().toISOString(),
-            feeAmount: 0,
-            actualAmount: amount,
-            tradeStatus: 4,
-            tradeStatusLabel: '已完成',
-            applyTime: new Date().toISOString()
-        };
-        setTransactions(prev => [...prev, newTx]);
-    };
-
-    const processSettlement = () => {
-        let totalSettled = 0;
-        let totalConfirmed = 0;
-
-        setTransactions(prev => prev.map(tx => {
-            if (tx.tradeStatus === 3) {
-                totalSettled += tx.actualAmount;
-                return { ...tx, tradeStatus: 4, tradeStatusLabel: '已完成' };
-            }
-            if (tx.tradeStatus === 5) { 
-                totalConfirmed++;
-                return { ...tx, tradeStatus: 2, tradeStatusLabel: '已确认' };
-            }
-            return tx;
-        }));
-
-        setUser(prev => ({
-            ...prev,
-            accountBalance: prev.accountBalance + totalSettled,
-            unsettledCash: Math.max(0, (prev.unsettledCash || 0) - totalSettled)
-        }));
-    };
-
-    // --- Admin Actions ---
-    const adminAddFund = (fund: FundViewModel) => {
-        setFunds(prev => [...prev, fund]);
-        logOperation('CREATE_FUND', fund.fundCode, '发行新基金产品');
-    };
-
-    const adminUpdateFund = (fund: FundViewModel) => {
-        setFunds(prev => prev.map(f => f.id === fund.id ? fund : f));
-        logOperation('UPDATE_FUND', fund.fundCode, '更新基金基础参数');
-    };
-
-    const adminAuditTransaction = (txId: number, action: 'confirm' | 'reject', remark?: string) => {
-        setTransactions(prev => prev.map(tx => {
-            if (tx.id === txId) {
-                if (action === 'confirm') {
-                    if (tx.tradeStatus === 3) {
-                        setUser(u => ({
-                            ...u,
-                            accountBalance: u.accountBalance + tx.actualAmount,
-                            unsettledCash: Math.max(0, (u.unsettledCash || 0) - tx.actualAmount)
-                        }));
-                        logOperation('AUDIT_TX_CONFIRM', tx.tradeNo, '赎回确认到账');
-                        return { ...tx, tradeStatus: 4, tradeStatusLabel: '已完成' };
-                    }
-                    if (tx.tradeStatus === 5) {
-                        logOperation('AUDIT_TX_CONFIRM', tx.tradeNo, '申购确认');
-                        return { ...tx, tradeStatus: 2, tradeStatusLabel: '已确认' };
-                    }
-                    return { ...tx, tradeStatus: 2, tradeStatusLabel: '已确认' };
-                } else {
-                    if (tx.tradeType === 1) {
-                        setUser(u => ({ ...u, accountBalance: u.accountBalance + tx.actualAmount }));
-                    }
-                    if (tx.tradeType === 2 && tx.tradeShares) {
-                         setHoldings(prevH => {
-                             const existing = prevH.find(h => h.fundId === tx.fundId);
-                             if (existing) {
-                                 return prevH.map(h => h.fundId === tx.fundId ? {
-                                     ...h,
-                                     holdShares: h.holdShares + (tx.tradeShares || 0),
-                                     totalAsset: (h.holdShares + (tx.tradeShares || 0)) * h.latestNav
-                                 } : h);
-                             } else {
-                                return [...prevH, {
-                                    id: Date.now(),
-                                    userId: tx.userId,
-                                    fundId: tx.fundId,
-                                    holdShares: tx.tradeShares || 0,
-                                    averageCost: tx.nav,
-                                    holdDays: 0,
-                                    latestNav: tx.nav,
-                                    totalAsset: (tx.tradeShares || 0) * tx.nav,
-                                    profitAmount: 0,
-                                    profitRate: 0,
-                                    fundInfo: {
-                                        fundCode: tx.fundInfo?.fundCode || '',
-                                        fundName: tx.fundInfo?.fundName || '',
-                                        fundTypeLabel: '未知', 
-                                        simulateSettlementDays: 3
-                                    }
-                                }];
-                             }
-                         });
-                         setUser(u => ({ ...u, unsettledCash: Math.max(0, (u.unsettledCash || 0) - tx.actualAmount) }));
-                    }
-                    logOperation('AUDIT_TX_REJECT', tx.tradeNo, `驳回交易: ${remark}`);
-                    return { ...tx, tradeStatus: 6, tradeStatusLabel: '已驳回', remark: remark || '管理员驳回' };
-                }
-            }
-            return tx;
-        }));
-    };
-
-    const adminLiquidateFund = (fundId: number) => {
-        setFunds(prev => prev.map(f => f.id === fundId ? { ...f, status: 3, statusLabel: '清算期' } : f));
-        
-        const targetHoldings = holdings.filter(h => h.fundId === fundId);
-        targetHoldings.forEach(h => {
-             const amount = h.totalAsset;
-             setUser(u => ({ ...u, accountBalance: u.accountBalance + amount }));
-             const newTx: TransactionRecord = {
-                id: Date.now() + Math.random(),
-                tradeNo: 'LIQ' + Date.now(),
-                userId: h.userId,
-                fundId: fundId,
-                tradeType: 2, 
-                tradeTypeLabel: '强制清算',
-                tradeAmount: amount,
-                tradeShares: h.holdShares,
-                navDate: new Date().toISOString().split('T')[0],
-                nav: h.latestNav,
-                feeAmount: 0,
-                actualAmount: amount,
-                tradeStatus: 4,
-                tradeStatusLabel: '已完成',
-                applyTime: new Date().toISOString(),
-                remark: '基金清算退款',
-                fundInfo: {
-                    fundCode: h.fundInfo.fundCode,
-                    fundName: h.fundInfo.fundName
-                }
-            };
-            setTransactions(prev => [...prev, newTx]);
-        });
-
-        setHoldings(prev => prev.filter(h => h.fundId !== fundId));
-        logOperation('LIQUIDATE_FUND', String(fundId), '触发基金清算，强制兑付所有持仓');
-        alert("清算指令已下达，所有用户持仓已强制兑付至余额。");
-    };
-
-    const updateFundsAndHoldingsWithNav = (fundId: number, newNav: number, newAccumNav: number, dailyReturn: number) => {
-        setFunds(prev => prev.map(f => f.id === fundId ? {
-            ...f,
-            nav: newNav,
-            navAccumulated: newAccumNav,
-            dailyReturnRate: dailyReturn
-        } : f));
-
-        setHoldings(prev => prev.map(h => {
-            if (h.fundId === fundId) {
-                return {
-                    ...h,
-                    latestNav: newNav,
-                    totalAsset: h.holdShares * newNav,
-                    profitAmount: (h.holdShares * newNav) - (h.averageCost * h.holdShares),
-                    profitRate: (newNav - h.averageCost) / h.averageCost
-                };
-            }
-            return h;
-        }));
-    };
-
-    const adminUpdateNav = (fundId: number, navRecord: FundNav) => {
-        setNavLogs(prev => {
-            const fundLogs = prev[fundId] || [];
-            const otherLogs = fundLogs.filter(l => l.navDate !== navRecord.navDate);
-            const newLogs = [...otherLogs, navRecord].sort((a, b) => new Date(a.navDate).getTime() - new Date(b.navDate).getTime());
-            
-            const latestLog = newLogs[newLogs.length - 1];
-            if (latestLog.navDate === navRecord.navDate) {
-                 updateFundsAndHoldingsWithNav(fundId, navRecord.nav, navRecord.navAccumulated, navRecord.dailyReturnRate || 0);
-            }
-            return { ...prev, [fundId]: newLogs };
-        });
-        logOperation('UPDATE_NAV', String(fundId), `录入净值: ${navRecord.navDate} - ${navRecord.nav}`);
-    };
-
-    const adminBatchUpdateNav = (fundId: number, navRecords: FundNav[]) => {
-        setNavLogs(prev => {
-            const fundLogs = prev[fundId] || [];
-            // Explicitly typing the Map to ensure values are FundNav
-            const logMap = new Map<string, FundNav>();
-            fundLogs.forEach(l => logMap.set(l.navDate, l));
-            navRecords.forEach(r => logMap.set(r.navDate, r));
-
-            const newLogs = Array.from(logMap.values()).sort((a, b) => new Date(a.navDate).getTime() - new Date(b.navDate).getTime());
-            
-            const latestLog = newLogs[newLogs.length - 1];
-            updateFundsAndHoldingsWithNav(fundId, latestLog.nav, latestLog.navAccumulated, latestLog.dailyReturnRate || 0);
-            return { ...prev, [fundId]: newLogs };
-        });
-        logOperation('BATCH_UPDATE_NAV', String(fundId), `批量导入净值 ${navRecords.length} 条`);
-    };
-
-    const adminAdjustHolding = (holdingId: number, newShares: number, newCost: number, remark: string) => {
-        setHoldings(prev => prev.map(h => {
-            if (h.id === holdingId) {
-                return {
-                    ...h,
-                    holdShares: newShares,
-                    averageCost: newCost,
-                    totalAsset: newShares * h.latestNav,
-                    profitAmount: (newShares * h.latestNav) - (newCost * newShares)
-                };
-            }
-            return h;
-        }));
-        logOperation('ADJUST_HOLDING', String(holdingId), `手动调整持仓: ${remark}`);
-    };
-
-    const adminExecuteDividend = (fundId: number, type: 1 | 2, amountPerShare: number, date: string) => {
-        const targetFund = funds.find(f => f.id === fundId);
-        if (!targetFund) return;
-        const targetHoldings = holdings.filter(h => h.fundId === fundId);
-        if (targetHoldings.length === 0) return;
-
-        let totalAmount = 0;
-        let affectedCount = 0;
-
-        targetHoldings.forEach(h => {
-            affectedCount++;
-            const payout = h.holdShares * amountPerShare;
-            totalAmount += payout;
-
-            if (type === 1) { 
-                setUser(u => ({ ...u, accountBalance: u.accountBalance + payout }));
-                const newTx: TransactionRecord = {
-                    id: Date.now() + Math.random(),
-                    tradeNo: 'DIV' + Date.now(),
-                    userId: h.userId,
-                    fundId: fundId,
-                    tradeType: 4, 
-                    tradeTypeLabel: '现金分红',
-                    tradeAmount: payout,
-                    nav: h.latestNav,
-                    navDate: date,
-                    feeAmount: 0,
-                    actualAmount: payout,
-                    tradeStatus: 4,
-                    tradeStatusLabel: '已完成',
-                    applyTime: new Date().toISOString(),
-                    fundInfo: { fundCode: targetFund.fundCode, fundName: targetFund.fundName }
-                };
-                setTransactions(prev => [...prev, newTx]);
-            } else { 
-                const newShares = payout / h.latestNav;
-                setHoldings(prevH => prevH.map(ph => ph.id === h.id ? {
-                    ...ph,
-                    holdShares: ph.holdShares + newShares,
-                    totalAsset: (ph.holdShares + newShares) * ph.latestNav
-                } : ph));
-                 const newTx: TransactionRecord = {
-                    id: Date.now() + Math.random(),
-                    tradeNo: 'DIV' + Date.now(),
-                    userId: h.userId,
-                    fundId: fundId,
-                    tradeType: 4,
-                    tradeTypeLabel: '红利再投',
-                    tradeAmount: payout,
-                    tradeShares: newShares,
-                    nav: h.latestNav,
-                    navDate: date,
-                    feeAmount: 0,
-                    actualAmount: payout,
-                    tradeStatus: 4,
-                    tradeStatusLabel: '已完成',
-                    applyTime: new Date().toISOString(),
-                    fundInfo: { fundCode: targetFund.fundCode, fundName: targetFund.fundName }
-                };
-                setTransactions(prev => [...prev, newTx]);
-            }
-        });
-
-        const record: DividendRecord = {
-            id: Date.now(),
-            dividendNo: 'D' + Date.now(),
-            fundId,
-            fundName: targetFund.fundName,
-            dividendDate: date,
-            dividendType: type,
-            dividendTypeLabel: type === 1 ? '现金分红' : '红利再投',
-            dividendPerShare: amountPerShare,
-            totalDividendAmount: totalAmount,
-            affectedUserCount: affectedCount,
-            confirmTime: new Date().toISOString()
-        };
-        setDividendRecords(prev => [record, ...prev]);
-        logOperation('EXECUTE_DIVIDEND', targetFund.fundName, `执行分红: ${type===1?'现金':'再投'}, 每份 ${amountPerShare}`);
-    };
-
-    const updateSysConfig = (config: SysConfig) => {
-        setSysConfig(config);
-        logOperation('UPDATE_CONFIG', 'System', '更新全局系统配置');
-    };
-
-    const backupData = () => {
-        const backup = {
-            timestamp: new Date().toISOString(),
-            funds,
-            users: [user], // Mock
-            holdings,
-            transactions,
-            navLogs,
-            dividendRecords,
-            sysConfig
-        };
-        // In reality, trigger download
-        console.log("Backup Data Ready:", backup);
-        logOperation('BACKUP_DATA', 'System', '全量数据备份导出');
-        alert("全量数据备份文件已生成 (Check Console)");
-    };
-
-    const generateMockUsers = (count: number) => {
-        const newUsers: User[] = [];
-        for (let i = 0; i < count; i++) {
-            const id = Date.now() + i;
-            newUsers.push({
-                id,
-                username: `user_${id.toString().substr(-4)}`,
-                realName: `测试用户${i+1}`,
-                userType: 2,
-                virtualAccount: `JC${Math.floor(Math.random()*1000000)}`,
-                accountBalance: Math.floor(Math.random() * 1000000) + 50000,
-                status: 1,
-                extJson: { isQualifiedInvestor: Math.random() > 0.5, phone: `13${Math.floor(Math.random()*1000000000)}` },
-                createTime: new Date().toISOString()
-            });
-        }
-        setManagedUsers(prev => [...prev, ...newUsers]);
-        logOperation('MOCK_GEN_USERS', 'Simulation', `生成 ${count} 个测试用户`);
-        alert(`已生成 ${count} 个测试用户数据`);
-    };
-
-    const generateMockTransactions = (count: number) => {
-        const newTxs: TransactionRecord[] = [];
-        for(let i=0; i<count; i++) {
-             const fund = funds[Math.floor(Math.random() * funds.length)];
-             const type = Math.random() > 0.5 ? 1 : 2;
-             const amount = Math.floor(Math.random() * 50000) + 1000;
-             newTxs.push({
-                 id: Date.now() + i,
-                 tradeNo: 'TRD' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-                 userId: Math.floor(Math.random() * 100) + 1000,
-                 fundId: fund.id,
-                 tradeType: type,
-                 tradeTypeLabel: type === 1 ? '申购' : '赎回',
-                 tradeAmount: amount,
-                 nav: fund.nav || 1,
-                 navDate: new Date().toISOString().split('T')[0],
-                 feeAmount: 0,
-                 actualAmount: amount,
-                 tradeStatus: 4,
-                 tradeStatusLabel: '已完成',
-                 applyTime: new Date(Date.now() - Math.random() * 1000000000).toISOString(),
-                 fundInfo: { fundCode: fund.fundCode, fundName: fund.fundName }
-             });
-        }
-        setTransactions(prev => [...prev, ...newTxs]);
-        logOperation('MOCK_GEN_TXS', 'Simulation', `生成 ${count} 条测试交易记录`);
-    };
-
-    // User Management Actions
-    const adminAddUser = (u: User) => {
-        setManagedUsers(prev => [...prev, { ...u, id: Date.now(), createTime: new Date().toISOString() }]);
-        logOperation('ADD_USER', u.username, '新增用户');
-    };
-
-    const adminUpdateUser = (u: User) => {
-        setManagedUsers(prev => prev.map(user => user.id === u.id ? u : user));
-        logOperation('UPDATE_USER', u.username, '更新用户信息');
-    };
-
-    const adminDeleteUser = (id: number) => {
-        setManagedUsers(prev => prev.filter(u => u.id !== id));
-        logOperation('DELETE_USER', String(id), '删除用户');
-    };
-
-    const adminToggleUserStatus = (id: number, status: 1 | 2 | 3) => {
-        setManagedUsers(prev => prev.map(u => u.id === id ? { ...u, status } : u));
-        logOperation('CHANGE_STATUS', String(id), `更改用户状态至 ${status}`);
-    };
-
-    const adminResetUserPassword = (id: number) => {
-        logOperation('RESET_PWD', String(id), '重置用户密码');
-        alert("密码已重置为默认密码: 123456");
-    };
-
-    // 新增：用户资金上分功能
-    const adminAddUserBalance = (id: number, amount: number, remark: string = '') => {
-        setManagedUsers(prev => prev.map(u => {
-            if (u.id === id) {
-                const newBalance = u.accountBalance + amount;
-                logOperation('ADD_BALANCE', String(id), `上分 ${amount} 元，余额: ${u.accountBalance} → ${newBalance}，备注: ${remark}`);
-                return { ...u, accountBalance: newBalance };
-            }
-            return u;
-        }));
-    };
-
-    // 新增：用户资金下分功能
-    const adminDeductUserBalance = (id: number, amount: number, remark: string = '') => {
-        setManagedUsers(prev => prev.map(u => {
-            if (u.id === id) {
-                const newBalance = u.accountBalance - amount;
-                if (newBalance < 0) {
-                    alert("余额不足，无法完成下分操作");
-                    return u;
-                }
-                logOperation('DEDUCT_BALANCE', String(id), `下分 ${amount} 元，余额: ${u.accountBalance} → ${newBalance}，备注: ${remark}`);
-                return { ...u, accountBalance: newBalance };
-            }
-            return u;
-        }));
-    };
-
+  const renderBack = () => {
+    const mapUrl = "https://www.google.com/maps/search/?api=1&query=Jinjiang+Star+Hotel+Jiangxi+Grand+Hotel";
     return (
-        <AppContext.Provider value={{ 
-            user, managedUsers, holdings, transactions, funds, navLogs, sysConfig, dividendRecords, operationLogs, backtestTasks, chatSessions,
-            login, logout, updateUserRisk, certifyInvestor, buyFund, redeemFund, depositCash, processSettlement, sendUserMessage,
-            adminActions: { 
-                addFund: adminAddFund, 
-                updateFund: adminUpdateFund, 
-                auditTransaction: adminAuditTransaction,
-                updateNav: adminUpdateNav,
-                batchUpdateNav: adminBatchUpdateNav,
-                liquidateFund: adminLiquidateFund,
-                adjustHolding: adminAdjustHolding,
-                executeDividend: adminExecuteDividend,
-                updateSysConfig,
-                logOperation,
-                backupData,
-                generateMockUsers,
-                generateMockTransactions,
-                sendAdminMessage,
-                markSessionRead,
-                sendFinancialServiceReminder, // 新增财务服务提醒功能
-                addUser: adminAddUser,
-                updateUser: adminUpdateUser,
-                deleteUser: adminDeleteUser,
-                toggleUserStatus: adminToggleUserStatus,
-                resetUserPassword: adminResetUserPassword,
-                addUserBalance: adminAddUserBalance,
-                deductUserBalance: adminDeductUserBalance
-            }
-        }}>
-            <Router>
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                        <Route path="/website" element={<OfficialSite />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/admin/login" element={<AdminLogin />} />
-                        <Route path="/*" element={
-                            user.extJson?.phone ? (
-                                <AppLayout user={user}>
-                                    <Routes>
-                                        {/* User Routes */}
-                                        <Route path="/" element={
-                                            user.userType === 1 ? <Navigate to="/admin/dashboard" replace /> : <Dashboard />
-                                        } />
-                                        <Route path="/market" element={<FundMarket />} />
-                                        <Route path="/portfolio" element={<Portfolio />} />
-                                        <Route path="/tools" element={<Tools />} />
-                                        <Route path="/qualification" element={<QualifiedInvestor />} />
+    <div className="h-full flex flex-col items-center justify-center p-8 bg-paper bg-texture relative border-4 border-stone-200 border-double shadow-[inset_20px_0_20px_-10px_rgba(0,0,0,0.1)]">
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none z-10"></div>
+      
+      <div className="text-center space-y-8">
+        <div className="space-y-2">
+          <h3 className="text-2xl font-bold text-ink mb-4">联系我们 Contact Us</h3>
+          <div className="flex flex-col items-center gap-3 text-stone-600">
+             <a href="tel:+639552461263" className="flex items-center gap-2 hover:text-gold transition-colors cursor-pointer">
+                <PhoneIcon />
+                <span className="tracking-widest font-mono">0955 246 1263</span>
+             </a>
+             <a href="https://t.me/jx555999" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-gold transition-colors cursor-pointer">
+                <TelegramIcon />
+                <span className="tracking-widest font-mono">@jx555999</span>
+             </a>
+             <a 
+                href={mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-center hover:text-gold transition-colors cursor-pointer flex-col"
+             >
+                <div className="flex items-center gap-2">
+                   <MapPinIcon />
+                   <span className="text-sm font-bold">江西大酒店四楼会所</span>
+                </div>
+                <span className="text-xs text-stone-500">Metro Manila, Philippines</span>
+             </a>
+          </div>
+        </div>
 
-                                        {/* Admin Routes */}
-                                        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                                        <Route path="/admin/users" element={<AdminUserManager />} />
-                                        <Route path="/admin/funds" element={<AdminFundManager />} />
-                                        <Route path="/admin/nav" element={<AdminNavManager />} />
-                                        <Route path="/admin/transactions" element={<AdminTransactionAudit />} />
-                                        <Route path="/admin/assets" element={<AdminAssetManager />} />
-                                        <Route path="/admin/reports" element={<AdminReports />} />
-                                        <Route path="/admin/settings" element={<AdminSettings />} />
-                                        <Route path="/admin/security" element={<AdminSecurity />} />
-                                        <Route path="/admin/simulation" element={<AdminSimulation />} />
-                                        <Route path="/admin/service" element={<AdminCustomerService />} />
+        <div className="w-32 h-32 bg-white p-2 mx-auto shadow-lg transform rotate-3">
+            <img src="https://picsum.photos/seed/qrcode/200/200" className="w-full h-full grayscale contrast-125" alt="QR" />
+        </div>
+        
+        <p className="text-xs text-stone-400">扫码获取优惠 Scan for promotions</p>
+      </div>
+      
+      <div className="mt-auto pt-8 text-[10px] text-stone-300 text-center w-full border-t border-stone-100">
+        © 2024 Jinjiang Star Hotel. All rights reserved.
+      </div>
+    </div>
+  )};
 
-                                        <Route path="*" element={<Navigate to="/" replace />} />
-                                    </Routes>
-                                </AppLayout>
-                            ) : (
-                                <Navigate to="/login" replace />
-                            )
-                        } />
-                    </Routes>
-                </Suspense>
-            </Router>
-        </AppContext.Provider>
+  const getAnimationClass = () => {
+    switch (transition) {
+      case 'flip-next': return 'animate-flip-next';
+      case 'flip-prev': return 'animate-flip-prev';
+      case 'slide-up': return 'animate-slide-up';
+      case 'slide-down': return 'animate-slide-down';
+      default: return 'animate-fade-in';
+    }
+  };
+
+  const is3DTransition = transition === 'flip-next' || transition === 'flip-prev';
+
+  // --- Admin Mode Render ---
+  if (isAdminMode) {
+    return <AdminQRCodeGenerator />;
+  }
+
+  // Loading & Error Screens
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-wood bg-wood-pattern text-gold z-50">
+        <div className="w-16 h-16 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4"></div>
+        <p className="tracking-widest font-serif">Loading Menu...</p>
+        <p className="text-xs text-stone-500 mt-2">正在加载菜单</p>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-wood bg-wood-pattern text-stone-400 z-50 p-6 text-center">
+        <div className="w-16 h-16 border-4 border-stone-600 rounded-full flex items-center justify-center mb-4 text-stone-600">
+            !
+        </div>
+        <h2 className="text-lg text-stone-300 mb-2">加载失败 Failed to Load</h2>
+        <p className="text-xs mb-6">{error}</p>
+        <button 
+            onClick={fetchData}
+            className="flex items-center gap-2 bg-gold text-wood px-6 py-2 rounded-sm font-bold hover:bg-white transition-colors"
+        >
+            <RefreshIcon /> 重试 Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-full max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col relative">
+      
+      <div 
+        className="flex-1 relative w-full perspective-1500 overflow-hidden shadow-2xl mt-4 mb-0 md:my-8 rounded-t-sm bg-wood"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div 
+            key={currentPage}
+            className={`w-full h-full bg-paper absolute inset-0 ${is3DTransition ? 'origin-left backface-hidden preserve-3d' : ''} ${getAnimationClass()}`}
+        >
+           {activePage.type === 'cover' && renderCover()}
+           {activePage.type === 'content' && renderContent(activePage)}
+           {activePage.type === 'back' && renderBack()}
+        </div>
+
+        <div className="absolute inset-y-0 left-0 w-8 z-20 cursor-pointer" onClick={goToPrevCategory}></div>
+        <div className="absolute inset-y-0 right-0 w-8 z-20 cursor-pointer" onClick={goToNextCategory}></div>
+      </div>
+
+      <div className="hidden md:flex h-12 items-center justify-between px-6 text-stone-light/50 bg-wood">
+        <button 
+          onClick={goToPrevCategory}
+          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
+          title="Previous Category"
+        >
+          <ChevronLeft />
+        </button>
+        <div className="flex flex-col items-center">
+           <span className="text-xs tracking-widest text-gold">{activePage.categoryTitleZh || '首页 Home'}</span>
+        </div>
+        <button 
+          onClick={goToNextCategory}
+          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
+          title="Next Category"
+        >
+          <ChevronRight />
+        </button>
+      </div>
+
+      <BottomBar 
+        cartCount={cartCount}
+        onOpenMenu={() => setIsMenuOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenInfo={() => setIsInfoOpen(true)}
+        onOpenService={() => setIsServiceOpen(true)}
+      />
+
+      <CategoryNav 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+        categories={menuData} 
+        onSelectCategory={jumpToCategory}
+      />
+
+      <CartModal 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cart={cart}
+        itemsMap={itemsMap}
+        onAdd={addToCart}
+        onRemove={removeFromCart}
+        onUpdateQuantity={updateCartQuantity}
+        onClear={clearCart}
+        tableId={tableId}
+        locationLabel={locationLabel}
+      />
+
+      <SearchOverlay 
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        menuData={menuData}
+        cart={cart}
+        onAdd={addToCart}
+        onRemove={removeFromCart}
+        onItemClick={handleDishClick}
+      />
+
+      <InfoModal 
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        onOpen={() => {}}
+        tableId={tableId}
+        locationLabel={locationLabel}
+      />
+
+      <DishDetailModal 
+        item={selectedDish}
+        quantity={selectedDish ? (cart[selectedDish.id] || 0) : 0}
+        onClose={() => setSelectedDish(null)}
+        onAdd={addToCart}
+        onRemove={removeFromCart}
+      />
+
+      <ServiceModal
+        isOpen={isServiceOpen}
+        onClose={() => setIsServiceOpen(false)}
+        tableId={tableId}
+        locationLabel={locationLabel}
+      />
+
+    </div>
+  );
 };
 
 export default App;
