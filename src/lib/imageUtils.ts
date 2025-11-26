@@ -6,7 +6,7 @@ const SUPABASE_STORAGE_URL = import.meta.env.VITE_APP_SUPABASE_STORAGE_URL || ''
 const STORAGE_BUCKET = 'dish-images'; // Supabase存储桶名称
 
 // 本地占位图路径
-const LOCAL_PLACEHOLDER = '/placeholder-dish.jpg';
+const LOCAL_PLACEHOLDER = '/placeholder-dish.svg';
 
 // 默认占位图（如果没有配置本地占位图）
 const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect fill="%23f5f5f0" width="300" height="200"/%3E%3Ctext fill="%23a0a0a0" font-family="sans-serif" font-size="16" dy="50%25" dx="50%25" text-anchor="middle" alignment-baseline="middle"%3E暂无图片%3C/text%3E%3C/svg%3E';
