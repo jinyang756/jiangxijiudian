@@ -1,0 +1,53 @@
+name: Run non-transactional CREATE INDEX (one-off)
+on:
+  workflow_dispatch: # 手动触发
+jobs:
+  create-index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Validate SQL file exists
+        run: |
+          if [ ! -f "./migrations/V4__create_partial_unique_index_concurrently.sql" ]; then
+            echo "SQL file V4__create_partial_unique_index_concurrently.sql not found in repo root."
+            exit 2
+          fi
+        shell: bash
+      - name: Install PostgreSQL client (psql)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client
+          psql --version
+        shell: bash
+      - name: Run CREATE INDEX CONCURRENTLY
+        env:
+          PGHOST: ${{ secrets.DB_HOST }}
+          PGPORT: ${{ secrets.DB_PORT }}
+          PGDATABASE: ${{ secrets.DB_NAME }}
+          PGUSER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "Starting CREATE INDEX CONCURRENTLY at $(date --utc)"
+          echo "Using PGHOST=${PGHOST} PGPORT=${PGPORT:-5432} PGDATABASE=${PGDATABASE} PGUSER=${PGUSER}"
+          # Print the SQL (sanitized) for logs — but avoid printing secrets
+          echo "---- SQL file start ----"
+          sed -n '1,200p' migrations/V4__create_partial_unique_index_concurrently.sql
+          echo "---- SQL file end ----"
+          # Execute non-transactional CREATE INDEX CONCURRENTLY.
+          # Using psql -v ON_ERROR_STOP=1 to fail fast on SQL errors.
+          # Using --set ON_ERROR_STOP=on is equivalent for some psql versions.
+          psql "host=${PGHOST} port=${PGPORT:-5432} dbname=${PGDATABASE} user=${PGUSER} sslmode=require" \
+            -v ON_ERROR_STOP=1 \
+            -f migrations/V4__create_partial_unique_index_concurrently.sql
+          STATUS=$?
+          if [ $STATUS -eq 0 ]; then
+            echo "CREATE INDEX CONCURRENTLY finished successfully at $(date --utc)"
+          else
+            echo "CREATE INDEX CONCURRENTLY failed with status $STATUS at $(date --utc)" >&2
+            exit $STATUS
+          fi
+        shell: bash
