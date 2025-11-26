@@ -142,6 +142,7 @@ npm run test-db
 有关数据库设置和数据导入的详细说明，请参考以下文档：
 - [DATABASE_SETUP.md](DATABASE_SETUP.md) - 数据库表结构和数据导入
 - [DATABASE_VIEW_SETUP.md](DATABASE_VIEW_SETUP.md) - **重要**: 数据库视图配置（部署前必读）
+- [IMAGE_MANAGEMENT.md](IMAGE_MANAGEMENT.md) - 菜品图片上传和管理指南
 - [ENV_SETUP.md](ENV_SETUP.md) - 环境变量配置指南
 
 ### 快速验证

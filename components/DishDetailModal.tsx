@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
+import { getDishImageUrl, getDefaultPlaceholder } from '../src/lib/imageUtils';
 
 interface DishDetailModalProps {
   item: MenuItem | null;
@@ -35,9 +36,9 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quanti
 
   const isSoldOut = item.available === false;
 
-  // Logic: Use backend provided URL first
-  const seed = item.id.charCodeAt(0) + parseInt(item.id.slice(1) || '0');
-  const imageUrl = item.imageUrl || `https://loremflickr.com/600/400/food,chinese/all?lock=${seed}`;
+  // 使用新的图片管理工具
+  const imageUrl = getDishImageUrl(item.imageUrl, item.id);
+  const fallbackImage = getDefaultPlaceholder();
 
   // Bilingual description - 使用默认描述
   const description = `一道地道的传统佳肴，选用上等食材烹制，保留了食物的原汁原味。\nThis authentic dish is prepared using traditional methods to bring out the rich flavors of its premium ingredients.`;
@@ -69,7 +70,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quanti
                 <div className="absolute inset-0 bg-stone-200 animate-shimmer bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 bg-[length:200%_100%] z-10" />
              )}
              <img 
-               src={imageError ? "/images/default-dish-detail.png" : imageUrl}
+               src={imageError ? fallbackImage : imageUrl}
                alt={item.en} 
                className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isSoldOut ? 'grayscale' : ''}`}
                onLoad={() => setImageLoaded(true)}

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { MenuItem, MenuCategory } from '../types';
+import { getDishImageUrl } from '../src/lib/imageUtils';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -87,8 +88,7 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, menuData
             <div className="space-y-3">
                 {filteredItems.map(item => {
                     const qty = cart[item.id] || 0;
-                    const seed = item.id.charCodeAt(0) + parseInt(item.id.slice(1) || '0');
-                    const imageUrl = `https://loremflickr.com/100/100/food,chinese/all?lock=${seed}`;
+                    const imageUrl = getDishImageUrl(item.imageUrl, item.id);
 
                     return (
                         <div 

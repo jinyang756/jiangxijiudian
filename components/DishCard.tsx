@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
+import { getDishImageUrl, getDefaultPlaceholder } from '../src/lib/imageUtils';
 
 interface DishCardProps {
   item: MenuItem;
@@ -27,9 +28,9 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  // Logic: Use backend provided URL first, otherwise fallback to generation
-  const seed = item.id.charCodeAt(0) + parseInt(item.id.slice(1) || '0');
-  const imageUrl = item.imageUrl || `https://loremflickr.com/300/200/food,chinese/all?lock=${seed}`;
+  // 使用新的图片管理工具，优先使用数据库URL，降级到本地占位图
+  const imageUrl = getDishImageUrl(item.imageUrl, item.id);
+  const fallbackImage = getDefaultPlaceholder();
   
   // Check if sold out (default to true if undefined)
   const isSoldOut = item.available === false;
@@ -76,7 +77,7 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
             <div className="absolute inset-0 bg-stone-200 animate-shimmer bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 bg-[length:200%_100%] z-10" />
         )}
         <img
-          src={imageError ? "/images/default-dish.png" : imageUrl}
+          src={imageError ? fallbackImage : imageUrl}
           alt={item.en}
           className={`w-full h-full object-cover transition-all duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isSoldOut ? 'grayscale contrast-125' : 'group-hover:scale-110'}`}
           loading="lazy"

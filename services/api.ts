@@ -2,6 +2,7 @@ import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse } 
 import { MENU_DATA } from '../constants';
 import { supabase } from '../src/lib/supabaseClient';
 import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
+import { logger } from '../src/lib/logger';
 
 export const api = {
   /**
@@ -48,9 +49,9 @@ export const api = {
 
       return { code: 200, message: 'success', data: result };
     } catch (error: any) {
-      console.warn('[API] Connection to Supabase failed. Using local fallback data.', error.message);
-      console.info('[INFO] To enable real-time data, ensure the menu_view is created in Supabase.');
-      console.info('[INFO] See DATABASE_VIEW_SETUP.md for instructions.');
+      logger.warn('Connection to Supabase failed. Using local fallback data.', error.message);
+      logger.info('To enable real-time data, ensure the menu_view is created in Supabase.');
+      logger.info('See DATABASE_VIEW_SETUP.md for instructions.');
       // Fallback: Return static data defined in constants.ts
       return { code: 200, message: 'Loaded from local backup', data: MENU_DATA };
     }
