@@ -1,0 +1,46 @@
+name: 部署到Vercel
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: 安装依赖
+      run: npm ci
+    
+    - name: 运行测试
+      run: npm test
+    
+    - name: 构建项目
+      run: npm run build
+      env:
+        VITE_APP_DB_URL: ${{ secrets.VITE_APP_DB_URL }}
+        VITE_APP_DB_POSTGRES_PASSWORD: ${{ secrets.VITE_APP_DB_POSTGRES_PASSWORD }}
+        VITE_APP_DB_POSTGRES_PRISMA_URL: ${{ secrets.VITE_APP_DB_POSTGRES_PRISMA_URL }}
+        VITE_APP_DB_POSTGRES_URL: ${{ secrets.VITE_APP_DB_POSTGRES_URL }}
+        VITE_APP_DB_POSTGRES_URL_NON_POOLING: ${{ secrets.VITE_APP_DB_POSTGRES_URL_NON_POOLING }}
+        VITE_APP_SUPABASE_STORAGE_URL: ${{ secrets.VITE_APP_SUPABASE_STORAGE_URL }}
+    
+    - name: 部署到Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        scope: ${{ secrets.VERCEL_SCOPE }}

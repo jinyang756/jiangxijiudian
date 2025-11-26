@@ -831,11 +831,7 @@ const AppContent: React.FC = () => {
     <div className="w-full h-full max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col relative">
       
       {/* 添加调试信息 */}
-      {import.meta.env.DEV && (
-        <div className="bg-red-500 text-white p-2 text-xs z-50">
-          Debug: Pages: {pages.length}, Current: {currentPage}, Type: {activePage?.type}
-        </div>
-      )}
+      {/* Debug info removed for production */}
       
       <div 
         className="flex-1 relative w-full perspective-1500 overflow-hidden shadow-2xl mt-4 mb-0 md:my-8 rounded-t-sm bg-wood"

@@ -3,6 +3,25 @@
 ## 重要提示 ⚠️
 敏感密钥已从代码库中移除。部署前需要配置以下环境变量。
 
+## GitHub Secrets配置
+
+为了保护敏感信息，项目使用GitHub Secrets来存储环境变量。
+
+需要在GitHub仓库中配置以下Secrets:
+
+```
+VITE_APP_DB_URL=your_supabase_project_url
+VITE_APP_DB_POSTGRES_PASSWORD=your_supabase_anon_key
+VITE_APP_DB_POSTGRES_PRISMA_URL=your_postgres_prisma_url
+VITE_APP_DB_POSTGRES_URL=your_postgres_url
+VITE_APP_DB_POSTGRES_URL_NON_POOLING=your_postgres_non_pooling_url
+VITE_APP_SUPABASE_STORAGE_URL=your_supabase_storage_url
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_vercel_org_id
+VERCEL_PROJECT_ID=your_vercel_project_id
+VERCEL_SCOPE=your_vercel_scope
+```
+
 ## 本地开发配置
 
 1. 复制 `.env.example` 文件并重命名为 `.env.development`
