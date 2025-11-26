@@ -35,12 +35,19 @@ export const api = {
         }
 
         // Transform the view data to App Data Structure
-        const categories: MenuCategory[] = menuData.map((row: any) => {
+        const categories: MenuCategory[] = menuData.map((row) => {
+          // 定义row的类型，基于Supabase查询结果
+          const typedRow = row as {
+            category_id: string;
+            category_name: string;
+            items: any[];
+          };
+          
           return {
-            key: row.category_id,
-            titleZh: row.category_name || '',
-            titleEn: row.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
-            items: row.items || [],
+            key: typedRow.category_id,
+            titleZh: typedRow.category_name || '',
+            titleEn: typedRow.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
+            items: typedRow.items || [],
           };
         });
 
@@ -48,8 +55,9 @@ export const api = {
       }, { maxRetries: 3, delay: 1000 });
 
       return { code: 200, message: 'success', data: result };
-    } catch (error: any) {
-      logger.warn('Connection to Supabase failed. Using local fallback data.', error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.warn('Connection to Supabase failed. Using local fallback data.', errorMessage);
       logger.info('To enable real-time data, ensure the menu_view is created in Supabase.');
       logger.info('See DATABASE_VIEW_SETUP.md for instructions.');
       // Fallback: Return static data defined in constants.ts
@@ -90,8 +98,9 @@ export const api = {
         message: 'success',
         data: result
       };
-    } catch (error: any) {
-      console.warn('[API] Order submission failed (Offline Mode). Simulating success.', error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn('[API] Order submission failed (Offline Mode). Simulating success.', errorMessage);
       // Simulate success for UI testing
       return { 
         code: 200, 
@@ -129,8 +138,9 @@ export const api = {
       }, { maxRetries: 2, delay: 1500 });
 
       return { code: 200, message: 'success', data: null };
-    } catch (error: any) {
-      console.warn('[API] Service call failed (Offline Mode). Simulating success.', error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn('[API] Service call failed (Offline Mode). Simulating success.', errorMessage);
       return { code: 200, message: 'Offline request simulated', data: null };
     }
   }

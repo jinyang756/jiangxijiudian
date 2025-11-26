@@ -84,13 +84,13 @@ export const executeWithRetry = async <T>(
       // 执行函数并设置超时
       const result = await Promise.race([fn(), timeoutPromise]);
       return result;
-    } catch (error: any) {
+    } catch (error) {
       lastError = createApiError(
-        error.message || 'Unknown error',
+        error instanceof Error ? error.message : 'Unknown error',
         {
-          status: error.status,
-          code: error.code || ERROR_CODES.NETWORK_ERROR,
-          retryable: error.retryable
+          status: error instanceof Error && 'status' in error ? (error as any).status : undefined,
+          code: error instanceof Error && 'code' in error ? (error as any).code : ERROR_CODES.NETWORK_ERROR,
+          retryable: error instanceof Error && 'retryable' in error ? (error as any).retryable : undefined
         }
       );
 

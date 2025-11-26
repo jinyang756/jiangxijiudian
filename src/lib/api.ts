@@ -9,7 +9,7 @@ console.log('API Base URL:', API_BASE_URL);
 console.log('Admin Base URL:', ADMIN_BASE_URL);
 
 // 通用API请求函数
-export const fetchFromAPI = async (endpoint: string, options: RequestInit = {}) => {
+export const fetchFromAPI = async <T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
   
   const defaultOptions: RequestInit = {
@@ -47,7 +47,7 @@ export const getRecord = async (collection: string, id: string) => {
 };
 
 // 创建记录
-export const createRecord = async (collection: string, data: any) => {
+export const createRecord = async <T = Record<string, unknown>>(collection: string, data: T) => {
   return fetchFromAPI(`/collections/${collection}/records`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -55,7 +55,7 @@ export const createRecord = async (collection: string, data: any) => {
 };
 
 // 更新记录
-export const updateRecord = async (collection: string, id: string, data: any) => {
+export const updateRecord = async <T = Record<string, unknown>>(collection: string, id: string, data: Partial<T>) => {
   return fetchFromAPI(`/collections/${collection}/records/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),

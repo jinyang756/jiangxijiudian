@@ -6,8 +6,15 @@ import { testLocalStorage, testSessionStorage, testNetworkConnection, testApiEnd
 import { safeLocalStorageGet, safeLocalStorageSet } from '../lib/storage';
 import { getRecords, createRecord, updateRecord, deleteRecord } from '../lib/api';
 
+interface TestResult {
+  name: string;
+  status: 'pass' | 'fail';
+  details: string;
+  timestamp: string;
+}
+
 const TestSuite: React.FC = () => {
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   // 添加测试结果

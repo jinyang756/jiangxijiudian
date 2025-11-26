@@ -1,7 +1,7 @@
 // 缓存管理工具
 export class CacheManager {
   private static instance: CacheManager;
-  private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
+  private cache: Map<string, { data: unknown; timestamp: number; ttl: number }> = new Map();
 
   private constructor() {
     // 定期清理过期缓存
@@ -18,7 +18,7 @@ export class CacheManager {
   }
 
   // 设置缓存
-  set(key: string, data: any, ttl: number = 300000) { // 默认5分钟过期
+  set<T>(key: string, data: T, ttl: number = 300000) { // 默认5分钟过期
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -40,7 +40,7 @@ export class CacheManager {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
   // 删除缓存

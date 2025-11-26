@@ -1,5 +1,6 @@
 // 用户认证和权限管理模块
 import { supabase } from './supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 // 用户角色定义
 export type UserRole = 'admin' | 'staff' | 'readonly' | 'anonymous';
@@ -67,7 +68,7 @@ class AuthManager {
   }
 
   // 确定用户角色
-  private determineUserRole(user: any): UserRole {
+  private determineUserRole(user: User): UserRole {
     // 这里应该根据实际的用户数据或配置来确定角色
     // 目前简化处理，后续可以从用户元数据或外部配置获取
     const email = user.email || '';
@@ -128,8 +129,9 @@ class AuthManager {
       }
 
       return { success: true, data };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -151,8 +153,9 @@ class AuthManager {
       }
 
       return { success: true, data };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -166,8 +169,9 @@ class AuthManager {
       }
 
       return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: errorMessage };
     }
   }
 
