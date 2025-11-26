@@ -2,6 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './src/index.css';
+import { initGlobalErrorHandler } from './src/lib/globalErrorHandler';
+
+// 初始化全局错误处理器
+initGlobalErrorHandler();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

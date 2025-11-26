@@ -10,6 +10,7 @@ import DishDetailModal from './components/DishDetailModal';
 import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
 import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { api } from './services/api';
 import { ImageLoader } from './src/lib/imageLoader';
 import TestSuite from './src/components/TestSuite';
@@ -1000,9 +1001,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <div>
+    <ErrorBoundary>
       <AppContent />
-    </div>
+    </ErrorBoundary>
   );
 };
 
