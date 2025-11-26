@@ -145,6 +145,7 @@ npm run test-db
 - [IMAGE_MANAGEMENT.md](IMAGE_MANAGEMENT.md) - 菜品图片上传和管理指南
 - [PERFORMANCE_OPTIMIZATION.md](PERFORMANCE_OPTIMIZATION.md) - 性能优化配置说明
 - [ERROR_BOUNDARY_GUIDE.md](ERROR_BOUNDARY_GUIDE.md) - React 错误边界使用指南
+- [NETWORK_DETECTION_GUIDE.md](NETWORK_DETECTION_GUIDE.md) - 网络检测系统使用指南
 - [ENV_SETUP.md](ENV_SETUP.md) - 环境变量配置指南
 
 ### 快速验证
