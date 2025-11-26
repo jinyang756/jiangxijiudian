@@ -10,7 +10,7 @@
 
 ### 后端部署
 - **服务器**: 154.221.19.68
-- **服务**: PocketBase
+- **服务**: Supabase (已替换PocketBase)
 - **HTTP端口**: 8090
 - **HTTPS端口**: 8443
 - **证书**: Let's Encrypt SSL证书
@@ -18,10 +18,10 @@
 ## 部署状态
 
 ### 后端服务状态
-- [x] PocketBase服务已安装
+- [x] Supabase服务已配置
 - [x] SSL证书已配置
 - [x] HTTPS服务正常运行
-- [x] systemd服务配置完成
+- [x] 数据库表结构已创建
 - [x] CORS配置已完成
 
 ### 前端部署状态
@@ -64,7 +64,7 @@
 - [x] 性能调优完成
 
 ### 第六阶段：后端部署
-- [x] PocketBase服务配置
+- [x] Supabase服务配置
 - [x] SSL证书配置
 - [x] 前后端连接测试
 
@@ -72,6 +72,17 @@
 - [x] 服务状态检查
 - [x] 配置文件验证
 - [x] 连接测试完成
+
+### 第八阶段：数据导入
+- [x] 创建菜品数据导入脚本
+- [ ] 导入示例菜品数据
+- [ ] 验证数据导入结果
+
+### 第九阶段：数据库设置
+- [x] 创建数据库设置文档
+- [ ] 创建数据库表结构
+- [ ] 导入初始数据
+- [ ] 验证数据完整性
 
 ## 重要配置信息
 
@@ -86,10 +97,9 @@
 NEXT_PUBLIC_API_URL=https://154.221.19.68:8443/api
 NEXT_PUBLIC_ADMIN_URL=https://154.221.19.68:8443/_
 
-# 后端环境变量
-PB_HTTPS_CERT=/opt/projects/jiangxijiudian/ssl/cert.pem
-PB_HTTPS_KEY=/opt/projects/jiangxijiudian/ssl/key.pem
-PB_CORS_ORIGINS=https://jiangxijiudian.vercel.app
+# Supabase环境变量
+VITE_APP_DB_URL=postgres://postgres.kdlhyzsihflwkwumxzfw:J2nkgp0cGZYF8iHk@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true
+VITE_APP_DB_POSTGRES_PASSWORD=J2nkgp0cGZYF8iHk
 ```
 
 ## 维护命令
@@ -115,6 +125,21 @@ cp /etc/letsencrypt/live/jcstjj.top/privkey.pem /opt/projects/jiangxijiudian/ssl
 # 重启服务
 systemctl restart pocketbase
 ```
+
+### 数据库管理
+```bash
+# 初始化数据库（创建表结构并导入示例数据）
+npm run init-db
+
+# 导入菜品数据
+npm run import-menu
+
+# 测试数据库连接
+npm run test-db
+```
+
+## 数据库设置
+有关数据库设置和数据导入的详细说明，请参考 [DATABASE_SETUP.md](DATABASE_SETUP.md) 文件。
 
 ## 联系信息
 - **维护人员**: 技术支持团队
