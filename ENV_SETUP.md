@@ -12,9 +12,6 @@
 ```
 VITE_APP_DB_URL=your_supabase_project_url
 VITE_APP_DB_POSTGRES_PASSWORD=your_supabase_anon_key
-VITE_APP_DB_POSTGRES_PRISMA_URL=your_postgres_prisma_url
-VITE_APP_DB_POSTGRES_URL=your_postgres_url
-VITE_APP_DB_POSTGRES_URL_NON_POOLING=your_postgres_non_pooling_url
 VITE_APP_SUPABASE_STORAGE_URL=your_supabase_storage_url
 VERCEL_TOKEN=your_vercel_token
 VERCEL_ORG_ID=your_vercel_org_id
@@ -97,9 +94,11 @@ vercel env pull
 
 1. ❌ **绝对不要** 将 `.env.development` 或 `.env.production` 提交到 Git
 2. ❌ **绝对不要** 在代码中硬编码敏感密钥
-3. ✅ **务必** 使用环境变量管理所有敏感信息
-4. ✅ **定期** 轮换 API 密钥
-5. ✅ 使用不同的密钥用于开发和生产环境
+3. ❌ **绝对不要** 在前端环境变量中包含PostgreSQL连接字符串
+4. ✅ **务必** 使用环境变量管理所有敏感信息
+5. ✅ **定期** 轮换 API 密钥
+6. ✅ 使用不同的密钥用于开发和生产环境
+7. ✅ 前端只应使用Supabase项目URL和anon key，不应包含PostgreSQL连接信息
 
 ## 验证配置
 

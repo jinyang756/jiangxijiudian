@@ -80,14 +80,14 @@ async function testConnection() {
     if (categoriesData.length > 0) {
       console.log('示例分类数据:');
       categoriesData.slice(0, 3).forEach(cat => {
-        console.log(`  - ${cat.title_zh} (${cat.title_en})`);
+        console.log(`  - ${cat.name} (无英文名称)`);
       });
     }
     
     if (dishesData.length > 0) {
       console.log('示例菜品数据:');
       dishesData.slice(0, 3).forEach(dish => {
-        console.log(`  - ${dish.name_zh} (${dish.name_en}) - ¥${dish.price}`);
+        console.log(`  - ${dish.name} (${dish.en_title}) - ¥${dish.price}`);
       });
     }
     

@@ -118,7 +118,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quanti
 
             <div className="flex items-baseline gap-2 mb-6 pb-6 border-b border-dashed border-stone-200">
                 <span className={`text-3xl font-bold ${isSoldOut ? 'text-stone-400' : 'text-cinnabar'}`}>
-                    <span className="text-lg align-top mr-1">₱</span>{item.price}
+                    {item.price.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
                 </span>
                 <span className="text-stone-400 text-xs">/ 份 portion</span>
             </div>

@@ -167,7 +167,7 @@ const PrintService: React.FC<PrintServiceProps> = ({
                     </td>
                     <td>{quantity}</td>
                     <td className="price">
-                      ₱{itemTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                      {itemTotal.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
                     </td>
                   </tr>
                 );
@@ -178,15 +178,15 @@ const PrintService: React.FC<PrintServiceProps> = ({
           <div className="totals">
             <div className="totals-row">
               <span>小计 Subtotal:</span>
-              <span>₱{subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              <span>{subtotal.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</span>
             </div>
             <div className="totals-row">
               <span>服务费 Service (10%):</span>
-              <span>₱{serviceCharge.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              <span>{serviceCharge.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</span>
             </div>
             <div className="totals-row" style={{fontWeight: 'bold', borderTop: '1px solid #333', paddingTop: '5px'}}>
               <span>总计 Total:</span>
-              <span>₱{grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              <span>{grandTotal.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</span>
             </div>
           </div>
           

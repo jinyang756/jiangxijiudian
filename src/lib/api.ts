@@ -5,9 +5,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8090/api';
 const ADMIN_BASE_URL = import.meta.env.VITE_ADMIN_BASE_URL || 'http://localhost:8090/_';
 
-console.log('API Base URL:', API_BASE_URL);
-console.log('Admin Base URL:', ADMIN_BASE_URL);
-
 // 通用API请求函数
 export const fetchFromAPI = async <T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;

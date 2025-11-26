@@ -105,7 +105,6 @@ const safeSessionStorageSet = (key: string, value: string) => {
   try {
     sessionStorage.setItem(key, value);
   } catch (e) {
-    console.warn('无法访问 sessionStorage:', e);
   }
 };
 
@@ -113,7 +112,6 @@ const safeSessionStorageGet = (key: string) => {
   try {
     return sessionStorage.getItem(key);
   } catch (e) {
-    console.warn('无法访问 sessionStorage:', e);
     return null;
   }
 };
@@ -179,9 +177,7 @@ const AppContent: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await api.getMenu();
-      console.log('获取菜单数据响应:', response); // 添加调试日志
       if (response.code === 200) {
-        console.log('设置菜单数据:', response.data); // 添加调试日志
         setMenuData(response.data || []);
         setMenu(response.data || []);
       } else {
@@ -189,7 +185,6 @@ const AppContent: React.FC = () => {
       }
     } catch (err) {
       setError('加载菜单时发生错误');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -197,7 +192,6 @@ const AppContent: React.FC = () => {
 
   // 初始化应用
   useEffect(() => {
-    console.log('初始化应用，开始加载菜单数据'); // 添加调试日志
     loadMenu();
   }, []);
 
@@ -206,25 +200,26 @@ const AppContent: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await api.getMenu();
-      console.log('菜单数据响应:', response); // 添加调试日志
       
       if (response.code === 200) {
-        console.log('菜单数据:', response.data); // 添加调试日志
         setMenu(response.data || []);
         setMenuData(response.data || []);
         
         // 预加载菜单图片
         if (response.data && response.data.length > 0) {
           ImageLoader.preloadMenuImages(response.data)
-            .then(() => console.log('菜单图片预加载完成'))
-            .catch(err => console.warn('图片预加载失败:', err));
+            .catch(err => {
+              // 只在开发环境记录警告
+              if (import.meta.env.DEV) {
+                console.warn('图片预加载失败:', err);
+              }
+            });
         }
       } else {
         setError('加载菜单失败');
       }
     } catch (err) {
       setError('加载菜单时发生错误');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -280,8 +275,6 @@ const AppContent: React.FC = () => {
 
   // Generate Pages & Category Mapping
   const { pages, categoryPageMap, categoryKeys } = useMemo(() => {
-    console.log('生成页面，menu长度:', menu.length);
-    console.log('menu数据:', menu);
     
     const generatedPages: PageData[] = [];
     const catMap: {[key: string]: number} = {};
@@ -313,7 +306,6 @@ const AppContent: React.FC = () => {
       console.log('开始生成内容页面');
       let globalPageCount = 1;
       menu.forEach((category, index) => {
-        console.log('处理分类:', category);
         // 确保每个分类都有唯一的key
         const categoryKey = category.key || `category-${index}`;
         keys.push(categoryKey);
@@ -321,7 +313,6 @@ const AppContent: React.FC = () => {
         
         const items = category.items || [];
         const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-        console.log(`分类 ${category.titleZh} 有 ${items.length} 个菜品，需要 ${totalCatPages} 页`);
         
         // 即使分类没有菜品也要生成页面
         if (totalCatPages === 0) {
@@ -341,7 +332,6 @@ const AppContent: React.FC = () => {
             const start = i * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
             const pageItems = items.slice(start, end);
-            console.log(`页面 ${i+1} 有 ${pageItems.length} 个菜品`);
             
             generatedPages.push({
               type: 'content',
@@ -364,10 +354,6 @@ const AppContent: React.FC = () => {
     catMap['back'] = generatedPages.length;
     generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
     
-    console.log('生成的页面:', generatedPages);
-    console.log('分类映射:', catMap);
-    console.log('分类键:', keys);
-    
     return { pages: generatedPages, categoryPageMap: catMap, categoryKeys: keys };
   }, [menu]);
 
@@ -375,27 +361,14 @@ const AppContent: React.FC = () => {
   const activePage = pages[currentPage] || pages[0];
   
   // 添加调试信息
-  console.log('页面信息:', {
-    currentPage,
-    totalPages,
-    activePage: activePage ? {
-      type: activePage.type,
-      categoryKey: activePage.categoryKey,
-      categoryTitleZh: activePage.categoryTitleZh
-    } : null,
-    pagesLength: pages.length,
-    menuLength: menu.length
-  });
+  // Debug info removed for production
 
   // 检查是否有页面数据
   if (pages.length === 0) {
-    console.warn('没有生成任何页面!');
   }
 
   if (activePage) {
-    console.log('当前页面详情:', activePage);
   } else {
-    console.warn('没有当前页面!');
   }
 
   // Navigation Logic
@@ -774,7 +747,12 @@ const AppContent: React.FC = () => {
             重新加载菜单数据
           </button>
           <button 
-            onClick={() => console.log('菜单数据:', menu)}
+            onClick={() => {
+              // 只在开发环境记录菜单数据
+              if (import.meta.env.DEV) {
+                console.log('菜单数据:', menu);
+              }
+            }}
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
           >
             在控制台打印菜单数据
