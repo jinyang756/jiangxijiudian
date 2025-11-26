@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f3f4f6"/>
+  <circle cx="150" cy="100" r="40" fill="#d1d5db"/>
+  <path d="M150 60 L190 140 L110 140 Z" fill="#9ca3af"/>
+  <text x="150" y="180" font-family="Arial, sans-serif" font-size="14" fill="#6b7280" text-anchor="middle">
+    图片加载失败
+  </text>
+</svg>

@@ -26,7 +26,7 @@ const HighlightText = ({ text, highlight }: { text: string, highlight: string })
 const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, menuData, cart, onAdd, onRemove, onItemClick }) => {
   const [query, setQuery] = useState('');
 
-  // Flatten items for search
+  // Flatten items for search and add image loading status
   const allItems = useMemo(() => {
     return menuData.flatMap(cat => cat.items);
   }, [menuData]);
@@ -39,7 +39,7 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, menuData
       item.en.toLowerCase().includes(lowerQ) ||
       item.id.toLowerCase().includes(lowerQ)
     );
-  }, [query, allItems]);
+  }, [allItems, query]);
 
   if (!isOpen) return null;
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
 
 interface DishCardProps {
@@ -25,6 +25,7 @@ const LeafIcon = () => (
 
 const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, onClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Logic: Use backend provided URL first, otherwise fallback to generation
   const seed = item.id.charCodeAt(0) + parseInt(item.id.slice(1) || '0');
@@ -32,6 +33,36 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
   
   // Check if sold out (default to true if undefined)
   const isSoldOut = item.available === false;
+
+  // 处理图片加载错误，显示默认图片
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
+
+  // 重置图片状态
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [item.id]);
+
+  // 预加载图片
+  useEffect(() => {
+    if (item.imageUrl) {
+      const img = new Image();
+      img.src = item.imageUrl;
+      img.onload = () => {
+        if (item.id === item.id) { // 确保是当前组件的图片
+          setImageLoaded(true);
+        }
+      };
+      img.onerror = () => {
+        if (item.id === item.id) { // 确保是当前组件的图片
+          handleImageError();
+        }
+      };
+    }
+  }, [item.imageUrl, item.id]);
 
   return (
     <div 
@@ -41,15 +72,16 @@ const DishCard: React.FC<DishCardProps> = ({ item, quantity, onAdd, onRemove, on
       
       {/* Image Container */}
       <div className="relative overflow-hidden aspect-[4/3] mb-2 bg-stone-100 rounded-sm group-hover:shadow-md transition-shadow">
-        {!imageLoaded && (
+        {!imageLoaded && !imageError && (
             <div className="absolute inset-0 bg-stone-200 animate-shimmer bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 bg-[length:200%_100%] z-10" />
         )}
         <img
-          src={imageUrl}
+          src={imageError ? "/images/default-dish.png" : imageUrl}
           alt={item.en}
           className={`w-full h-full object-cover transition-all duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isSoldOut ? 'grayscale contrast-125' : 'group-hover:scale-110'}`}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
+          onError={handleImageError}
         />
         <div className="absolute top-0 left-0 bg-wood/80 text-stone-light px-1.5 py-0.5 text-[10px] font-serif z-10">
           {item.id}

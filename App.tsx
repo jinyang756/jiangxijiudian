@@ -11,7 +11,7 @@ import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
 import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import { api } from './services/api';
-import { safeLocalStorageGet, safeLocalStorageSet, safeSessionStorageGet, safeSessionStorageSet } from './src/lib/storage';
+import { ImageLoader } from './src/lib/imageLoader';
 import TestSuite from './src/components/TestSuite';
 
 // Types for our Page system
@@ -72,36 +72,133 @@ const RefreshIcon = () => (
 // --- Constants ---
 const ITEMS_PER_PAGE = 6;
 
-const App: React.FC = () => {
-  // Check for Admin Mode
-  const isAdminMode = new URLSearchParams(window.location.search).get('mode') === 'admin';
-  // Check for Test Mode
-  const isTestMode = new URLSearchParams(window.location.search).get('mode') === 'test';
+// 添加安全的 sessionStorage 操作函数
+const safeSessionStorageSet = (key: string, value: string) => {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch (e) {
+    console.warn('无法访问 sessionStorage:', e);
+  }
+};
 
-  // Data State
+const safeSessionStorageGet = (key: string) => {
+  try {
+    return sessionStorage.getItem(key);
+  } catch (e) {
+    console.warn('无法访问 sessionStorage:', e);
+    return null;
+  }
+};
+
+const AppContent: React.FC = () => {
+  const [menu, setMenu] = useState<MenuCategory[]>([]);
   const [menuData, setMenuData] = useState<MenuCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+  const [cart, setCart] = useState<CartItems>({});
+
+
+  const [tableId, setTableId] = useState('');
 
   const [currentPage, setCurrentPage] = useState(0);
   const [transition, setTransition] = useState<TransitionType>(null);
-  
-  // App States for Ordering & Nav
-  const [cart, setCart] = useState<CartItems>(() => {
-    return safeLocalStorageGet('cart', {});
-  });
-
+  const [isLoading, setIsLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isServiceOpen, setIsServiceOpen] = useState(false);
-  
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
 
-  // --- Location / Table Persistence Logic ---
-  const [tableId, setTableId] = useState<string>('A01');
 
+  // 购物车操作函数
+  const addToCart = (item: MenuItem) => {
+    setCart(prevCart => ({
+      ...prevCart,
+      [item.id]: (prevCart[item.id] || 0) + 1
+    }));
+  };
+
+  const removeFromCart = (item: MenuItem) => {
+    setCart(prevCart => {
+      const newCart = { ...prevCart };
+      if (newCart[item.id] > 1) {
+        newCart[item.id] -= 1;
+      } else {
+        delete newCart[item.id];
+      }
+      return newCart;
+    });
+  };
+
+  const clearCart = () => {
+    setCart({});
+  };
+
+  const updateCartQuantity = (item: MenuItem, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(item);
+    } else {
+      setCart(prevCart => ({
+        ...prevCart,
+        [item.id]: quantity
+      }));
+    }
+  };
+
+  // 初始化应用
+  useEffect(() => {
+    loadMenu();
+  }, []);
+
+  // 加载菜单数据
+  const loadMenu = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.getMenu();
+      
+      if (response.code === 200) {
+        setMenu(response.data || []);
+        setMenuData(response.data || []);
+        
+        // 预加载菜单图片
+        if (response.data && response.data.length > 0) {
+          ImageLoader.preloadMenuImages(response.data)
+            .then(() => console.log('菜单图片预加载完成'))
+            .catch(err => console.warn('图片预加载失败:', err));
+        }
+      } else {
+        setError('加载菜单失败');
+      }
+    } catch (err) {
+      setError('加载菜单时发生错误');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 添加获取数据函数
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.getMenu();
+      if (response.code === 200) {
+        setMenuData(response.data || []);
+      } else {
+        setError('加载菜单失败');
+      }
+    } catch (err) {
+      setError('加载菜单时发生错误');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+
+  // --- Location / Table Persistence Logic ---
   useEffect(() => {
     // 1. Try URL Param
     const params = new URLSearchParams(window.location.search);
@@ -132,95 +229,19 @@ const App: React.FC = () => {
     return `Table ${id}`;
   }, [tableId]);
 
-  // Fetch Data Function
-  const fetchData = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.getMenu();
-      if (response.data) {
-        setMenuData(response.data);
-      } else {
-        setError('No data received');
-      }
-    } catch (e) {
-      console.error("Failed to fetch menu", e);
-      setError('Failed to load menu. Please check your connection.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Initial Load
-  useEffect(() => {
-    if (!isAdminMode) {
-      fetchData();
-    }
-  }, [isAdminMode]);
-
-  // Save cart to localStorage
-  useEffect(() => {
-    safeLocalStorageSet('cart', cart);
-  }, [cart]);
-
-  // Play Sound on Flip
-  useEffect(() => {
-    if (transition === 'flip-next' || transition === 'flip-prev') {
-       const audio = document.getElementById('page-flip-sound') as HTMLAudioElement;
-       if (audio) {
-           audio.currentTime = 0;
-           audio.play().catch(() => console.log("Audio interaction needed first"));
-       }
-    }
-  }, [transition]);
-
   // Derived State: Total Cart Count
   const cartCount = useMemo(() => Object.values(cart).reduce((a: number, b: number) => a + b, 0), [cart]);
 
   // Derived State: Map for quick item lookup
   const itemsMap = useMemo(() => {
     const map = new Map<string, MenuItem>();
-    menuData.forEach(cat => {
+    menu.forEach(cat => {
         cat.items.forEach(item => map.set(item.id, item));
     });
     return map;
-  }, [menuData]);
+  }, [menu]);
 
   // Actions
-  const addToCart = (item: MenuItem) => {
-    setCart(prev => ({
-      ...prev,
-      [item.id]: (prev[item.id] || 0) + 1
-    }));
-  };
-
-  const removeFromCart = (item: MenuItem) => {
-    setCart(prev => {
-      const current = prev[item.id] || 0;
-      if (current <= 1) {
-        const { [item.id]: _, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [item.id]: current - 1 };
-    });
-  };
-
-  const updateCartQuantity = (item: MenuItem, quantity: number) => {
-    if (quantity <= 0) {
-      setCart(prev => {
-        const { [item.id]: _, ...rest } = prev;
-        return rest;
-      });
-    } else {
-      setCart(prev => ({
-        ...prev,
-        [item.id]: quantity
-      }));
-    }
-  };
-
-  const clearCart = () => setCart({});
-
   const handleDishClick = (item: MenuItem) => {
     setSelectedDish(item);
   };
@@ -236,9 +257,9 @@ const App: React.FC = () => {
     catMap['cover'] = 0;
 
     // 2. Content Pages
-    if (menuData.length > 0) {
+    if (menu.length > 0) {
       let globalPageCount = 1;
-      menuData.forEach((category) => {
+      menu.forEach((category) => {
         keys.push(category.key);
         catMap[category.key] = generatedPages.length;
 
@@ -271,7 +292,7 @@ const App: React.FC = () => {
     generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
 
     return { pages: generatedPages, categoryPageMap: catMap, categoryKeys: keys };
-  }, [menuData]);
+  }, [menu]);
 
   const totalPages = pages.length;
   const activePage = pages[currentPage] || pages[0];
@@ -371,7 +392,7 @@ const App: React.FC = () => {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isAdminMode || isSearchOpen || isMenuOpen || isCartOpen || isInfoOpen || isServiceOpen || selectedDish || isLoading) return; 
+      if (isSearchOpen || isMenuOpen || isCartOpen || isInfoOpen || isServiceOpen || selectedDish || isLoading) return; 
       if (e.key === 'ArrowRight') goToNextCategory();
       if (e.key === 'ArrowLeft') goToPrevCategory();
       if (e.key === 'ArrowDown') goToNextPageInCat();
@@ -379,7 +400,7 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, isSearchOpen, isMenuOpen, isCartOpen, isInfoOpen, isServiceOpen, activePage, selectedDish, isLoading, isAdminMode]);
+  }, [currentPage, isSearchOpen, isMenuOpen, isCartOpen, isInfoOpen, isServiceOpen, activePage, selectedDish, isLoading]);
 
   // --- Render Page Types ---
 
@@ -501,6 +522,11 @@ const App: React.FC = () => {
   };
 
   const is3DTransition = transition === 'flip-next' || transition === 'flip-prev';
+
+  // 获取URL参数
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAdminMode = urlParams.get('mode') === 'admin';
+  const isTestMode = urlParams.get('mode') === 'test';
 
   // --- Admin Mode Render ---
   if (isAdminMode) {
@@ -670,6 +696,14 @@ const App: React.FC = () => {
         locationLabel={locationLabel}
       />
 
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <div>
+      <AppContent />
     </div>
   );
 };

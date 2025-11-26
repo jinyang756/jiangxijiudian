@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MenuItem, CartItems } from '../types';
 import { api } from '../services/api';
+import PrintService from './PrintService';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null); // 添加提交错误状态
 
   // Reset confirmation state when modal opens/closes
   useEffect(() => {
@@ -27,6 +29,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
       setShowConfirmation(false);
       setEditingId(null);
       setIsSubmitting(false);
+      setSubmitError(null); // 重置错误状态
     }
   }, [isOpen]);
 
@@ -51,6 +54,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
 
   const confirmOrder = async () => {
     setIsSubmitting(true);
+    setSubmitError(null); // 清除之前的错误
     try {
       // Prepare Payload
       const itemsPayload = cartItemIds.map(id => ({
@@ -67,16 +71,21 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
       const response = await api.submitOrder(payload);
       
       if (response.code === 200) {
-        alert(`下单成功！Order Placed Successfully!\n\nLocation: ${locationLabel}\nOrder ID: ${response.data.orderId}\n\nSalamat po!`);
+        alert(`下单成功！Order Placed Successfully!
+
+Location: ${locationLabel}
+Order ID: ${response.data.orderId}
+
+Salamat po!`);
         onClear();
         onClose();
         setShowConfirmation(false);
       } else {
-        alert('下单失败，请重试。\nFailed to place order.');
+        setSubmitError('下单失败，请重试。\nFailed to place order.');
       }
     } catch (e) {
       console.error(e);
-      alert('网络错误，请重试。\nNetwork Error.');
+      setSubmitError('网络错误，请重试。\nNetwork Error.');
     } finally {
       setIsSubmitting(false);
     }
@@ -121,8 +130,23 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
                 <button onClick={onClear} className="text-xs text-stone-400 hover:text-white underline underline-offset-2 ml-2">
                     清空 Empty
                 </button>
+                <button 
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-stone-800 text-stone-400 hover:text-white flex items-center justify-center transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </div>
+
+        {/* Error Message */}
+        {submitError && (
+          <div className="bg-red-100 border-l-4 border-red-500 p-4 text-red-700">
+            <p>{submitError}</p>
+          </div>
+        )}
 
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -196,6 +220,12 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart, itemsMap, 
                {grandTotal.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
             </span>
           </div>
+          <PrintService 
+            cart={cart}
+            itemsMap={itemsMap}
+            locationLabel={locationLabel}
+          />
+          
           <button 
             className={`w-full py-3 rounded-sm font-bold tracking-widest text-lg shadow-md transition-all ${cartItemIds.length > 0 ? 'bg-wood text-gold hover:bg-black' : 'bg-stone-300 text-stone-500 cursor-not-allowed'}`}
             disabled={cartItemIds.length === 0}

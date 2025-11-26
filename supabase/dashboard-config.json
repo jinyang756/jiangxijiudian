@@ -1,0 +1,176 @@
+{
+  "dashboard": {
+    "name": "江西酒店中控系统管理面板",
+    "tables": [
+      {
+        "name": "categories",
+        "display_name": "菜品分类",
+        "columns": [
+          {
+            "name": "key",
+            "display_name": "分类键",
+            "type": "text"
+          },
+          {
+            "name": "title_zh",
+            "display_name": "中文标题",
+            "type": "text"
+          },
+          {
+            "name": "title_en",
+            "display_name": "英文标题",
+            "type": "text"
+          },
+          {
+            "name": "sort",
+            "display_name": "排序",
+            "type": "integer"
+          }
+        ],
+        "primary_key": "id",
+        "relationships": []
+      },
+      {
+        "name": "dishes",
+        "display_name": "菜品",
+        "columns": [
+          {
+            "name": "dish_id",
+            "display_name": "菜品ID",
+            "type": "text"
+          },
+          {
+            "name": "name_zh",
+            "display_name": "中文名称",
+            "type": "text"
+          },
+          {
+            "name": "name_en",
+            "display_name": "英文名称",
+            "type": "text"
+          },
+          {
+            "name": "price",
+            "display_name": "价格",
+            "type": "numeric"
+          },
+          {
+            "name": "is_spicy",
+            "display_name": "辣味",
+            "type": "boolean"
+          },
+          {
+            "name": "is_vegetarian",
+            "display_name": "素食",
+            "type": "boolean"
+          },
+          {
+            "name": "available",
+            "display_name": "可用",
+            "type": "boolean"
+          },
+          {
+            "name": "image_url",
+            "display_name": "图片URL",
+            "type": "text"
+          },
+          {
+            "name": "category_id",
+            "display_name": "分类ID",
+            "type": "uuid",
+            "foreign_key": {
+              "table": "categories",
+              "column": "id"
+            }
+          }
+        ],
+        "primary_key": "id",
+        "relationships": [
+          {
+            "name": "category",
+            "table": "categories",
+            "foreign_key": "category_id"
+          }
+        ]
+      },
+      {
+        "name": "orders",
+        "display_name": "订单",
+        "columns": [
+          {
+            "name": "table_id",
+            "display_name": "桌号",
+            "type": "text"
+          },
+          {
+            "name": "items_json",
+            "display_name": "订单项(JSON)",
+            "type": "text"
+          },
+          {
+            "name": "total_amount",
+            "display_name": "总金额",
+            "type": "numeric"
+          },
+          {
+            "name": "status",
+            "display_name": "状态",
+            "type": "text"
+          }
+        ],
+        "primary_key": "id",
+        "relationships": []
+      },
+      {
+        "name": "service_requests",
+        "display_name": "服务请求",
+        "columns": [
+          {
+            "name": "table_id",
+            "display_name": "桌号",
+            "type": "text"
+          },
+          {
+            "name": "type",
+            "display_name": "类型",
+            "type": "text"
+          },
+          {
+            "name": "type_name",
+            "display_name": "类型名称",
+            "type": "text"
+          },
+          {
+            "name": "details",
+            "display_name": "详情",
+            "type": "text"
+          },
+          {
+            "name": "status",
+            "display_name": "状态",
+            "type": "text"
+          }
+        ],
+        "primary_key": "id",
+        "relationships": []
+      }
+    ],
+    "views": [
+      {
+        "name": "menu_overview",
+        "display_name": "菜单概览",
+        "query": "SELECT d.dish_id, d.name_zh, d.name_en, d.price, c.title_zh as category, d.available FROM dishes d JOIN categories c ON d.category_id = c.id ORDER BY c.sort, d.name_zh"
+      },
+      {
+        "name": "order_summary",
+        "display_name": "订单汇总",
+        "query": "SELECT table_id, total_amount, status, created_at FROM orders ORDER BY created_at DESC"
+      },
+      {
+        "name": "service_requests_summary",
+        "display_name": "服务请求汇总",
+        "query": "SELECT table_id, type_name, details, status, created_at FROM service_requests ORDER BY created_at DESC"
+      }
+    ]
+  }
+}

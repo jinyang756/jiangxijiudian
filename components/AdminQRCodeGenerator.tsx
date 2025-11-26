@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
+import PrinterMappingManager from './PrinterMapping';
 
 type LocationType = 'restaurant' | 'hotel' | 'ktv';
 
 const AdminQRCodeGenerator: React.FC = () => {
   const [locationType, setLocationType] = useState<LocationType>('hotel');
   const [inputNumber, setInputNumber] = useState('');
+  const [showPrinterConfig, setShowPrinterConfig] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   // Generate the full Table ID based on type
@@ -62,8 +64,22 @@ const AdminQRCodeGenerator: React.FC = () => {
         
         {/* Controls */}
         <div className="bg-paper p-6 rounded shadow-xl border-t-4 border-gold">
-          <h1 className="text-2xl font-bold text-ink mb-6 border-b border-stone-200 pb-2">二维码生成后台</h1>
+          <div className="flex justify-between items-center mb-6 border-b border-stone-200 pb-2">
+            <h1 className="text-2xl font-bold text-ink">二维码生成后台</h1>
+            <button 
+              onClick={() => setShowPrinterConfig(!showPrinterConfig)}
+              className="text-sm bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1 rounded transition-colors"
+            >
+              {showPrinterConfig ? '隐藏打印机配置' : '显示打印机配置'}
+            </button>
+          </div>
           
+          {showPrinterConfig && (
+            <div className="mb-6">
+              <PrinterMappingManager />
+            </div>
+          )}
+
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-bold text-stone-500 mb-2 uppercase tracking-wider">1. 选择区域 Area Type</label>

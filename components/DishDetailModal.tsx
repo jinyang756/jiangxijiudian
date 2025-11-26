@@ -24,9 +24,11 @@ const LeafIcon = () => (
 
 const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quantity, onAdd, onRemove }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   useEffect(() => {
     setImageLoaded(false);
+    setImageError(false);
   }, [item?.id]);
 
   if (!item) return null;
@@ -37,8 +39,14 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quanti
   const seed = item.id.charCodeAt(0) + parseInt(item.id.slice(1) || '0');
   const imageUrl = item.imageUrl || `https://loremflickr.com/600/400/food,chinese/all?lock=${seed}`;
 
-  // Bilingual description
+  // Bilingual description - 使用默认描述
   const description = `一道地道的传统佳肴，选用上等食材烹制，保留了食物的原汁原味。\nThis authentic dish is prepared using traditional methods to bring out the rich flavors of its premium ingredients.`;
+
+  // 处理图片加载错误
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
@@ -57,14 +65,15 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({ item, onClose, quanti
 
         {/* Image Header */}
         <div className="h-64 sm:h-72 flex-shrink-0 bg-stone-200 relative overflow-hidden">
-             {!imageLoaded && (
+             {!imageLoaded && !imageError && (
                 <div className="absolute inset-0 bg-stone-200 animate-shimmer bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 bg-[length:200%_100%] z-10" />
              )}
              <img 
-               src={imageUrl} 
+               src={imageError ? "/images/default-dish-detail.png" : imageUrl}
                alt={item.en} 
                className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isSoldOut ? 'grayscale' : ''}`}
                onLoad={() => setImageLoaded(true)}
+               onError={handleImageError}
              />
              <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
              

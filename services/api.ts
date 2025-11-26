@@ -1,110 +1,120 @@
-import PocketBase from 'pocketbase';
 import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse, MenuItem } from '../types';
 import { MENU_DATA } from '../constants';
-
-// --- Configuration ---
-// Robust way to get environment variable without crashing if import.meta is undefined or unsupported
-const getEnv = () => {
-  try {
-    return import.meta.env?.VITE_PB_URL;
-  } catch (e) {
-    return undefined;
-  }
-};
-
-const PB_URL = getEnv() || 'http://127.0.0.1:8090';
-
-console.log(`[App] Connecting to PocketBase at: ${PB_URL}`);
-
-// Initialize SDK
-const pb = new PocketBase(PB_URL);
-
-// Disable auto-cancellation to prevent race conditions in React StrictMode
-pb.autoCancellation(false);
+import { supabase } from '../src/lib/supabaseClient';
+import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
 
 export const api = {
   /**
-   * Fetch menu data from PocketBase
+   * Fetch menu data from Supabase
    * 
    * Logic:
-   * 1. Try to fetch 'categories' and 'dishes' from the backend.
+   * 1. Try to fetch 'categories' and 'dishes' from the Supabase backend.
    * 2. If successful, construct the nested menu structure.
    * 3. If failed (backend offline/network error), fallback to local `MENU_DATA` constant.
    */
   getMenu: async (): Promise<ApiResponse<MenuCategory[]>> => {
     try {
-      // 1. Fetch all categories (sorted by sort order)
-      const categoriesRecord = await pb.collection('categories').getFullList({
-        sort: 'sort',
-      });
+      // 使用重试机制执行API调用
+      const result = await executeWithRetry(async () => {
+        // 1. Fetch all categories (sorted by sort order)
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .order('sort');
 
-      // 2. Fetch all available dishes (sorted by creation time)
-      const dishesRecord = await pb.collection('dishes').getFullList({
-        sort: '+created',
-        filter: 'available = true',
-      });
+        if (categoriesError) {
+          throw createApiError('Failed to fetch categories', {
+            code: categoriesError.code || ERROR_CODES.SERVER_ERROR,
+            retryable: true
+          });
+        }
 
-      // 3. Transform PocketBase records to App Data Structure
-      const categories: MenuCategory[] = categoriesRecord.map((cat) => {
-        // Find dishes belonging to this category
-        // Matches both relation ID or raw string ID depending on DB setup
-        const catDishes = dishesRecord.filter(d => d.category === cat.id || d.category_id === cat.id);
+        // 2. Fetch all available dishes (sorted by creation time)
+        const { data: dishesData, error: dishesError } = await supabase
+          .from('dishes')
+          .select('*')
+          .eq('available', true)
+          .order('created_at', { ascending: true });
 
-        const items: MenuItem[] = catDishes.map((record) => {
-          // Generate full image URL if image exists
-          const imgUrl = record.image 
-            ? pb.files.getUrl(record, record.image)
-            : undefined;
+        if (dishesError) {
+          throw createApiError('Failed to fetch dishes', {
+            code: dishesError.code || ERROR_CODES.SERVER_ERROR,
+            retryable: true
+          });
+        }
+
+        // 3. Transform Supabase records to App Data Structure
+        const categories: MenuCategory[] = categoriesData.map((cat) => {
+          // Find dishes belonging to this category
+          const catDishes = dishesData.filter(d => d.category_id === cat.id);
+
+          const items: MenuItem[] = catDishes.map((record) => {
+            return {
+              id: record.id,
+              zh: record.name_zh,
+              en: record.name_en,
+              price: record.price,
+              spicy: record.is_spicy,
+              vegetarian: record.is_vegetarian,
+              available: record.available,
+              imageUrl: record.image_url || undefined,
+            };
+          });
 
           return {
-            id: record.dish_id || record.id,
-            zh: record.name_zh,
-            en: record.name_en,
-            price: record.price,
-            spicy: record.is_spicy,
-            vegetarian: record.is_vegetarian,
-            available: record.available,
-            imageUrl: imgUrl,
+            key: cat.key,
+            titleZh: cat.title_zh,
+            titleEn: cat.title_en,
+            items: items,
           };
         });
 
-        return {
-          key: cat.key,
-          titleZh: cat.title_zh,
-          titleEn: cat.title_en,
-          items: items,
-        };
-      });
+        return categories;
+      }, { maxRetries: 3, delay: 1000 });
 
-      return { code: 200, message: 'success', data: categories };
+      return { code: 200, message: 'success', data: result };
     } catch (error: any) {
-      console.warn(`[API] Connection to ${PB_URL} failed. Using local fallback data.`, error.message);
+      console.warn('[API] Connection to Supabase failed. Using local fallback data.', error.message);
       // Fallback: Return static data defined in constants.ts
       return { code: 200, message: 'Loaded from local backup', data: MENU_DATA };
     }
   },
 
   /**
-   * Submit order to PocketBase 'orders' collection
+   * Submit order to Supabase 'orders' collection
    */
   submitOrder: async (payload: SubmitOrderPayload): Promise<ApiResponse<{orderId: string}>> => {
     try {
-      const data = {
-        table_id: payload.tableId,
-        items_json: JSON.stringify(payload.items),
-        total_amount: payload.totalAmount,
-        status: 'pending'
-      };
+      // 使用重试机制执行API调用
+      const result = await executeWithRetry(async () => {
+        const { data, error } = await supabase
+          .from('orders')
+          .insert({
+            table_id: payload.tableId,
+            items_json: JSON.stringify(payload.items),
+            total_amount: payload.totalAmount,
+            status: 'pending'
+          })
+          .select()
+          .single();
 
-      const record = await pb.collection('orders').create(data);
-      
+        if (error) {
+          throw createApiError('Failed to submit order', {
+            code: error.code || ERROR_CODES.SERVER_ERROR,
+            retryable: true
+          });
+        }
+        
+        return { orderId: data.id };
+      }, { maxRetries: 2, delay: 1500 });
+
       return {
         code: 200,
         message: 'success',
-        data: { orderId: record.id }
+        data: result
       };
     } catch (error: any) {
-      console.warn("[API] Order submission failed (Offline Mode). Simulating success.", error.message);
+      console.warn('[API] Order submission failed (Offline Mode). Simulating success.', error.message);
       // Simulate success for UI testing
       return { 
         code: 200, 
@@ -119,19 +129,31 @@ export const api = {
    */
   callService: async (payload: ServiceRequestPayload): Promise<ApiResponse<null>> => {
     try {
-      const data = {
-        table_id: payload.tableId,
-        type: payload.type,
-        type_name: payload.typeName,
-        details: payload.details || '',
-        status: 'pending'
-      };
+      // 使用重试机制执行API调用
+      await executeWithRetry(async () => {
+        const { error } = await supabase
+          .from('service_requests')
+          .insert({
+            table_id: payload.tableId,
+            type: payload.type,
+            type_name: payload.typeName,
+            details: payload.details || '',
+            status: 'pending'
+          });
 
-      await pb.collection('service_requests').create(data);
-      
+        if (error) {
+          throw createApiError('Failed to call service', {
+            code: error.code || ERROR_CODES.SERVER_ERROR,
+            retryable: true
+          });
+        }
+        
+        return null;
+      }, { maxRetries: 2, delay: 1500 });
+
       return { code: 200, message: 'success', data: null };
     } catch (error: any) {
-      console.warn("[API] Service call failed (Offline Mode). Simulating success.", error.message);
+      console.warn('[API] Service call failed (Offline Mode). Simulating success.', error.message);
       return { code: 200, message: 'Offline request simulated', data: null };
     }
   }
