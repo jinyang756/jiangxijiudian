@@ -9,7 +9,8 @@
     "import-menu": "node scripts/import-menu-data.js",
     "test-db": "node scripts/test-database-connection.js",
     "init-db": "node scripts/init-database.js",
-    "complete-import": "node scripts/complete-data-import.js"
+    "complete-import": "node scripts/complete-data-import.js",
+    "verify-views": "node scripts/verify-views.js"
   },
   "dependencies": {
     "@supabase/postgrest-js": "^2.84.0",

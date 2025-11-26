@@ -139,7 +139,16 @@ npm run test-db
 ```
 
 ## 数据库设置
-有关数据库设置和数据导入的详细说明，请参考 [DATABASE_SETUP.md](DATABASE_SETUP.md) 文件。
+有关数据库设置和数据导入的详细说明，请参考以下文档：
+- [DATABASE_SETUP.md](DATABASE_SETUP.md) - 数据库表结构和数据导入
+- [DATABASE_VIEW_SETUP.md](DATABASE_VIEW_SETUP.md) - **重要**: 数据库视图配置（部署前必读）
+- [ENV_SETUP.md](ENV_SETUP.md) - 环境变量配置指南
+
+### 快速验证
+```bash
+# 验证数据库视图是否已正确配置
+npm run verify-views
+```
 
 ## 联系信息
 - **维护人员**: 技术支持团队

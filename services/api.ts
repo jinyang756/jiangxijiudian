@@ -11,6 +11,10 @@ export const api = {
    * 1. Try to fetch 'categories' and 'dishes' from the Supabase backend.
    * 2. If successful, construct the nested menu structure.
    * 3. If failed (backend offline/network error), fallback to local `MENU_DATA` constant.
+   * 
+   * Note: This function depends on the 'menu_view' database view.
+   * If the view doesn't exist, the API will return an error and fallback to local data.
+   * To create the view, see: DATABASE_VIEW_SETUP.md
    */
   getMenu: async (): Promise<ApiResponse<MenuCategory[]>> => {
     try {
@@ -45,6 +49,8 @@ export const api = {
       return { code: 200, message: 'success', data: result };
     } catch (error: any) {
       console.warn('[API] Connection to Supabase failed. Using local fallback data.', error.message);
+      console.info('[INFO] To enable real-time data, ensure the menu_view is created in Supabase.');
+      console.info('[INFO] See DATABASE_VIEW_SETUP.md for instructions.');
       // Fallback: Return static data defined in constants.ts
       return { code: 200, message: 'Loaded from local backup', data: MENU_DATA };
     }
