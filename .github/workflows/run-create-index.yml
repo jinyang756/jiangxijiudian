@@ -22,6 +22,27 @@ jobs:
           sudo apt-get install -y postgresql-client
           psql --version
         shell: bash
+      - name: Validate environment variables
+        run: |
+          if [[ -z "$PGHOST" || -z "$PGDATABASE" || -z "$PGUSER" ]]; then
+            echo "ERROR: Required environment variables are not set correctly"
+            echo "PGHOST=${PGHOST}"
+            echo "PGDATABASE=${PGDATABASE}"
+            echo "PGUSER=${PGUSER}"
+            exit 1
+          fi
+          echo "Environment variables validation passed"
+          echo "PGHOST=${PGHOST}"
+          echo "PGPORT=${PGPORT:-5432}"
+          echo "PGDATABASE=${PGDATABASE}"
+          echo "PGUSER=${PGUSER}"
+        env:
+          PGHOST: ${{ secrets.DB_HOST }}
+          PGPORT: ${{ secrets.DB_PORT }}
+          PGDATABASE: ${{ secrets.DB_NAME }}
+          PGUSER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        shell: bash
       - name: Run CREATE INDEX CONCURRENTLY
         env:
           PGHOST: ${{ secrets.DB_HOST }}
@@ -32,7 +53,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "Starting CREATE INDEX CONCURRENTLY at $(date --utc)"
-          echo "Using PGHOST=${PGHOST} PGPORT=${PGPORT:-5432} PGDATABASE=${PGDATABASE} PGUSER=${PGUSER}"
           # Print the SQL (sanitized) for logs — but avoid printing secrets
           echo "---- SQL file start ----"
           sed -n '1,200p' migrations/V4__create_partial_unique_index_concurrently.sql
