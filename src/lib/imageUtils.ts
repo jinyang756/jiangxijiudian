@@ -22,7 +22,7 @@ const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/
  * @param dishId - 菜品ID，用于生成一致的占位图
  * @returns 完整的图片URL
  */
-export function getDishImageUrl(imageUrl?: string | null, dishId?: string): string {
+export function getDishImageUrl(imageUrl?: string | null, _dishId?: string): string {
   // 如果有数据库URL
   if (imageUrl) {
     // 如果是完整的HTTP/HTTPS URL，直接返回
