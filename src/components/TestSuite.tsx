@@ -71,7 +71,7 @@ const TestSuite: React.FC = () => {
       // 8. 测试API端点（使用PocketBase测试端点）
       try {
         // 这里我们测试到后端的连接
-        const apiTest = await testApiEndpoint(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090/api/health');
+        const apiTest = await testApiEndpoint(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8090/api/health');
         addTestResult('后端API连接测试', apiTest.ok ? 'pass' : 'fail', 
           `状态码: ${apiTest.status}, 连接${apiTest.ok ? '成功' : '失败'}`);
       } catch (e) {

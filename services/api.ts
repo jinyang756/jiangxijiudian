@@ -16,11 +16,11 @@ export const api = {
     try {
       // 使用重试机制执行API调用
       const result = await executeWithRetry(async () => {
-        // 1. Fetch all categories (sorted by sort order)
+        // 1. Fetch all categories (sorted by creation time)
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
-          .order('sort');
+          .order('created_at', { ascending: true });
 
         if (categoriesError) {
           throw createApiError('Failed to fetch categories', {
@@ -33,7 +33,6 @@ export const api = {
         const { data: dishesData, error: dishesError } = await supabase
           .from('dishes')
           .select('*')
-          .eq('available', true)
           .order('created_at', { ascending: true });
 
         if (dishesError) {
@@ -50,21 +49,21 @@ export const api = {
 
           const items: MenuItem[] = catDishes.map((record) => {
             return {
-              id: record.id,
-              zh: record.name_zh,
-              en: record.name_en,
-              price: record.price,
-              spicy: record.is_spicy,
-              vegetarian: record.is_vegetarian,
-              available: record.available,
+              id: record.dish_id || record.id,
+              zh: record.name || record.name_norm || '',
+              en: record.en_title || '',
+              price: record.price || 0,
+              spicy: record.is_spicy || false,
+              vegetarian: record.is_vegetarian || false,
+              available: record.available !== undefined ? record.available : true,
               imageUrl: record.image_url || undefined,
             };
           });
 
           return {
-            key: cat.key,
-            titleZh: cat.title_zh,
-            titleEn: cat.title_en,
+            key: cat.id,
+            titleZh: cat.name || '',
+            titleEn: cat.name || '', // 暂时使用name字段，因为没有单独的英文字段
             items: items,
           };
         });

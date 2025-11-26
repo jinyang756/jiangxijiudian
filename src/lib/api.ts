@@ -2,8 +2,8 @@
 // API配置和工具函数
 
 // 从环境变量获取API基础URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090/api';
-const ADMIN_BASE_URL = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8090/_';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8090/api';
+const ADMIN_BASE_URL = import.meta.env.VITE_ADMIN_BASE_URL || 'http://localhost:8090/_';
 
 console.log('API Base URL:', API_BASE_URL);
 console.log('Admin Base URL:', ADMIN_BASE_URL);

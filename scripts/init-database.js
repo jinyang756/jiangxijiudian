@@ -10,6 +10,10 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
+console.log('正在使用以下配置连接到 Supabase:');
+console.log('- Supabase URL:', supabaseUrl);
+console.log('- Supabase Key:', supabaseKey ? `${supabaseKey.substring(0, 10)}...` : '未设置');
+
 // 创建Supabase客户端
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -68,6 +72,12 @@ async function initDatabase() {
     
     if (categoryError) {
       console.error('导入分类数据时出错:', categoryError);
+      
+      // 提供一些故障排除建议
+      console.log('\n故障排除建议:');
+      console.log('1. 确保数据库表已正确创建');
+      console.log('2. 检查 Supabase 项目配置和权限设置');
+      console.log('3. 确保 VITE_APP_DB_POSTGRES_PASSWORD 是有效的 anon key 或 service role key');
       return;
     }
     console.log('分类数据导入完成');
@@ -76,7 +86,7 @@ async function initDatabase() {
     const { data: allCategories, error: fetchError } = await supabase
       .from('categories')
       .select('id, key');
-    
+
     if (fetchError) {
       console.error('获取分类数据时出错:', fetchError);
       return;
@@ -102,6 +112,12 @@ async function initDatabase() {
     
     if (dishError) {
       console.error('导入菜品数据时出错:', dishError);
+      
+      // 提供一些故障排除建议
+      console.log('\n故障排除建议:');
+      console.log('1. 确保数据库表已正确创建');
+      console.log('2. 检查 Supabase 项目配置和权限设置');
+      console.log('3. 确保 VITE_APP_DB_POSTGRES_PASSWORD 是有效的 anon key 或 service role key');
       return;
     }
     
@@ -132,6 +148,13 @@ async function initDatabase() {
     
   } catch (error) {
     console.error('初始化过程中发生错误:', error);
+    
+    // 提供一些通用的故障排除建议
+    console.log('\n通用故障排除建议:');
+    console.log('1. 检查网络连接是否正常');
+    console.log('2. 确保 Supabase 项目 URL 和密钥配置正确');
+    console.log('3. 检查数据库表是否已创建');
+    console.log('4. 确认有足够的权限执行数据库操作');
   }
 }
 

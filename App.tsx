@@ -156,8 +156,10 @@ const AppContent: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await api.getMenu();
+      console.log('菜单数据响应:', response); // 添加调试日志
       
       if (response.code === 200) {
+        console.log('菜单数据:', response.data); // 添加调试日志
         setMenu(response.data || []);
         setMenuData(response.data || []);
         
@@ -248,29 +250,36 @@ const AppContent: React.FC = () => {
 
   // Generate Pages & Category Mapping
   const { pages, categoryPageMap, categoryKeys } = useMemo(() => {
+    console.log('生成页面，menu长度:', menu.length);
+    console.log('menu数据:', menu);
+    
     const generatedPages: PageData[] = [];
     const catMap: {[key: string]: number} = {};
     const keys: string[] = ['cover'];
-
+    
     // 1. Cover Page
     generatedPages.push({ type: 'cover', id: 'cover', categoryKey: 'cover' });
     catMap['cover'] = 0;
-
+    
     // 2. Content Pages
     if (menu.length > 0) {
+      console.log('开始生成内容页面');
       let globalPageCount = 1;
       menu.forEach((category) => {
+        console.log('处理分类:', category);
         keys.push(category.key);
         catMap[category.key] = generatedPages.length;
-
+        
         const items = category.items;
         const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-
+        console.log(`分类 ${category.titleZh} 有 ${items.length} 个菜品，需要 ${totalCatPages} 页`);
+        
         for (let i = 0; i < totalCatPages; i++) {
           const start = i * ITEMS_PER_PAGE;
           const end = start + ITEMS_PER_PAGE;
           const pageItems = items.slice(start, end);
-
+          console.log(`页面 ${i+1} 有 ${pageItems.length} 个菜品`);
+          
           generatedPages.push({
             type: 'content',
             id: `${category.key}-${i}`,
@@ -285,17 +294,45 @@ const AppContent: React.FC = () => {
         }
       });
     }
-
+    
     // 3. Back Cover
     keys.push('back');
     catMap['back'] = generatedPages.length;
     generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
-
+    
+    console.log('生成的页面:', generatedPages);
+    console.log('分类映射:', catMap);
+    console.log('分类键:', keys);
+    
     return { pages: generatedPages, categoryPageMap: catMap, categoryKeys: keys };
   }, [menu]);
 
   const totalPages = pages.length;
   const activePage = pages[currentPage] || pages[0];
+  
+  // 添加调试信息
+  console.log('页面信息:', {
+    currentPage,
+    totalPages,
+    activePage: activePage ? {
+      type: activePage.type,
+      categoryKey: activePage.categoryKey,
+      categoryTitleZh: activePage.categoryTitleZh
+    } : null,
+    pagesLength: pages.length,
+    menuLength: menu.length
+  });
+
+  // 检查是否有页面数据
+  if (pages.length === 0) {
+    console.warn('没有生成任何页面!');
+  }
+
+  if (activePage) {
+    console.log('当前页面详情:', activePage);
+  } else {
+    console.warn('没有当前页面!');
+  }
 
   // Navigation Logic
   const goToNextCategory = () => {
@@ -574,6 +611,11 @@ const AppContent: React.FC = () => {
   return (
     <div className="w-full h-full max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col relative">
       
+      {/* 添加调试信息 */}
+      <div className="bg-red-500 text-white p-2 text-xs z-50">
+        Debug: Pages: {pages.length}, Current: {currentPage}, Type: {activePage?.type}
+      </div>
+      
       <div 
         className="flex-1 relative w-full perspective-1500 overflow-hidden shadow-2xl mt-4 mb-0 md:my-8 rounded-t-sm bg-wood"
         onTouchStart={handleTouchStart}
@@ -583,9 +625,19 @@ const AppContent: React.FC = () => {
             key={currentPage}
             className={`w-full h-full bg-paper absolute inset-0 ${is3DTransition ? 'origin-left backface-hidden preserve-3d' : ''} ${getAnimationClass()}`}
         >
-           {activePage.type === 'cover' && renderCover()}
-           {activePage.type === 'content' && renderContent(activePage)}
-           {activePage.type === 'back' && renderBack()}
+           {activePage && activePage.type === 'cover' && renderCover()}
+           {activePage && activePage.type === 'content' && renderContent(activePage)}
+           {activePage && activePage.type === 'back' && renderBack()}
+           
+           {/* 如果没有活动页面，显示一个默认内容 */}
+           {!activePage && (
+             <div className="h-full flex items-center justify-center p-4">
+               <div className="text-center">
+                 <p className="text-lg font-bold mb-2">加载中...</p>
+                 <p>请稍候</p>
+               </div>
+             </div>
+           )}
         </div>
 
         <div className="absolute inset-y-0 left-0 w-8 z-20 cursor-pointer" onClick={goToPrevCategory}></div>

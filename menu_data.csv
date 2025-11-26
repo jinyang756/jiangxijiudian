@@ -1,0 +1,82 @@
+dish_id,name_zh,name_en,price,is_spicy,is_vegetarian,available,category_key,category_title_zh,category_title_en
+H1,水煮牛肉,Boiled Beef in Spicy Broth,48,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H2,干锅花菜,Dry Pot Cauliflower,28,true,false,false,jianghu,江湖小炒,Jianghu Stir-Fries
+H3,家乡豆腐,Hometown Tofu,22,false,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H4,肉沫空心菜梗,Minced Pork with Water Spinach Stalks,26,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H5,酸辣手撕包菜,Spicy & Sour Shredded Cabbage,22,true,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H6,小炒牛肉,Sautéed Beef,58,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H7,香辣虾,Spicy Shrimp,68,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H8,尖椒虎皮蛋,Spicy Green Pepper Braised Eggs,24,true,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H9,红烧鱼块,Braised Fish Chunks,38,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H10,青椒回锅肉,Twice-Cooked Pork with Green Pepper,32,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H11,酸辣豆角肉末,Spicy & Sour Minced Pork with Cowpeas,28,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H12,酸菜鱼,Sour and Spicy Fish,58,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H13,肉沫酸菜,Minced Pork with Pickled Cabbage,26,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H14,啤酒鸭,Beer-Braised Duck,45,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H15,水煮肉片,Boiled Pork Slices in Spicy Broth,38,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H16,红烧茄子,Braised Eggplant,24,false,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H17,爆炒猪肝,Sautéed Pork Liver,28,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H18,铁板鱿鱼,Sizzling Squid on Iron Plate,42,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H19,泡椒肥牛,Pickled Chili Fatty Beef,52,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H20,红烧排骨,Braised Pork Ribs,48,false,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H21,干锅肥肠,Dry Pot Pork Intestines,45,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H22,酸辣土豆丝,Spicy & Sour Shredded Potatoes,18,true,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H23,凉瓜煎蛋,Bitter Melon Omelette,22,false,true,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H24,水煮鱼,Boiled Fish in Spicy Broth,68,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+H25,干锅白菜,Dry Pot Chinese Cabbage,24,true,false,true,jianghu,江湖小炒,Jianghu Stir-Fries
+I1,胡椒猪肚鸡,Pork Tripe & Chicken Soup with White Pepper,128,false,false,true,soup,炖汤类,Simmered Soups
+I2,虫草花乌鸡汤,Cordyceps Flower & Black Chicken Soup,58,false,false,true,soup,炖汤类,Simmered Soups
+I3,冬瓜水鸭汤,Winter Melon Duck Soup,48,false,false,true,soup,炖汤类,Simmered Soups
+I4,怀山排骨汤,Chinese Yam & Pork Rib Soup,42,false,false,true,soup,炖汤类,Simmered Soups
+I5,黑蒜炖肉汁,Black Garlic Braised Pork Broth,38,false,false,true,soup,炖汤类,Simmered Soups
+I6,海带排骨汤,Kelp & Pork Rib Soup,36,false,false,true,soup,炖汤类,Simmered Soups
+I7,西红柿蛋花汤,Tomato & Egg Drop Soup,18,false,true,true,soup,炖汤类,Simmered Soups
+I8,紫菜蛋汤,Laver & Egg Soup,16,false,true,true,soup,炖汤类,Simmered Soups
+I9,西洋参炖土鸡,American Ginseng Braised Native Chicken,68,false,false,true,soup,炖汤类,Simmered Soups
+I10,玉米萝卜炖筒骨,Corn, Radish & Pork Shank Soup,45,false,false,true,soup,炖汤类,Simmered Soups
+I11,鱼羊鲜,Fish & Lamb Delight,88,false,false,true,soup,炖汤类,Simmered Soups
+I12,鱼头豆腐汤,Fish Head & Tofu Soup,42,false,false,true,soup,炖汤类,Simmered Soups
+I13,五指毛桃乳鸽,Braised Pigeon with Five-Finger Fig,58,false,false,true,soup,炖汤类,Simmered Soups
+D1,美国凤爪,Braised Chicken Feet,32,false,false,true,braised,卤料,Braised Delicacies
+D2,大肠头,Braised Pork Intestine Tips,38,false,false,true,braised,卤料,Braised Delicacies
+D3,五花肉,Braised Streaky Pork,35,false,false,true,braised,卤料,Braised Delicacies
+D4,鸭掌,Braised Duck Feet,32,false,false,true,braised,卤料,Braised Delicacies
+D5,猪头肉,Braised Pig Head Meat,30,false,false,true,braised,卤料,Braised Delicacies
+D6,老豆腐,Braised Old Tofu,12,false,true,true,braised,卤料,Braised Delicacies
+D7,猪耳朵,Braised Pig Ears,35,false,false,true,braised,卤料,Braised Delicacies
+F1,眼镜王焖土鸡,Braised Native Chicken with King Cobra,188,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F2,黑椒牛排,Black Pepper Beef Steak,68,true,false,true,cantonese,粤菜,Cantonese Cuisine
+F3,红葱头焗鸡,Braised Chicken with Shallots,58,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F4,南腐红烧肉,Braised Pork with Fermented Tofu,48,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F5,煎焗大虾,Pan-Seared Prawns,78,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F6,付竹炆鱼块,Braised Fish Chunks with Yuba,42,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F7,萝卜焖牛腩,Braised Beef Brisket with Radish,52,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F8,豉汁蒸鱼头,Steamed Fish Head with Black Bean Sauce,48,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F9,番茄牛脯煲,Beef Brisket with Tomato Casserole,55,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F10,蒜蓉蒸排骨,Steamed Spareribs with Garlic,45,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F11,海味焗猪手,Braised Pork Trotters with Seafood,58,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F12,广式咕噜肉,Cantonese Sweet and Sour Pork,42,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F13,胡椒鸭,Pepper Duck,48,true,false,true,cantonese,粤菜,Cantonese Cuisine
+F14,肉沫炒丁,Stir-Fried Minced Pork with Dices,32,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F15,糖醋排骨,Sweet and Sour Spareribs,45,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F16,蒜蓉蒸排骨,Steamed Spareribs with Garlic,45,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F17,香煎虾饼,Pan-Fried Shrimp Cakes,38,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F18,干煎白苍鱼,Pan-Fried White Pomfret,52,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F19,干贝蒸水蛋,Steamed Egg Custard with Scallops,28,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F20,椒盐猪手,Salt and Pepper Pork Trotters,48,true,false,true,cantonese,粤菜,Cantonese Cuisine
+F21,白切鸡,Boiled Chicken,58,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F22,黄豆焖石鸡,Braised Frog with Soybeans,62,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F23,粉蒸肉,Steamed Pork with Rice Flour,38,false,false,true,cantonese,粤菜,Cantonese Cuisine
+F24,铁板黑椒牛仔骨,Sizzling Black Pepper Short Ribs,68,true,false,true,cantonese,粤菜,Cantonese Cuisine
+L1,可乐,Coca-Cola,6,false,true,true,drinks,酒水/其他,Beverages & Others
+L2,雪碧,Sprite,6,false,true,true,drinks,酒水/其他,Beverages & Others
+L3,绿茶,Green Tea,12,false,true,true,drinks,酒水/其他,Beverages & Others
+L4,红茶,Black Tea,12,false,true,true,drinks,酒水/其他,Beverages & Others
+L5,银色生力,San Miguel Silver,15,false,true,true,drinks,酒水/其他,Beverages & Others
+L6,金色生力,San Miguel Gold,15,false,true,true,drinks,酒水/其他,Beverages & Others
+L7,雪花啤酒,Snow Beer,8,false,true,true,drinks,酒水/其他,Beverages & Others
+L8,红牛,Red Bull,12,false,true,true,drinks,酒水/其他,Beverages & Others
+L9,矿泉水,Mineral Water,4,false,true,true,drinks,酒水/其他,Beverages & Others
+L10,王老吉,Wanglaoji Herbal Tea,8,false,true,true,drinks,酒水/其他,Beverages & Others
+L11,米饭,Steamed Rice,3,false,true,true,drinks,酒水/其他,Beverages & Others
+L12,西瓜,Watermelon,20,false,true,true,drinks,酒水/其他,Beverages & Others

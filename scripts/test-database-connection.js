@@ -1,5 +1,16 @@
 // 数据库连接测试脚本
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// 获取当前文件目录
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// 加载环境变量
+dotenv.config({ path: join(__dirname, '../.env') });
+dotenv.config({ path: join(__dirname, '../.env.development') });
 
 // 从环境变量获取Supabase配置
 const supabaseUrl = process.env.VITE_APP_DB_URL || process.env.SUPABASE_URL;
@@ -9,6 +20,10 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('错误: 请设置环境变量 VITE_APP_DB_URL 和 VITE_APP_DB_POSTGRES_PASSWORD');
   process.exit(1);
 }
+
+console.log('正在使用以下配置连接到 Supabase:');
+console.log('- Supabase URL:', supabaseUrl);
+console.log('- Supabase Key:', supabaseKey ? `${supabaseKey.substring(0, 10)}...` : '未设置');
 
 // 创建Supabase客户端
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -25,6 +40,13 @@ async function testConnection() {
     
     if (error) {
       console.error('数据库连接失败:', error.message);
+      
+      // 提供一些故障排除建议
+      console.log('\n故障排除建议:');
+      console.log('1. 检查 VITE_APP_DB_URL 是否正确设置为 Supabase 项目 URL (例如: https://your-project.supabase.co)');
+      console.log('2. 检查 VITE_APP_DB_POSTGRES_PASSWORD 是否正确设置为 Supabase anon key');
+      console.log('3. 确保 Supabase 项目已正确配置并且数据库表已创建');
+      console.log('4. 检查网络连接是否正常');
       return;
     }
     
