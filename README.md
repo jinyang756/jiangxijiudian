@@ -170,6 +170,14 @@ npm run test-db
 - [NETWORK_DETECTION_GUIDE.md](NETWORK_DETECTION_GUIDE.md) - 网络检测系统使用指南
 - [TYPESCRIPT_TYPE_SAFETY_GUIDE.md](TYPESCRIPT_TYPE_SAFETY_GUIDE.md) - TypeScript 类型安全最佳实践
 - [ENV_SETUP.md](ENV_SETUP.md) - 环境变量配置指南
+- [DATA_UPDATE_GUIDE.md](DATA_UPDATE_GUIDE.md) - 数据更新和修正指南
+- [VERCEL_DEPLOYMENT_GUIDE.md](VERCEL_DEPLOYMENT_GUIDE.md) - Vercel 部署配置指南
+- [VERCEL_ENV_UPDATE.md](VERCEL_ENV_UPDATE.md) - Vercel 环境变量安全配置更新
+- [ENV_PLATFORM_GUIDE.md](ENV_PLATFORM_GUIDE.md) - 环境变量配置平台说明
+- [VERCEL_SUPABASE_ARCH.md](VERCEL_SUPABASE_ARCH.md) - Vercel + Supabase 架构配置确认
+- [SECURITY_ENV_UPDATE.md](SECURITY_ENV_UPDATE.md) - 环境变量安全配置更新说明
+- [VERCEL_ENV_CONFIRM.md](VERCEL_ENV_CONFIRM.md) - Vercel 平台环境变量配置确认
+- [ENV_SECURITY_PROTECTION.md](ENV_SECURITY_PROTECTION.md) - 环境变量文件安全保护说明
 
 ### 快速验证
 ```bash
