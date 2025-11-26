@@ -3,8 +3,8 @@
 # 检查是否有环境变量文件被意外提交
 echo "检查环境变量文件..."
 
-# 检查暂存区是否有.env文件
-if git diff --cached --name-only | grep -E "^\.env"; then
+# 检查暂存区是否有新添加的.env文件（排除删除的文件）
+if git diff --cached --name-only --diff-filter=A | grep -E "^\.env"; then
   echo "错误: 环境变量文件已被暂存，取消提交!"
   echo "请确保敏感信息已移至GitHub Secrets"
   exit 1
