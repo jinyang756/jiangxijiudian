@@ -116,12 +116,32 @@ const safeSessionStorageGet = (key: string) => {
   }
 };
 
+// 添加安全的 localStorage 操作函数
+const safeLocalStorageSet = (key: string, value: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    // 忽略错误，不影响主功能
+  }
+};
+
+const safeLocalStorageGet = (key: string, defaultValue: any) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
+};
+
 const AppContent: React.FC = () => {
   const [menu, setMenu] = useState<MenuCategory[]>([]);
   const [menuData, setMenuData] = useState<MenuCategory[]>([]);
 
   const [error, setError] = useState<string | null>(null);
-  const [cart, setCart] = useState<CartItems>({});
+  const [cart, setCart] = useState<CartItems>(() => {
+    return safeLocalStorageGet('cart', {});
+  });
 
 
   const [tableId, setTableId] = useState('');
@@ -242,6 +262,11 @@ const AppContent: React.FC = () => {
         }
     }
   }, []);
+
+  // Save cart to localStorage
+  useEffect(() => {
+    safeLocalStorageSet('cart', cart);
+  }, [cart]);
 
   // Derived Location Label
   const locationLabel = useMemo(() => {

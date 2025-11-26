@@ -180,6 +180,7 @@ npm run test-db
 - [ENV_SECURITY_PROTECTION.md](ENV_SECURITY_PROTECTION.md) - 环境变量文件安全保护说明
 - [WORKFLOW_STATUS_CHECK.md](WORKFLOW_STATUS_CHECK.md) - GitHub Actions 工作流状态检查
 - [VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md](VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md) - Vercel 部署版本差异分析
+- [CART_PERSISTENCE_FIX.md](CART_PERSISTENCE_FIX.md) - 购物车状态持久化功能修复方案
 
 ### 快速验证
 ```bash
