@@ -179,6 +179,7 @@ npm run test-db
 - [VERCEL_ENV_CONFIRM.md](VERCEL_ENV_CONFIRM.md) - Vercel 平台环境变量配置确认
 - [ENV_SECURITY_PROTECTION.md](ENV_SECURITY_PROTECTION.md) - 环境变量文件安全保护说明
 - [WORKFLOW_STATUS_CHECK.md](WORKFLOW_STATUS_CHECK.md) - GitHub Actions 工作流状态检查
+- [VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md](VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md) - Vercel 部署版本差异分析
 
 ### 快速验证
 ```bash
