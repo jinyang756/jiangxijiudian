@@ -1,68 +1,67 @@
-// 简单的数据库测试
+// 简单的数据库测试脚本
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
-// 获取当前文件目录
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// 从环境变量获取配置
+const supabaseUrl = process.env.VITE_APP_DB_URL || 'https://kdlhyzsihflwkwumxzfw.supabase.co';
+const supabaseAnonKey = process.env.VITE_APP_DB_POSTGRES_PASSWORD || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
 
-// 加载环境变量
-dotenv.config({ path: join(__dirname, '../.env') });
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key exists:', !!supabaseAnonKey);
 
-// 从环境变量获取Supabase配置
-const supabaseUrl = process.env.VITE_APP_DB_URL;
-const supabaseKey = process.env.VITE_APP_DB_POSTGRES_PASSWORD;
+// 创建 Supabase 客户端
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-console.log('正在使用以下配置连接到 Supabase:');
-console.log('- Supabase URL:', supabaseUrl);
-console.log('- Supabase Key:', supabaseKey ? `${supabaseKey.substring(0, 10)}...` : '未设置');
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('错误: 请设置环境变量 VITE_APP_DB_URL 和 VITE_APP_DB_POSTGRES_PASSWORD');
-  process.exit(1);
-}
-
-// 创建Supabase客户端
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function testSimpleQuery() {
-  console.log('测试简单查询...');
+async function testDatabaseConnection() {
+  console.log('开始测试数据库连接...');
   
   try {
-    // 测试categories查询
-    console.log('\n--- 测试 categories 查询 ---');
-    const { data: categories, error: categoriesError } = await supabase
+    // 测试数据库连接
+    console.log('\n1. 测试数据库连接:');
+    const { data, error } = await supabase
       .from('categories')
-      .select('id, name, created_at')
-      .limit(3);
-    
-    if (categoriesError) {
-      console.error('Categories查询错误:', categoriesError.message);
-    } else {
-      console.log('Categories查询成功:');
-      console.log(JSON.stringify(categories, null, 2));
+      .select('id, name')
+      .limit(1);
+      
+    if (error) {
+      console.error('  数据库连接失败:', error.message);
+      return;
     }
     
-    // 测试dishes查询
-    console.log('\n--- 测试 dishes 查询 ---');
+    console.log('  数据库连接成功!');
+    console.log('  categories 表查询结果:', data);
+    
+    // 查询 dishes 表
+    console.log('\n2. 查询 dishes 表:');
     const { data: dishes, error: dishesError } = await supabase
       .from('dishes')
-      .select('id, dish_id, name, en_title, price, category_id, created_at')
+      .select('id, dish_id, name, en_title, price, category_id')
       .limit(3);
-    
+      
     if (dishesError) {
-      console.error('Dishes查询错误:', dishesError.message);
+      console.error('  dishes 表查询失败:', dishesError.message);
     } else {
-      console.log('Dishes查询成功:');
-      console.log(JSON.stringify(dishes, null, 2));
+      console.log('  dishes 表查询成功:');
+      console.log('  字段:', dishes && dishes.length > 0 ? Object.keys(dishes[0]) : '无数据');
+      console.log('  示例数据:', dishes);
+    }
+    
+    // 尝试查询视图（如果已创建）
+    console.log('\n3. 尝试查询 menu_view:');
+    const { data: menuView, error: menuViewError } = await supabase
+      .from('menu_view')
+      .select('*')
+      .limit(1);
+      
+    if (menuViewError) {
+      console.log('  menu_view 查询失败（可能尚未创建）:', menuViewError.message);
+    } else {
+      console.log('  menu_view 查询成功:');
+      console.log('  数据:', menuView);
     }
     
   } catch (error) {
-    console.error('测试过程中发生错误:', error);
+    console.error('测试数据库连接时出错:', error.message);
   }
 }
 
-// 执行测试
-testSimpleQuery();
+testDatabaseConnection();

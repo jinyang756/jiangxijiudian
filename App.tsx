@@ -13,9 +13,11 @@ import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import { api } from './services/api';
 import { ImageLoader } from './src/lib/imageLoader';
 import TestSuite from './src/components/TestSuite';
+import TestComponents from './test-components';
+import FeaturePage from './components/FeaturePage';
 
 // Types for our Page system
-type PageType = 'cover' | 'content' | 'back';
+type PageType = 'cover' | 'content' | 'back' | 'search' | 'service' | 'about' | 'order';
 
 interface PageData {
   type: PageType;
@@ -41,6 +43,31 @@ const ChevronLeft = () => (
 const ChevronRight = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+);
+
+// 添加底部导航栏图标
+const SearchIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+);
+
+const BellIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+  </svg>
+);
+
+const InformationIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+  </svg>
+);
+
+const ShoppingBagIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
   </svg>
 );
 
@@ -146,8 +173,30 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // 添加获取数据函数
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.getMenu();
+      console.log('获取菜单数据响应:', response); // 添加调试日志
+      if (response.code === 200) {
+        console.log('设置菜单数据:', response.data); // 添加调试日志
+        setMenuData(response.data || []);
+        setMenu(response.data || []);
+      } else {
+        setError('加载菜单失败');
+      }
+    } catch (err) {
+      setError('加载菜单时发生错误');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 初始化应用
   useEffect(() => {
+    console.log('初始化应用，开始加载菜单数据'); // 添加调试日志
     loadMenu();
   }, []);
 
@@ -179,26 +228,6 @@ const AppContent: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  // 添加获取数据函数
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.getMenu();
-      if (response.code === 200) {
-        setMenuData(response.data || []);
-      } else {
-        setError('加载菜单失败');
-      }
-    } catch (err) {
-      setError('加载菜单时发生错误');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
 
   // --- Location / Table Persistence Logic ---
   useEffect(() => {
@@ -261,41 +290,75 @@ const AppContent: React.FC = () => {
     generatedPages.push({ type: 'cover', id: 'cover', categoryKey: 'cover' });
     catMap['cover'] = 0;
     
-    // 2. Content Pages
-    if (menu.length > 0) {
+    // 2. 功能页面
+    generatedPages.push({ type: 'search', id: 'search', categoryKey: 'search' });
+    catMap['search'] = generatedPages.length - 1;
+    keys.push('search');
+    
+    generatedPages.push({ type: 'service', id: 'service', categoryKey: 'service' });
+    catMap['service'] = generatedPages.length - 1;
+    keys.push('service');
+    
+    generatedPages.push({ type: 'about', id: 'about', categoryKey: 'about' });
+    catMap['about'] = generatedPages.length - 1;
+    keys.push('about');
+    
+    generatedPages.push({ type: 'order', id: 'order', categoryKey: 'order' });
+    catMap['order'] = generatedPages.length - 1;
+    keys.push('order');
+    
+    // 3. Content Pages
+    if (menu && menu.length > 0) {
       console.log('开始生成内容页面');
       let globalPageCount = 1;
-      menu.forEach((category) => {
+      menu.forEach((category, index) => {
         console.log('处理分类:', category);
-        keys.push(category.key);
-        catMap[category.key] = generatedPages.length;
+        // 确保每个分类都有唯一的key
+        const categoryKey = category.key || `category-${index}`;
+        keys.push(categoryKey);
+        catMap[categoryKey] = generatedPages.length;
         
-        const items = category.items;
+        const items = category.items || [];
         const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
         console.log(`分类 ${category.titleZh} 有 ${items.length} 个菜品，需要 ${totalCatPages} 页`);
         
-        for (let i = 0; i < totalCatPages; i++) {
-          const start = i * ITEMS_PER_PAGE;
-          const end = start + ITEMS_PER_PAGE;
-          const pageItems = items.slice(start, end);
-          console.log(`页面 ${i+1} 有 ${pageItems.length} 个菜品`);
-          
+        // 即使分类没有菜品也要生成页面
+        if (totalCatPages === 0) {
           generatedPages.push({
             type: 'content',
-            id: `${category.key}-${i}`,
-            categoryKey: category.key,
-            items: pageItems,
+            id: `${categoryKey}-0`,
+            categoryKey: categoryKey,
+            items: [],
             categoryTitleZh: category.titleZh,
             categoryTitleEn: category.titleEn,
             pageNumber: globalPageCount++,
-            totalPages: totalCatPages,
-            categoryIndex: i + 1
+            totalPages: 1,
+            categoryIndex: 1
           });
+        } else {
+          for (let i = 0; i < totalCatPages; i++) {
+            const start = i * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageItems = items.slice(start, end);
+            console.log(`页面 ${i+1} 有 ${pageItems.length} 个菜品`);
+            
+            generatedPages.push({
+              type: 'content',
+              id: `${categoryKey}-${i}`,
+              categoryKey: categoryKey,
+              items: pageItems,
+              categoryTitleZh: category.titleZh,
+              categoryTitleEn: category.titleEn,
+              pageNumber: globalPageCount++,
+              totalPages: totalCatPages,
+              categoryIndex: i + 1
+            });
+          }
         }
       });
     }
     
-    // 3. Back Cover
+    // 4. Back Cover
     keys.push('back');
     catMap['back'] = generatedPages.length;
     generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
@@ -352,6 +415,15 @@ const AppContent: React.FC = () => {
       const prevCatKey = categoryKeys[currentCatIndex - 1];
       setTransition('flip-prev');
       setCurrentPage(categoryPageMap[prevCatKey]);
+    }
+  };
+
+  // 跳转到特定功能页面
+  const goToFeaturePage = (pageType: 'search' | 'service' | 'about' | 'order') => {
+    const pageIndex = categoryPageMap[pageType];
+    if (pageIndex !== undefined) {
+      setTransition('flip-next');
+      setCurrentPage(pageIndex);
     }
   };
 
@@ -548,6 +620,82 @@ const AppContent: React.FC = () => {
     </div>
   )};
 
+  // 渲染搜索页面
+  const renderSearch = () => {
+    return (
+      <FeaturePage 
+        title="搜索菜品" 
+        titleEn="Search Dishes" 
+        onBack={goToPrevCategory}
+      >
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <SearchIcon />
+          </div>
+          <p className="text-stone-500 text-center">请输入菜名或拼音进行搜索</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Please enter dish name or pinyin</p>
+        </div>
+      </FeaturePage>
+    );
+  };
+
+  // 渲染服务页面
+  const renderService = () => {
+    return (
+      <FeaturePage 
+        title="呼叫服务" 
+        titleEn="Call Service" 
+        onBack={goToPrevCategory}
+      >
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <BellIcon />
+          </div>
+          <p className="text-stone-500 text-center">点击右下角按钮呼叫服务</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Click the button in the bottom right to call service</p>
+        </div>
+      </FeaturePage>
+    );
+  };
+
+  // 渲染关于页面
+  const renderAbout = () => {
+    return (
+      <FeaturePage 
+        title="关于我们" 
+        titleEn="About Us" 
+        onBack={goToPrevCategory}
+      >
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <InformationIcon />
+          </div>
+          <p className="text-stone-500 text-center">江西大酒店四楼会所</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Jinjiang Star Hotel 4th Floor</p>
+        </div>
+      </FeaturePage>
+    );
+  };
+
+  // 渲染订单页面
+  const renderOrder = () => {
+    return (
+      <FeaturePage 
+        title="我的订单" 
+        titleEn="My Order" 
+        onBack={goToPrevCategory}
+      >
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <ShoppingBagIcon />
+          </div>
+          <p className="text-stone-500 text-center">购物车为空</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Your cart is empty</p>
+        </div>
+      </FeaturePage>
+    );
+  };
+
   const getAnimationClass = () => {
     switch (transition) {
       case 'flip-next': return 'animate-flip-next';
@@ -564,6 +712,76 @@ const AppContent: React.FC = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const isAdminMode = urlParams.get('mode') === 'admin';
   const isTestMode = urlParams.get('mode') === 'test';
+  const isDebugMode = urlParams.get('mode') === 'debug';
+  const isComponentTestMode = urlParams.get('mode') === 'components';
+
+  // --- Component Test Mode Render ---
+  if (isComponentTestMode) {
+    return (
+      <div className="w-full h-screen">
+        <TestComponents />
+      </div>
+    );
+  }
+
+  // --- Debug Mode Render ---
+  if (isDebugMode) {
+    return (
+      <div className="w-full h-screen bg-gray-100 p-4 overflow-y-auto">
+        <h1 className="text-2xl font-bold mb-4">调试模式</h1>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2">环境变量检查:</h2>
+          <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '已设置' : '未设置'}</p>
+          <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '已设置' : '未设置'}</p>
+        </div>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2">菜单数据:</h2>
+          <p>菜单分类数量: {menu.length}</p>
+          <p>菜单数据状态: {menu.length > 0 ? '已加载' : '未加载'}</p>
+          {menu.length > 0 && (
+            <div className="mt-2">
+              <h3 className="font-medium">分类详情:</h3>
+              <ul className="list-disc pl-5">
+                {menu.map((category, index) => (
+                  <li key={index}>
+                    {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 个菜品
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2">页面信息:</h2>
+          <p>总页面数: {pages.length}</p>
+          <p>当前页面索引: {currentPage}</p>
+          <p>当前页面类型: {activePage?.type || '无'}</p>
+          {activePage && (
+            <div className="mt-2">
+              <h3 className="font-medium">当前页面详情:</h3>
+              <p>分类: {activePage.categoryTitleZh || 'N/A'}</p>
+              <p>分类键: {activePage.categoryKey}</p>
+              <p>菜品数量: {activePage.items?.length || 0}</p>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={loadMenu}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            重新加载菜单数据
+          </button>
+          <button 
+            onClick={() => console.log('菜单数据:', menu)}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          >
+            在控制台打印菜单数据
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // --- Admin Mode Render ---
   if (isAdminMode) {
@@ -625,16 +843,42 @@ const AppContent: React.FC = () => {
             key={currentPage}
             className={`w-full h-full bg-paper absolute inset-0 ${is3DTransition ? 'origin-left backface-hidden preserve-3d' : ''} ${getAnimationClass()}`}
         >
-           {activePage && activePage.type === 'cover' && renderCover()}
-           {activePage && activePage.type === 'content' && renderContent(activePage)}
-           {activePage && activePage.type === 'back' && renderBack()}
+           {/* 修复页面渲染逻辑，确保所有类型的页面都能正确显示 */}
+           {activePage && (() => {
+             switch (activePage.type) {
+               case 'cover':
+                 return renderCover();
+               case 'search':
+                 return renderSearch();
+               case 'service':
+                 return renderService();
+               case 'about':
+                 return renderAbout();
+               case 'order':
+                 return renderOrder();
+               case 'content':
+                 return renderContent(activePage);
+               case 'back':
+                 return renderBack();
+               default:
+                 return (
+                   <div className="h-full flex items-center justify-center p-4">
+                     <div className="text-center">
+                       <p className="text-lg font-bold mb-2 text-ink">页面类型未识别</p>
+                       <p className="text-stone-500">Page type not recognized: {activePage.type}</p>
+                     </div>
+                   </div>
+                 );
+             }
+           })()}
            
-           {/* 如果没有活动页面，显示一个默认内容 */}
-           {!activePage && (
+           {/* 如果没有活动页面或处于加载状态，显示加载指示器 */}
+           {(!activePage || isLoading) && (
              <div className="h-full flex items-center justify-center p-4">
                <div className="text-center">
-                 <p className="text-lg font-bold mb-2">加载中...</p>
-                 <p>请稍候</p>
+                 <div className="w-8 h-8 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4 mx-auto"></div>
+                 <p className="text-lg font-bold mb-2 text-ink">加载中...</p>
+                 <p className="text-stone-500">请稍候</p>
                </div>
              </div>
            )}
@@ -689,10 +933,10 @@ const AppContent: React.FC = () => {
       <BottomBar 
         cartCount={cartCount}
         onOpenMenu={() => setIsMenuOpen(true)}
-        onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenInfo={() => setIsInfoOpen(true)}
-        onOpenService={() => setIsServiceOpen(true)}
+        onOpenSearch={() => goToFeaturePage('search')}
+        onOpenCart={() => goToFeaturePage('order')}
+        onOpenInfo={() => goToFeaturePage('about')}
+        onOpenService={() => goToFeaturePage('service')}
       />
 
       <CategoryNav 

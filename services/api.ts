@@ -1,4 +1,4 @@
-import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse, MenuItem } from '../types';
+import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse } from '../types';
 import { MENU_DATA } from '../constants';
 import { supabase } from '../src/lib/supabaseClient';
 import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
@@ -16,55 +16,26 @@ export const api = {
     try {
       // 使用重试机制执行API调用
       const result = await executeWithRetry(async () => {
-        // 1. Fetch all categories (sorted by creation time)
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('*')
-          .order('created_at', { ascending: true });
+        // 使用您创建的 menu_view 视图来获取菜单数据
+        const { data: menuData, error: menuError } = await supabase
+          .from('menu_view')
+          .select('category_id, category_name, items')
+          .order('category_name');
 
-        if (categoriesError) {
-          throw createApiError('Failed to fetch categories', {
-            code: categoriesError.code || ERROR_CODES.SERVER_ERROR,
+        if (menuError) {
+          throw createApiError('Failed to fetch menu data', {
+            code: menuError.code || ERROR_CODES.SERVER_ERROR,
             retryable: true
           });
         }
 
-        // 2. Fetch all available dishes (sorted by creation time)
-        const { data: dishesData, error: dishesError } = await supabase
-          .from('dishes')
-          .select('*')
-          .order('created_at', { ascending: true });
-
-        if (dishesError) {
-          throw createApiError('Failed to fetch dishes', {
-            code: dishesError.code || ERROR_CODES.SERVER_ERROR,
-            retryable: true
-          });
-        }
-
-        // 3. Transform Supabase records to App Data Structure
-        const categories: MenuCategory[] = categoriesData.map((cat) => {
-          // Find dishes belonging to this category
-          const catDishes = dishesData.filter(d => d.category_id === cat.id);
-
-          const items: MenuItem[] = catDishes.map((record) => {
-            return {
-              id: record.dish_id || record.id,
-              zh: record.name || record.name_norm || '',
-              en: record.en_title || '',
-              price: record.price || 0,
-              spicy: record.is_spicy || false,
-              vegetarian: record.is_vegetarian || false,
-              available: record.available !== undefined ? record.available : true,
-              imageUrl: record.image_url || undefined,
-            };
-          });
-
+        // Transform the view data to App Data Structure
+        const categories: MenuCategory[] = menuData.map((row: any) => {
           return {
-            key: cat.id,
-            titleZh: cat.name || '',
-            titleEn: cat.name || '', // 暂时使用name字段，因为没有单独的英文字段
-            items: items,
+            key: row.category_id,
+            titleZh: row.category_name || '',
+            titleEn: row.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
+            items: row.items || [],
           };
         });
 
