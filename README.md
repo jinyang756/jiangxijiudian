@@ -178,6 +178,7 @@ npm run test-db
 - [SECURITY_ENV_UPDATE.md](SECURITY_ENV_UPDATE.md) - 环境变量安全配置更新说明
 - [VERCEL_ENV_CONFIRM.md](VERCEL_ENV_CONFIRM.md) - Vercel 平台环境变量配置确认
 - [ENV_SECURITY_PROTECTION.md](ENV_SECURITY_PROTECTION.md) - 环境变量文件安全保护说明
+- [GITHUB_WORKFLOW_FIX.md](GITHUB_WORKFLOW_FIX.md) - GitHub Actions 工作流问题分析与修复建议
 
 ### 快速验证
 ```bash
