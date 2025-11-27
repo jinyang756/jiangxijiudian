@@ -66,6 +66,9 @@ supabase/.temp/
 dish-images/
 migrations/
 
+# Angular directory (should not be in project)
+angular/
+
 # Specific files to ignore
 api-test.html
 check-env-and-db.cjs
