@@ -56,6 +56,9 @@ __tests__/
 scripts/
 !scripts/init-db-optimized.js
 !scripts/check-and-create-tables.js
+!scripts/init-database-via-api.js
+!scripts/setup-database-tables.js
+!scripts/auto-deploy-admin-panel.js
 
 # Admin panel files (they have their own directory)
 admin-panel/
