@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西酒店管理面板部署指南</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">江西酒店管理面板部署指南</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">部署步骤</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">第一步：创建存储桶</h3>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>登录 <a href="https://app.supabase.com" target="_blank" class="text-blue-500 hover:underline">Supabase Dashboard</a></li>
+                    <li>选择您的"江西酒店"项目</li>
+                    <li>在左侧菜单中点击 "Storage"</li>
+                    <li>点击 "Create bucket" 按钮</li>
+                    <li>输入存储桶名称: <code class="bg-gray-100 px-1 rounded">admin-panel</code></li>
+                    <li>设置为公开访问</li>
+                    <li>点击 "Create bucket"</li>
+                </ol>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">第二步：上传文件</h3>
+                <p class="mb-2">有两种方式上传文件：</p>
+                
+                <div class="ml-4 mb-4">
+                    <h4 class="font-medium mb-1">方式一：使用脚本上传（推荐）</h4>
+                    <p class="mb-2">在项目根目录打开终端，运行：</p>
+                    <pre class="bg-gray-800 text-white p-4 rounded mb-2">node deploy-admin-panel.js</pre>
+                    <p>脚本会自动上传所有管理面板文件。</p>
+                </div>
+                
+                <div class="ml-4">
+                    <h4 class="font-medium mb-1">方式二：手动上传</h4>
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li>在 Supabase Dashboard 中点击刚刚创建的 "admin-panel" 存储桶</li>
+                        <li>点击 "Upload" 按钮</li>
+                        <li>选择并上传 <code class="bg-gray-100 px-1 rounded">admin-panel</code> 目录中的所有文件和子目录</li>
+                        <li>确保上传了以下关键文件：
+                            <ul class="list-disc list-inside ml-6 mt-2">
+                                <li><code>index.html</code> - 主页面</li>
+                                <li><code>set-env.html</code> - 环境变量设置页面</li>
+                                <li><code>src/</code> 目录及其所有内容</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium mb-2">第三步：访问管理面板</h3>
+                <p class="mb-2">部署完成后，您可以通过以下 URL 访问管理面板：</p>
+                <pre class="bg-gray-800 text-white p-4 rounded break-all">https://kdlhyzsihflwkwumxzfw.supabase.co/storage/v1/object/public/admin-panel/index.html</pre>
+                <p class="mt-2">首次访问时，请先通过 <code>set-env.html</code> 设置环境变量。</p>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">故障排除</h2>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-medium mb-2">常见问题</h3>
+                
+                <div class="mb-3">
+                    <h4 class="font-medium">404 错误 - Object not found</h4>
+                    <p class="text-gray-600">可能原因：</p>
+                    <ul class="list-disc list-inside ml-4 text-gray-600">
+                        <li>存储桶未创建</li>
+                        <li>文件未上传</li>
+                        <li>存储桶未设置为公开访问</li>
+                    </ul>
+                    <p class="mt-1">解决方案：按照上述步骤重新检查并完成部署。</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h4 class="font-medium">无法连接数据库</h4>
+                    <p class="text-gray-600">可能原因：</p>
+                    <ul class="list-disc list-inside ml-4 text-gray-600">
+                        <li>环境变量未设置</li>
+                        <li>Supabase URL 或 Anon Key 错误</li>
+                    </ul>
+                    <p class="mt-1">解决方案：通过 <code>set-env.html</code> 页面正确设置环境变量。</p>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium mb-2">需要帮助？</h3>
+                <p>如果在部署过程中遇到问题，请检查浏览器控制台的错误信息，或联系技术支持。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

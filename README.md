@@ -1,143 +1,148 @@
 # 江西酒店菜单系统
 
-## 项目概述
+这是一个现代化的酒店菜单系统，包含前端展示页面和后台管理面板。
 
-江西酒店菜单系统是一个现代化的餐厅点餐应用，专为江西大酒店四楼会所设计。该系统提供多语言界面（中文/菲律宾语），响应式设计适配移动设备，支持桌位号识别、菜品搜索、购物车管理等功能。
+## 目录结构
 
-## 技术架构
-
-### 前端技术栈
-- **框架**: React 18 + TypeScript
-- **构建工具**: Vite 5
-- **样式**: Tailwind CSS 3
-- **状态管理**: React Hooks
-- **打包优化**: 
-  - Gzip/Brotli双重压缩
-  - 代码分割和资源优化
-  - 构建分析工具集成
-
-### 后端技术栈
-- **数据库**: Supabase (PostgreSQL)
-- **API**: Supabase JavaScript客户端
-- **部署平台**: Vercel (前端), Supabase (后端)
-
-### 核心功能模块
-1. **菜单浏览**: 分类展示菜品，支持左右滑动切换分类
-2. **菜品搜索**: 支持按菜名或拼音搜索
-3. **购物车系统**: 添加/删除菜品，数量管理
-4. **服务呼叫**: 呼叫服务员、加水、结账等服务
-5. **订单管理**: 提交订单，查看订单状态
-6. **关于我们**: 酒店信息展示
-7. **标签化订单**: 支持生成带标签的二维码，用于特殊订单处理
-
-## 数据库设置
-
-### 表结构
-1. **categories**: 菜单分类
-2. **dishes**: 菜品信息
-3. **orders**: 订单记录
-4. **service_requests**: 服务请求
-5. **tagged_orders**: 标签化订单
-
-### 数据库视图
-- `menu_view`: 前端API查询菜单数据的主要视图
-- `dishes_with_category`: 包含分类信息的菜品视图
-
-### 初始化数据库
-```bash
-# 创建表结构并导入示例数据
-npm run init-db
-
-# 或使用优化的SQL脚本
-npm run init-db-optimized
+```
+jiangxijiudian/
+├── admin-panel/           # 管理面板目录
+├── src/                   # 前端源代码
+├── public/                # 静态资源
+├── scripts/               # 数据库脚本
+├── sql/                   # SQL 文件
+├── docs/                  # 文档
+├── README.md              # 本说明文件
+└── package.json           # 项目配置
 ```
 
-## 管理面板
+## 功能特性
 
-项目包含一个可视化管理面板，用于管理菜单、订单和服务请求。
+### 前端展示
+1. **响应式设计** - 适配各种设备屏幕
+2. **菜品展示** - 分类展示菜品信息
+3. **购物车功能** - 添加、删除、修改菜品数量
+4. **订单提交** - 提交订单到后台
+5. **桌面二维码** - 每桌独立二维码点餐
 
-### 功能特性
-- 仪表板 - 系统概览和统计信息
-- 菜单管理 - 添加、编辑、删除菜品
-- 分类管理 - 管理菜单分类
-- 订单管理 - 查看和处理订单
-- 服务请求 - 处理客户服务请求
-- 标签化订单 - 管理带标签的特殊订单
-- 数据库管理 - 数据库维护和管理
+### 后台管理
+1. **仪表板** - 系统概览和统计信息
+2. **菜单管理** - 添加、编辑、删除菜品
+3. **分类管理** - 管理菜单分类
+4. **订单管理** - 查看和处理订单
+5. **服务请求** - 处理客户服务请求
+6. **标签化订单** - 管理带标签的特殊订单
 
-## 标签化订单功能
+## 快速开始
 
-### 功能概述
-标签化订单功能允许餐厅为特殊订单（如外卖、儿童餐、VIP订单等）生成带标签的二维码。顾客扫码后可以直接访问点餐系统，并且订单会自动标记相应的标签。
-
-### 使用流程
-1. 在管理面板中生成带标签的二维码
-2. 将二维码打印并放置在相应位置
-3. 顾客扫码访问点餐系统
-4. 顾客下单后，订单会自动保存到tagged_orders表中
-5. 管理员可以在管理面板中查看和处理标签化订单
-
-### 技术实现
-- 使用URL参数传递标签信息（?table=TABLE_ID&tag=TAG_NAME）
-- 标签信息保存在sessionStorage中
-- 订单提交时检查标签信息，如果有则提交到tagged_orders表
-- 管理面板提供标签化订单的查看和打印功能
-
-## 测试和调试
-
-### 数据库连接测试
+### 前端部署
 ```bash
-npm run test-db
-```
-
-### 数据库查询测试
-```bash
-npm run test-db-query
-```
-
-### 浏览器数据库调试
-直接在浏览器中打开 `db-debug.html` 文件，使用图形界面测试数据库连接和查询数据。
-
-## 性能优化
-
-1. **图片优化**: 图片预加载和懒加载
-2. **代码分割**: 按功能模块分割代码
-3. **资源压缩**: Gzip/Brotli压缩
-4. **缓存策略**: 合理使用浏览器缓存
-5. **响应式设计**: 移动端优化
-
-## 安全措施
-
-1. **环境变量保护**: 敏感信息通过GitHub Secrets管理
-2. **API权限控制**: Supabase行级安全策略
-3. **错误处理**: 完善的错误边界和异常处理
-4. **输入验证**: 前后端数据验证
-
-## 维护命令
-
-```bash
-# 构建项目
-npm run build
+# 安装依赖
+npm install
 
 # 启动开发服务器
 npm run dev
 
-# 预览构建结果
+# 构建生产版本
+npm run build
+
+# 预览生产版本
 npm run preview
-
-# 初始化数据库
-npm run init-db
-
-# 导入菜单数据
-npm run import-menu-csv
-
-# 测试数据库连接
-npm run test-db
-
-# 验证数据库视图
-npm run verify-views
 ```
 
-## 联系信息
-- **维护人员**: 技术支持团队
-- **最后更新**: 2025年11月27日
+### 管理面板部署
+管理面板需要单独部署到 Supabase Storage：
+
+1. **创建存储桶**：
+   - 登录 Supabase Dashboard
+   - 选择项目并进入 Storage
+   - 创建名为 `admin-panel` 的存储桶并设置为公开
+
+2. **上传文件**：
+   ```bash
+   # 使用自动部署脚本
+   node deploy-admin-panel.js
+   ```
+
+3. **访问管理面板**：
+   ```
+   https://kdlhyzsihflwkwumxzfw.supabase.co/storage/v1/object/public/admin-panel/index.html
+   ```
+
+## 环境变量配置
+
+### 前端环境变量 (Vercel)
+在 Vercel 项目设置中配置以下环境变量：
+
+```
+VITE_APP_DB_URL=https://kdlhyzsihflwkwumxzfw.supabase.co
+VITE_APP_DB_POSTGRES_PASSWORD=sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I
+```
+
+详细配置步骤请参考 [Vercel 环境变量配置指南](VERCEL_ENV_SETUP.md)
+
+### 管理面板环境变量
+管理面板通过浏览器界面配置：
+1. 访问 `set-env.html` 页面
+2. 输入 Supabase URL 和 Anon Key
+3. 保存配置
+
+## 数据库设置
+
+### 初始化数据库
+```bash
+# 创建数据库表和视图
+npm run init-db-optimized
+```
+
+### 数据库结构
+- `categories` - 菜单分类
+- `dishes` - 菜品信息
+- `orders` - 订单数据
+- `service_requests` - 服务请求
+- `tagged_orders` - 标签化订单
+
+## 开发说明
+
+### 技术栈
+- **前端框架**: React + Vite
+- **样式框架**: Tailwind CSS
+- **数据库**: Supabase
+- **状态管理**: React Hooks
+- **构建工具**: Vite
+
+### 代码规范
+- 使用 TypeScript 进行类型检查
+- 遵循 ESLint 和 Prettier 规范
+- 组件化开发，提高代码复用性
+
+## 部署指南
+
+### Vercel 部署（推荐）
+1. 连接 GitHub 仓库到 Vercel
+2. 设置环境变量（参考 [Vercel 环境变量配置指南](VERCEL_ENV_SETUP.md)）
+3. 自动部署完成
+
+### 手动部署
+1. 构建项目：`npm run build`
+2. 上传 `dist/` 目录到服务器
+3. 配置 Web 服务器指向 `dist/` 目录
+
+## 故障排除
+
+### 常见问题
+1. **页面空白**：检查环境变量配置
+2. **数据库连接失败**：验证 Supabase 配置
+3. **管理面板404**：确认 Supabase Storage 部署
+
+### 调试工具
+- 浏览器开发者工具
+- Supabase Dashboard
+- 项目根目录的调试脚本
+
+## 相关文档
+
+详细信息请参阅 `docs/` 目录下的文档：
+- [部署说明](ADMIN_PANEL_DEPLOYMENT_GUIDE.html)
+- [数据库设置](docs/database/DATABASE_SETUP.md)
+- [环境变量配置](VERCEL_ENV_SETUP.md)

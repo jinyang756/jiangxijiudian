@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vercel 环境变量验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Vercel 环境变量验证</h1>
+    <div id="result"></div>
+
+    <script type="module">
+        // 检查环境变量
+        const resultDiv = document.getElementById('result');
+        
+        try {
+            const envVars = {
+                'VITE_APP_DB_URL': import.meta.env.VITE_APP_DB_URL,
+                'VITE_APP_DB_POSTGRES_PASSWORD': import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD,
+                'MODE': import.meta.env.MODE,
+                'DEV': import.meta.env.DEV,
+                'PROD': import.meta.env.PROD
+            };
+            
+            let resultHTML = '<h2>环境变量状态:</h2><ul>';
+            
+            for (const [key, value] of Object.entries(envVars)) {
+                if (key === 'VITE_APP_DB_POSTGRES_PASSWORD' && value) {
+                    resultHTML += `<li><strong>${key}:</strong> ${value.substring(0, 20)}... (已设置)</li>`;
+                } else {
+                    resultHTML += `<li><strong>${key}:</strong> ${value || '<span class="error">未设置</span>'}</li>`;
+                }
+            }
+            
+            resultHTML += '</ul>';
+            
+            // 检查 Supabase 客户端配置
+            if (envVars['VITE_APP_DB_URL'] && envVars['VITE_APP_DB_POSTGRES_PASSWORD']) {
+                resultHTML += '<p class="success">✅ 环境变量配置正确</p>';
+                resultHTML += '<p>您的应用应该可以正常连接到 Supabase 数据库。</p>';
+            } else {
+                resultHTML += '<p class="error">❌ 环境变量未正确设置</p>';
+                resultHTML += '<p>请在 Vercel 项目设置中添加以下环境变量:</p>';
+                resultHTML += `<pre>VITE_APP_DB_URL=https://kdlhyzsihflwkwumxzfw.supabase.co
+VITE_APP_DB_POSTGRES_PASSWORD=sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I</pre>`;
+            }
+            
+            resultDiv.innerHTML = resultHTML;
+        } catch (error) {
+            resultDiv.innerHTML = `<p class="error">测试过程中发生错误: ${error.message}</p>`;
+        }
+    </script>
+</body>
+</html>
