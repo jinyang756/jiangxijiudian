@@ -20,11 +20,11 @@
     "upload-images": "node scripts/upload-dish-images.js",
     "tagged-order-stats": "node scripts/tagged-order-stats.js",
     "init-db-script": "node scripts/execute-sql-script.js",
-    "verify-db": "node scripts/verify-database.js",
+    "verify-db": "node scripts/verify-database-connection.js",
     "final-init": "node scripts/final-init.js",
     "check-and-create-direct": "node scripts/check-and-create-tables-direct.js",
     "final-data-init": "node scripts/final-data-init.js",
-    "deploy-admin-panel": "echo 请通过 Supabase Dashboard 手动部署管理面板: https://app.supabase.com",
+    "deploy-admin-panel": "node scripts/auto-deploy-admin-panel.js",
     "deploy-helper": "powershell -ExecutionPolicy Bypass -File deploy-helper.ps1",
     "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\""
   },

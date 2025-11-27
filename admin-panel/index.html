@@ -27,9 +27,38 @@
         .sidebar.expanded + .content {
             margin-left: 250px;
         }
+        /* 添加加载动画 */
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        /* 添加警报样式 */
+        .alert-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .alert-banner.hidden {
+            transform: translateY(-100%);
+        }
     </style>
 </head>
 <body class="bg-gray-100">
+    <!-- 警报横幅 -->
+    <div id="alert-banner" class="alert-banner hidden bg-red-500 text-white hidden">
+        <div class="container mx-auto flex justify-between items-center">
+            <span id="alert-message"></span>
+            <button id="close-alert" class="text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
     <div class="flex h-screen">
         <!-- 侧边栏 -->
         <div id="sidebar" class="sidebar expanded bg-gray-800 text-white h-full fixed left-0 top-0 flex flex-col">
@@ -66,12 +95,20 @@
                         <i class="fas fa-database mr-3"></i>
                         <span id="database-link">数据库管理</span>
                     </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        <span id="monitoring-link">性能监控</span>
+                    </a>
                 </nav>
             </div>
             <div class="p-4 border-t border-gray-700">
                 <button id="toggle-sidebar" class="w-full flex items-center justify-center p-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
                     <i class="fas fa-arrow-left mr-2" id="toggle-icon"></i>
                     <span id="toggle-text">收起菜单</span>
+                </button>
+                <button id="logout-btn" class="w-full flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 rounded-lg mt-2 text-white">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span>退出登录</span>
                 </button>
             </div>
         </div>
@@ -86,14 +123,17 @@
                         <p class="text-gray-600" id="page-subtitle">系统概览和统计信息</p>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button class="p-2 rounded-full hover:bg-gray-200">
-                            <i class="fas fa-bell"></i>
-                        </button>
+                        <div class="relative">
+                            <button class="p-2 rounded-full hover:bg-gray-200">
+                                <i class="fas fa-bell"></i>
+                                <span id="alert-count" class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                            </button>
+                        </div>
                         <div class="flex items-center">
                             <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
                                 <i class="fas fa-user"></i>
                             </div>
-                            <span class="ml-2 text-gray-700">管理员</span>
+                            <span class="ml-2 text-gray-700" id="current-user">管理员</span>
                         </div>
                     </div>
                 </div>
@@ -168,7 +208,7 @@
                 <!-- 最近活动 -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold mb-4">最近活动</h2>
-                    <div class="space-y-4">
+                    <div class="space-y-4" id="recent-activities">
                         <div class="flex items-start border-b pb-4">
                             <div class="p-2 bg-blue-100 rounded-full text-blue-500 mr-3">
                                 <i class="fas fa-plus"></i>
@@ -205,35 +245,37 @@
         </div>
     </div>
 
-    <script>
-        // 从localStorage获取环境变量并设置到全局对象
-        window.env = {
-            VITE_APP_DB_URL: localStorage.getItem('VITE_APP_DB_URL') || 'https://kdlhyzsihflwkwumxzfw.supabase.co',
-            VITE_APP_DB_POSTGRES_PASSWORD: localStorage.getItem('VITE_APP_DB_POSTGRES_PASSWORD') || 'sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I'
-        };
-    </script>
-    <script src="src/services/database.js"></script>
-    <script src="src/services/taggedOrdersAPI.js"></script>
-    <script>
-        // 初始化数据库服务
-        const db = databaseManager;
-        window.dbService = db; // 将数据库服务挂载到全局对象
+    <script type="module">
+        // 导入服务模块
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+        import { authManager } from './src/services/auth.js';
+        import { performanceOptimizer } from './src/services/performance.js';
+        import { monitoringSystem } from './src/services/monitoring.js';
         
-        // 初始化完成后加载数据
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化统计数据
-            loadDashboardData();
-        });
+        // 初始化监控系统
+        monitoringSystem.startMonitoring();
+        monitoringSystem.recordPageView('dashboard');
         
-        // 侧边栏切换功能
+        // 数据库配置
+        const SUPABASE_URL = 'https://kdlhyzsihflwkwumxzfw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
+        
+        // 创建Supabase客户端
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // DOM元素
         const sidebar = document.getElementById('sidebar');
-        const toggleButton = document.getElementById('toggle-sidebar');
+        const toggleSidebar = document.getElementById('toggle-sidebar');
         const toggleIcon = document.getElementById('toggle-icon');
         const toggleText = document.getElementById('toggle-text');
-        const sidebarTitle = document.getElementById('sidebar-title');
-        const menuLinks = document.querySelectorAll('nav a');
-
-        toggleButton.addEventListener('click', () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        const alertBanner = document.getElementById('alert-banner');
+        const alertMessage = document.getElementById('alert-message');
+        const closeAlert = document.getElementById('close-alert');
+        const alertCount = document.getElementById('alert-count');
+        
+        // 侧边栏切换
+        toggleSidebar.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
             sidebar.classList.toggle('expanded');
             
@@ -241,77 +283,133 @@
                 toggleIcon.classList.remove('fa-arrow-left');
                 toggleIcon.classList.add('fa-arrow-right');
                 toggleText.textContent = '展开菜单';
-                sidebarTitle.classList.add('hidden');
-                document.querySelectorAll('nav span').forEach(span => {
-                    span.classList.add('hidden');
-                });
             } else {
                 toggleIcon.classList.remove('fa-arrow-right');
                 toggleIcon.classList.add('fa-arrow-left');
                 toggleText.textContent = '收起菜单';
-                sidebarTitle.classList.remove('hidden');
-                document.querySelectorAll('nav span').forEach(span => {
-                    span.classList.remove('hidden');
-                });
             }
-        });
-
-        // 菜单链接点击功能
-        menuLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                menuLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                
-                const page = link.querySelector('span').id.replace('-link', '');
-                updatePageContent(page);
+            
+            monitoringSystem.recordUserAction('toggle_sidebar', {
+                state: sidebar.classList.contains('expanded') ? 'expanded' : 'collapsed'
             });
         });
-
-        // 更新页面内容的函数
-        function updatePageContent(page) {
-            const pageTitle = document.getElementById('page-title');
-            const pageSubtitle = document.getElementById('page-subtitle');
+        
+        // 退出登录
+        logoutBtn.addEventListener('click', () => {
+            authManager.logout();
+            window.location.href = 'login.html'; // 重定向到登录页面
+            monitoringSystem.recordUserAction('logout');
+        });
+        
+        // 关闭警报
+        closeAlert.addEventListener('click', () => {
+            alertBanner.classList.add('hidden');
+            monitoringSystem.recordUserAction('close_alert');
+        });
+        
+        // 显示警报
+        function showAlert(message, type = 'error') {
+            alertMessage.textContent = message;
+            alertBanner.className = `alert-banner bg-${type === 'error' ? 'red' : 'yellow'}-500 text-white`;
+            alertBanner.classList.remove('hidden');
             
-            switch(page) {
-                case 'dashboard':
-                    pageTitle.textContent = '仪表板';
-                    pageSubtitle.textContent = '系统概览和统计信息';
-                    break;
-                case 'menu':
-                    pageTitle.textContent = '菜单管理';
-                    pageSubtitle.textContent = '管理菜品和分类';
-                    break;
-                case 'categories':
-                    pageTitle.textContent = '分类管理';
-                    pageSubtitle.textContent = '管理菜单分类';
-                    break;
-                case 'orders':
-                    pageTitle.textContent = '订单管理';
-                    pageSubtitle.textContent = '查看和处理订单';
-                    break;
-                case 'services':
-                    pageTitle.textContent = '服务请求';
-                    pageSubtitle.textContent = '处理客户服务请求';
-                    break;
-                case 'tagged-orders':
-                    pageTitle.textContent = '标签化订单';
-                    pageSubtitle.textContent = '管理带标签的订单';
-                    break;
-                case 'database':
-                    pageTitle.textContent = '数据库管理';
-                    pageSubtitle.textContent = '数据库维护和管理';
-                    break;
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                alertBanner.classList.add('hidden');
+            }, 3000);
+            
+            monitoringSystem.recordUserAction('show_alert', { message, type });
+        }
+        
+        // 更新警报计数
+        function updateAlertCount(count) {
+            if (count > 0) {
+                alertCount.textContent = count;
+                alertCount.classList.remove('hidden');
+            } else {
+                alertCount.classList.add('hidden');
             }
         }
-
-        // 模拟数据加载
+        
+        // 获取统计数据
+        async function fetchDashboardStats() {
+            try {
+                // 显示加载状态
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.classList.add('loading');
+                });
+                
+                // 获取菜品总数
+                const { count: dishesCount, error: dishesError } = await supabase
+                    .from('dishes')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (dishesError) throw dishesError;
+                
+                // 获取分类数量
+                const { count: categoriesCount, error: categoriesError } = await supabase
+                    .from('categories')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (categoriesError) throw categoriesError;
+                
+                // 获取今日订单数
+                const today = new Date().toISOString().split('T')[0];
+                const { count: todayOrdersCount, error: ordersError } = await supabase
+                    .from('orders')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', today);
+                
+                if (ordersError) throw ordersError;
+                
+                // 获取待处理服务请求数
+                const { count: pendingServicesCount, error: servicesError } = await supabase
+                    .from('service_requests')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'pending');
+                
+                if (servicesError) throw servicesError;
+                
+                // 更新UI
+                document.getElementById('total-dishes').textContent = dishesCount || 0;
+                document.getElementById('total-categories').textContent = categoriesCount || 0;
+                document.getElementById('today-orders').textContent = todayOrdersCount || 0;
+                document.getElementById('pending-services').textContent = pendingServicesCount || 0;
+                
+                // 移除加载状态
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.classList.remove('loading');
+                });
+                
+                monitoringSystem.recordApiCall('fetch_dashboard_stats', true);
+            } catch (error) {
+                console.error('获取仪表板统计数据失败:', error);
+                showAlert('获取统计数据失败: ' + error.message);
+                monitoringSystem.recordError('dashboard_stats_fetch', error.message);
+                monitoringSystem.recordApiCall('fetch_dashboard_stats', false);
+            }
+        }
+        
+        // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            // 模拟统计数据
-            document.getElementById('total-dishes').textContent = '128';
-            document.getElementById('total-categories').textContent = '5';
-            document.getElementById('today-orders').textContent = '24';
-            document.getElementById('pending-services').textContent = '3';
+            // 检查用户登录状态
+            const currentUser = authManager.getCurrentUser();
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 显示当前用户
+            document.getElementById('current-user').textContent = currentUser.username;
+            
+            // 获取统计数据
+            fetchDashboardStats();
+            
+            // 初始化性能优化器
+            performanceOptimizer.initLazyLoading();
+            
+            console.log('管理面板初始化完成');
+            monitoringSystem.recordUserAction('dashboard_loaded');
         });
     </script>
 </body>
