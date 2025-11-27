@@ -79,7 +79,7 @@ npm run preview
 
 ```
 VITE_APP_DB_URL=https://kdlhyzsihflwkwumxzfw.supabase.co
-VITE_APP_DB_POSTGRES_PASSWORD=sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I
+VITE_APP_DB_POSTGRES_PASSWORD=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8
 ```
 
 详细配置步骤请参考 [Vercel 环境变量配置指南](VERCEL_ENV_SETUP.md)

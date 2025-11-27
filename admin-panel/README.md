@@ -14,6 +14,7 @@ admin-panel/
 │   └── services/       # 数据库和服务相关代码
 │       └── database.js # 数据库管理服务
 └── README.md           # 本说明文件
+```
 
 ## 功能特性
 
@@ -22,8 +23,7 @@ admin-panel/
 3. **分类管理** - 管理菜单分类
 4. **订单管理** - 查看和处理订单
 5. **服务请求** - 处理客户服务请求
-6. **标签化订单** - 管理带标签的特殊订单
-7. **数据库管理** - 数据库维护和管理
+6. **数据库管理** - 数据库维护和管理
 
 ## 使用方法
 
@@ -34,35 +34,6 @@ admin-panel/
    VITE_APP_DB_POSTGRES_PASSWORD=你的Supabase项目anon key (JWT格式)
    ```
 3. 通过浏览器访问管理面板
-
-## 环境变量配置
-
-管理面板支持多种环境变量配置方式，具体取决于部署平台：
-
-### 1. Supabase Storage 部署（当前方式）
-由于 Supabase Storage 静态主机不支持环境变量，我们提供了以下解决方案：
-- 默认配置已嵌入在管理面板代码中
-- 用户可通过 `set-env.html` 页面自定义配置
-- 配置保存在浏览器的 localStorage 中
-
-### 2. Vercel/Netlify 部署（推荐）
-如果迁移到支持环境变量的平台，请使用以下配置：
-```
-# Vercel
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# Netlify
-REACT_APP_SUPABASE_URL=https://your-project.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### 3. 本地开发
-在本地开发时，可创建 `.env` 文件：
-```
-VITE_APP_DB_URL=https://your-project.supabase.co
-VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key
-```
 
 ## 数据库结构
 
@@ -104,15 +75,6 @@ VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key
 - status: 状态
 - created_at: 创建时间
 
-### tagged_orders表
-- id: UUID主键
-- table_id: 桌号
-- tag: 标签
-- items_json: 订单项JSON
-- total_amount: 总金额
-- status: 状态 (pending, printed, completed)
-- created_at: 创建时间
-
 ## 开发说明
 
 1. 管理面板使用纯HTML、CSS和JavaScript构建，无需编译步骤
@@ -128,11 +90,6 @@ VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key
 4. 环境变量中的anon key必须是JWT格式的完整token
 
 ## 更新日志
-
-### v1.1.0 (2025-11-27)
-- 新增标签化订单管理功能
-- 支持生成带标签的二维码
-- 添加标签化订单打印功能
 
 ### v1.0.0 (2025-11-27)
 - 完善了数据库连接配置说明
@@ -177,4 +134,3 @@ VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key
 - [数据库设置指南](../docs/database/DATABASE_SETUP.md)
 - [部署配置说明](../docs/deployment/ENV_SETUP.md)
 - [Supabase集成指南](../docs/integration/MCP_INTEGRATION_GUIDE.md)
-- [环境变量配置指南](./ENVIRONMENT_CONFIG.md)

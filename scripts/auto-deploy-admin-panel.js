@@ -10,7 +10,7 @@ import { join, relative } from 'path';
 
 // 配置 Supabase 客户端
 const supabaseUrl = 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-const supabaseKey = 'sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
 
 console.log('🚀 管理面板部署脚本');
 console.log('====================');
@@ -74,31 +74,45 @@ async function uploadDirectory(directoryPath, bucketName) {
   }
 }
 
-async function deployAdminPanel() {
+async function checkBucketExists(bucketName) {
   try {
-    console.log('\n📋 部署步骤:');
-    console.log('1. 请先通过 Supabase Dashboard 创建名为 "admin-panel" 的存储桶');
-    console.log('2. 设置存储桶为公开访问');
-    console.log('3. 运行此脚本上传文件');
+    console.log('\n1. 检查存储桶...');
     
     // 检查存储桶是否存在
-    console.log('\n1. 检查存储桶...');
     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
     
     if (bucketsError) {
       console.error('❌ 获取存储桶列表失败:', bucketsError.message);
-      console.log('\n💡 解决方案:');
-      console.log('   请确保您的 anon key 正确，并且具有访问存储桶的权限');
-      return;
+      return false;
     }
     
-    let bucketExists = buckets.some(bucket => bucket.name === 'admin-panel');
+    let bucketExists = buckets.some(bucket => bucket.name === bucketName);
     
     if (!bucketExists) {
-      console.log('⚠️  存储桶 "admin-panel" 不存在');
-      console.log('\n💡 请按以下步骤手动创建存储桶:');
-      console.log('   1. 登录 Supabase Dashboard');
-      console.log('   2. 选择您的项目');
+      console.log('⚠️  存储桶不存在');
+      return false;
+    } else {
+      console.log('✅ 存储桶已存在');
+      return true;
+    }
+  } catch (error) {
+    console.error('❌ 检查存储桶时发生错误:', error.message);
+    return false;
+  }
+}
+
+async function deployAdminPanel() {
+  try {
+    console.log('\n📋 部署步骤:');
+    
+    // 检查存储桶是否存在
+    const bucketExists = await checkBucketExists('admin-panel');
+    
+    if (!bucketExists) {
+      console.log('\n💡 解决方案:');
+      console.log('   请按以下步骤手动创建存储桶:');
+      console.log('   1. 登录 Supabase Dashboard (https://app.supabase.com)');
+      console.log('   2. 选择您的"江西酒店"项目');
       console.log('   3. 在左侧菜单中点击 "Storage"');
       console.log('   4. 点击 "Create bucket" 按钮');
       console.log('   5. 输入存储桶名称: admin-panel');
@@ -106,8 +120,6 @@ async function deployAdminPanel() {
       console.log('   7. 点击 "Create bucket"');
       console.log('   8. 重新运行此脚本');
       return;
-    } else {
-      console.log('✅ 存储桶已存在');
     }
     
     // 上传文件
@@ -125,9 +137,10 @@ async function deployAdminPanel() {
 
 // 显示使用说明
 console.log('\n📖 使用说明:');
-console.log('1. 首先需要在 Supabase Dashboard 中手动创建存储桶');
-console.log('2. 然后运行此脚本上传文件');
-console.log('3. 访问管理面板 URL 查看结果');
+console.log('1. 脚本会自动检查存储桶');
+console.log('2. 如果存储桶不存在，请按提示手动创建');
+console.log('3. 然后上传所有管理面板文件');
+console.log('4. 访问管理面板 URL 查看结果');
 
 // 运行部署
 deployAdminPanel();

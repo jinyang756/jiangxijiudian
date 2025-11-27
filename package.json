@@ -26,7 +26,9 @@
     "final-data-init": "node scripts/final-data-init.js",
     "deploy-admin-panel": "node scripts/auto-deploy-admin-panel.js",
     "deploy-helper": "powershell -ExecutionPolicy Bypass -File deploy-helper.ps1",
-    "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\""
+    "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\"",
+    "optimize-indexes": "echo '请查看 DATABASE_MAINTENANCE_GUIDE.md 文件了解如何手动应用索引优化'",
+    "show-maintenance-guide": "echo 请查看 DATABASE_MAINTENANCE_GUIDE.md 文件了解数据库维护指南"
   },
   "dependencies": {
     "@supabase/postgrest-js": "^2.84.0",

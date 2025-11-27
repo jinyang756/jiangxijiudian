@@ -1,13 +1,14 @@
 // 数据库管理服务
+import { createClient } from '@supabase/supabase-js';
+
 class DatabaseManager {
     constructor() {
         // 从环境变量获取配置
-        // 修复环境变量获取方式，使其在静态HTML中工作
-        this.supabaseUrl = this.getEnvVariable('VITE_APP_DB_URL') || 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-        this.supabaseKey = this.getEnvVariable('VITE_APP_DB_POSTGRES_PASSWORD') || 'sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I';
+        this.supabaseUrl = import.meta.env.VITE_APP_DB_URL || 'https://kdlhyzsihflwkwumxzfw.supabase.co';
+        this.supabaseKey = import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD || 'J2nkgp0cGZYF8iHk';
         
         // 创建Supabase客户端
-        this.supabase = supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        this.supabase = createClient(this.supabaseUrl, this.supabaseKey);
         
         // 绑定方法
         this.initializeDatabase = this.initializeDatabase.bind(this);
@@ -23,43 +24,98 @@ class DatabaseManager {
         this.updateOrderStatus = this.updateOrderStatus.bind(this);
         this.getServiceRequests = this.getServiceRequests.bind(this);
         this.updateServiceRequestStatus = this.updateServiceRequestStatus.bind(this);
-        this.getTaggedOrders = this.getTaggedOrders.bind(this);
-        this.addTaggedOrder = this.addTaggedOrder.bind(this);
-        this.updateTaggedOrderStatus = this.updateTaggedOrderStatus.bind(this);
     }
-    
-    // 获取环境变量的辅助函数
-    getEnvVariable(name) {
-        // 在浏览器环境中，我们无法直接访问环境变量
-        // 但我们可以尝试从全局变量或URL参数中获取
-        try {
-            // 尝试从全局变量获取
-            if (typeof window !== 'undefined' && window.env && window.env[name]) {
-                return window.env[name];
-            }
-            
-            // 尝试从localStorage获取
-            if (typeof localStorage !== 'undefined') {
-                const stored = localStorage.getItem(name);
-                if (stored) return stored;
-            }
-            
-            // 返回默认值
-            if (name === 'VITE_APP_DB_URL') {
-                return 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-            }
-            if (name === 'VITE_APP_DB_POSTGRES_PASSWORD') {
-                return 'sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I';
-            }
-        } catch (e) {
-            console.warn('无法获取环境变量:', name, e);
-        }
-        return null;
-    }
-    
+
     // 初始化数据库表
     async initializeDatabase() {
         try {
+            // 创建categories表
+            const { error: categoriesError } = await this.supabase.rpc('execute_sql', {
+                sql: `
+                    CREATE TABLE IF NOT EXISTS categories (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        key TEXT UNIQUE NOT NULL,
+                        title_zh TEXT NOT NULL,
+                        title_en TEXT NOT NULL,
+                        sort INTEGER DEFAULT 0,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                `
+            });
+
+            if (categoriesError) throw categoriesError;
+
+            // 创建dishes表
+            const { error: dishesError } = await this.supabase.rpc('execute_sql', {
+                sql: `
+                    CREATE TABLE IF NOT EXISTS dishes (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
+                        dish_id TEXT UNIQUE NOT NULL,
+                        name_zh TEXT NOT NULL,
+                        name_en TEXT NOT NULL,
+                        price NUMERIC NOT NULL,
+                        is_spicy BOOLEAN DEFAULT FALSE,
+                        is_vegetarian BOOLEAN DEFAULT FALSE,
+                        available BOOLEAN DEFAULT TRUE,
+                        image_url TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                `
+            });
+
+            if (dishesError) throw dishesError;
+
+            // 创建orders表
+            const { error: ordersError } = await this.supabase.rpc('execute_sql', {
+                sql: `
+                    CREATE TABLE IF NOT EXISTS orders (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        table_id TEXT NOT NULL,
+                        items_json TEXT NOT NULL,
+                        total_amount NUMERIC NOT NULL,
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                `
+            });
+
+            if (ordersError) throw ordersError;
+
+            // 创建service_requests表
+            const { error: serviceRequestsError } = await this.supabase.rpc('execute_sql', {
+                sql: `
+                    CREATE TABLE IF NOT EXISTS service_requests (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        table_id TEXT NOT NULL,
+                        type TEXT NOT NULL,
+                        type_name TEXT NOT NULL,
+                        details TEXT,
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                `
+            });
+
+            if (serviceRequestsError) throw serviceRequestsError;
+
+            // 创建索引
+            const { error: indexesError } = await this.supabase.rpc('execute_sql', {
+                sql: `
+                    CREATE INDEX IF NOT EXISTS idx_categories_key ON categories(key);
+                    CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort);
+                    CREATE INDEX IF NOT EXISTS idx_dishes_category_id ON dishes(category_id);
+                    CREATE INDEX IF NOT EXISTS idx_dishes_dish_id ON dishes(dish_id);
+                    CREATE INDEX IF NOT EXISTS idx_dishes_available ON dishes(available);
+                    CREATE INDEX IF NOT EXISTS idx_orders_table_id ON orders(table_id);
+                    CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+                    CREATE INDEX IF NOT EXISTS idx_service_requests_table_id ON service_requests(table_id);
+                    CREATE INDEX IF NOT EXISTS idx_service_requests_status ON service_requests(status);
+                `
+            });
+
+            if (indexesError) throw indexesError;
+
             console.log('数据库初始化完成');
             return { success: true };
         } catch (error) {
@@ -67,7 +123,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 获取菜单数据
     async getMenuData() {
         try {
@@ -84,7 +140,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 添加菜品
     async addDish(dishData) {
         try {
@@ -99,7 +155,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 更新菜品
     async updateDish(dishId, dishData) {
         try {
@@ -115,7 +171,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 删除菜品
     async deleteDish(dishId) {
         try {
@@ -131,7 +187,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 获取分类
     async getCategories() {
         try {
@@ -147,7 +203,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 添加分类
     async addCategory(categoryData) {
         try {
@@ -162,7 +218,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 更新分类
     async updateCategory(categoryId, categoryData) {
         try {
@@ -178,7 +234,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 删除分类
     async deleteCategory(categoryId) {
         try {
@@ -194,7 +250,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 获取订单
     async getOrders() {
         try {
@@ -210,7 +266,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 更新订单状态
     async updateOrderStatus(orderId, status) {
         try {
@@ -226,7 +282,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 获取服务请求
     async getServiceRequests() {
         try {
@@ -242,7 +298,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
+
     // 更新服务请求状态
     async updateServiceRequestStatus(requestId, status) {
         try {
@@ -258,54 +314,7 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
-    
-    // 获取标签化订单
-    async getTaggedOrders() {
-        try {
-            const { data, error } = await this.supabase
-                .from('tagged_orders')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            return { success: true, data };
-        } catch (error) {
-            console.error('获取标签化订单失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    // 添加标签化订单
-    async addTaggedOrder(orderData) {
-        try {
-            const { data, error } = await this.supabase
-                .from('tagged_orders')
-                .insert([orderData]);
-
-            if (error) throw error;
-            return { success: true, data };
-        } catch (error) {
-            console.error('添加标签化订单失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    // 更新标签化订单状态
-    async updateTaggedOrderStatus(orderId, status) {
-        try {
-            const { data, error } = await this.supabase
-                .from('tagged_orders')
-                .update({ status })
-                .eq('id', orderId);
-
-            if (error) throw error;
-            return { success: true, data };
-        } catch (error) {
-            console.error('更新标签化订单状态失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
 }
 
 // 导出单例实例
-const databaseManager = new DatabaseManager();
+export const databaseManager = new DatabaseManager();
