@@ -1,0 +1,253 @@
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">标签化订单管理</h2>
+        <button id="refresh-tagged-orders" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
+            <i class="fas fa-sync-alt mr-2"></i>
+            刷新
+        </button>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">标签</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">桌号</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="tagged-orders-table-body">
+                <!-- 动态加载数据 -->
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        加载中...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 标签化订单管理功能
+    document.addEventListener('DOMContentLoaded', function() {
+        // 刷新按钮事件
+        document.getElementById('refresh-tagged-orders').addEventListener('click', loadTaggedOrders);
+        
+        // 页面激活时加载数据
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const link = document.querySelector('#tagged-orders-link').closest('a');
+                    if (link.classList.contains('active')) {
+                        loadTaggedOrders();
+                    }
+                }
+            });
+        });
+        
+        const servicesLink = document.querySelector('#tagged-orders-link').closest('a');
+        observer.observe(servicesLink, { attributes: true });
+    });
+
+    // 加载标签化订单数据
+    async function loadTaggedOrders() {
+        try {
+            showLoading(true);
+            
+            // 使用新的API服务
+            if (window.taggedOrdersAPI) {
+                const result = await window.taggedOrdersAPI.getAllTaggedOrders();
+                
+                if (result.success) {
+                    renderTaggedOrders(result.data);
+                } else {
+                    showError('加载标签化订单失败: ' + result.error);
+                }
+            } else {
+                // 回退到直接调用数据库服务
+                const result = await window.dbService.getTaggedOrders();
+                
+                if (result.success) {
+                    renderTaggedOrders(result.data);
+                } else {
+                    showError('加载标签化订单失败: ' + result.error);
+                }
+            }
+        } catch (error) {
+            showError('网络错误: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // 显示/隐藏加载状态
+    function showLoading(show) {
+        const tbody = document.getElementById('tagged-orders-table-body');
+        if (show) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <div class="flex items-center justify-center">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                            加载中...
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // 渲染标签化订单表格
+    function renderTaggedOrders(orders) {
+        const tbody = document.getElementById('tagged-orders-table-body');
+        
+        if (orders.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        暂无标签化订单数据
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = orders.map(order => `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        ${order.tag}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.table_id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱${parseFloat(order.total_amount).toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                          order.status === 'printed' ? 'bg-blue-100 text-blue-800' : 
+                          'bg-green-100 text-green-800'}">
+                        ${order.status === 'pending' ? '待处理' : 
+                          order.status === 'printed' ? '已打印' : '已完成'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${new Date(order.created_at).toLocaleString('zh-CN')}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="printTaggedOrder('${order.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                        <i class="fas fa-print"></i> 打印
+                    </button>
+                    ${order.status === 'pending' ? 
+                        `<button onclick="updateTaggedOrderStatus('${order.id}', 'printed')" class="text-green-600 hover:text-green-900 mr-3">
+                            <i class="fas fa-check"></i> 标记已打印
+                        </button>` : ''}
+                    ${order.status === 'printed' ? 
+                        `<button onclick="updateTaggedOrderStatus('${order.id}', 'completed')" class="text-purple-600 hover:text-purple-900">
+                            <i class="fas fa-check-circle"></i> 标记完成
+                        </button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // 打印标签化订单
+    async function printTaggedOrder(orderId) {
+        try {
+            // 使用新的API服务获取订单详情
+            let order;
+            if (window.taggedOrdersAPI) {
+                const result = await window.taggedOrdersAPI.getTaggedOrderById(orderId);
+                if (result.success) {
+                    order = result.data;
+                } else {
+                    throw new Error(result.error);
+                }
+            } else {
+                // 回退到直接调用数据库服务
+                const { data, error } = await window.dbService.supabase
+                    .from('tagged_orders')
+                    .select('*')
+                    .eq('id', orderId)
+                    .single();
+                
+                if (error) throw error;
+                order = data;
+            }
+            
+            // 生成打印内容
+            let printContent;
+            if (window.taggedOrdersAPI) {
+                printContent = window.taggedOrdersAPI.generatePrintContent(order);
+            } else {
+                // 简单的打印内容生成
+                printContent = `
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>标签化订单 - ${order.tag}</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                .header { text-align: center; margin-bottom: 20px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>江西大酒店 - 标签化订单</h1>
+                                <h2>标签: ${order.tag}</h2>
+                                <p>桌号: ${order.table_id}</p>
+                                <p>订单ID: ${order.id}</p>
+                                <p>创建时间: ${new Date(order.created_at).toLocaleString('zh-CN')}</p>
+                            </div>
+                            <p>订单内容: ${order.items_json}</p>
+                            <p>总金额: ₱${parseFloat(order.total_amount).toFixed(2)}</p>
+                        </body>
+                    </html>
+                `;
+            }
+            
+            // 打开新窗口并打印
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.print();
+            } else {
+                alert('无法打开打印窗口，请检查浏览器弹窗设置');
+            }
+        } catch (error) {
+            showError('打印失败: ' + error.message);
+        }
+    }
+
+    // 更新标签化订单状态
+    async function updateTaggedOrderStatus(orderId, status) {
+        try {
+            // 使用新的API服务
+            let result;
+            if (window.taggedOrdersAPI) {
+                result = await window.taggedOrdersAPI.updateTaggedOrderStatus(orderId, status);
+            } else {
+                // 回退到直接调用数据库服务
+                result = await window.dbService.updateTaggedOrderStatus(orderId, status);
+            }
+            
+            if (result.success) {
+                alert('订单状态已更新');
+                loadTaggedOrders(); // 刷新列表
+            } else {
+                showError('更新失败: ' + result.error);
+            }
+        } catch (error) {
+            showError('网络错误: ' + error.message);
+        }
+    }
+
+    // 显示错误信息
+    function showError(message) {
+        alert('错误: ' + message);
+    }
+</script>

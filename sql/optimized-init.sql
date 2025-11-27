@@ -46,6 +46,17 @@ CREATE TABLE IF NOT EXISTS service_requests (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 创建 tagged_orders 表用于存储标签化订单
+CREATE TABLE IF NOT EXISTS tagged_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  table_id TEXT NOT NULL,
+  tag TEXT NOT NULL,
+  items_json TEXT NOT NULL,
+  total_amount NUMERIC NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 创建索引以提高查询性能
 CREATE INDEX IF NOT EXISTS idx_categories_key ON categories(key);
 CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort);
@@ -56,6 +67,10 @@ CREATE INDEX IF NOT EXISTS idx_orders_table_id ON orders(table_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_service_requests_table_id ON service_requests(table_id);
 CREATE INDEX IF NOT EXISTS idx_service_requests_status ON service_requests(status);
+CREATE INDEX IF NOT EXISTS idx_tagged_orders_table_id ON tagged_orders(table_id);
+CREATE INDEX IF NOT EXISTS idx_tagged_orders_tag ON tagged_orders(tag);
+CREATE INDEX IF NOT EXISTS idx_tagged_orders_status ON tagged_orders(status);
+CREATE INDEX IF NOT EXISTS idx_tagged_orders_created_at ON tagged_orders(created_at);
 
 -- 插入江西酒店实际的分类数据
 INSERT INTO categories (key, title_zh, title_en, sort) VALUES

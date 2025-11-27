@@ -57,6 +57,10 @@
                         <span id="services-link">服务请求</span>
                     </a>
                     <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-tags mr-3"></i>
+                        <span id="tagged-orders-link">标签化订单</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
                         <i class="fas fa-database mr-3"></i>
                         <span id="database-link">数据库管理</span>
                     </a>
@@ -199,7 +203,19 @@
         </div>
     </div>
 
+    <script src="src/services/database.js"></script>
+    <script src="src/services/taggedOrdersAPI.js"></script>
     <script>
+        // 初始化数据库服务
+        const db = new DatabaseService();
+        window.dbService = db; // 将数据库服务挂载到全局对象
+        
+        // 初始化完成后加载数据
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化统计数据
+            loadDashboardData();
+        });
+        
         // 侧边栏切换功能
         const sidebar = document.getElementById('sidebar');
         const toggleButton = document.getElementById('toggle-sidebar');
@@ -268,6 +284,10 @@
                 case 'services':
                     pageTitle.textContent = '服务请求';
                     pageSubtitle.textContent = '处理客户服务请求';
+                    break;
+                case 'tagged-orders':
+                    pageTitle.textContent = '标签化订单';
+                    pageSubtitle.textContent = '管理带标签的订单';
                     break;
                 case 'database':
                     pageTitle.textContent = '数据库管理';

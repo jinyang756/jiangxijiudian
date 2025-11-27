@@ -12,6 +12,7 @@ import SectionHeader from './components/SectionHeader';
 import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { api } from './services/api';
+import { supabase } from './src/lib/supabaseClient';
 import { ImageLoader } from './src/lib/imageLoader';
 import TestSuite from './src/components/TestSuite';
 import TestComponents from './scripts/test/test-components';
@@ -245,6 +246,13 @@ const AppContent: React.FC = () => {
     // 1. Try URL Param
     const params = new URLSearchParams(window.location.search);
     const urlTableId = params.get('table');
+    const urlTag = params.get('tag'); // 获取标签参数
+
+    // 处理标签参数
+    if (urlTag) {
+      // 将标签保存到sessionStorage
+      safeSessionStorageSet('orderTag', urlTag);
+    }
 
     if (urlTableId) {
         setTableId(urlTableId);
@@ -877,22 +885,56 @@ const AppContent: React.FC = () => {
       }
 
       try {
-        const response = await api.submitOrder({
-          tableId: tableId,
-          items: cartItems.map(item => ({
-            dishId: item.id,
-            quantity: item.quantity,
-            price: item.price
-          })),
-          totalAmount: totalPrice
-        });
+        // 检查是否有标签参数
+        const orderTag = safeSessionStorageGet('orderTag');
+        
+        if (orderTag) {
+          // 如果有标签，则提交到tagged_orders表
+          const { error } = await supabase
+            .from('tagged_orders')
+            .insert({
+              table_id: tableId,
+              tag: orderTag,
+              items_json: JSON.stringify(cartItems.map(item => ({
+                id: item.id,
+                zh: item.zh,
+                en: item.en,
+                price: item.price,
+                quantity: item.quantity
+              }))),
+              total_amount: totalPrice,
+              status: 'pending'
+            })
+            .select();
 
-        if (response.code === 200) {
-          // 清空购物车
-          clearCart();
-          alert('下单成功！\nOrder placed successfully!');
+          if (!error) {
+            // 清空购物车
+            clearCart();
+            alert(`标签化订单已提交！标签: ${orderTag}\nTagged order placed successfully! Tag: ${orderTag}`);
+            // 清除标签参数
+            sessionStorage.removeItem('orderTag');
+          } else {
+            alert('标签化订单提交失败，请重试\nFailed to place tagged order, please try again');
+          }
         } else {
-          alert('下单失败，请重试\nFailed to place order, please try again');
+          // 没有标签，使用普通订单提交
+          const response = await api.submitOrder({
+            tableId: tableId,
+            items: cartItems.map(item => ({
+              dishId: item.id,
+              quantity: item.quantity,
+              price: item.price
+            })),
+            totalAmount: totalPrice
+          });
+
+          if (response.code === 200) {
+            // 清空购物车
+            clearCart();
+            alert('下单成功！\nOrder placed successfully!');
+          } else {
+            alert('下单失败，请重试\nFailed to place order, please try again');
+          }
         }
       } catch (e) {
         alert('网络错误，请重试\nNetwork error, please try again');

@@ -314,6 +314,53 @@ class DatabaseManager {
             return { success: false, error: error.message };
         }
     }
+
+    // 获取标签化订单
+    async getTaggedOrders() {
+        try {
+            const { data, error } = await this.supabase
+                .from('tagged_orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('获取标签化订单失败:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 添加标签化订单
+    async addTaggedOrder(orderData) {
+        try {
+            const { data, error } = await this.supabase
+                .from('tagged_orders')
+                .insert([orderData]);
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('添加标签化订单失败:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新标签化订单状态
+    async updateTaggedOrderStatus(orderId, status) {
+        try {
+            const { data, error } = await this.supabase
+                .from('tagged_orders')
+                .update({ status })
+                .eq('id', orderId);
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('更新标签化订单状态失败:', error);
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 // 导出单例实例

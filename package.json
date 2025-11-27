@@ -1,6 +1,6 @@
 {
   "name": "xin-zhong-shi-menu",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,8 @@
     "test-db-query": "node test-db-query.cjs",
     "fix-db-connection": "node fix-database-connection.cjs",
     "verify-menu-view": "node verify-menu-view.cjs",
-    "upload-images": "node scripts/upload-dish-images.js"
+    "upload-images": "node scripts/upload-dish-images.js",
+    "tagged-order-stats": "node scripts/tagged-order-stats.js"
   },
   "dependencies": {
     "@supabase/postgrest-js": "^2.84.0",

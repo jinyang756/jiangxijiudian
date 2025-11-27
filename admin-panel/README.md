@@ -14,7 +14,6 @@ admin-panel/
 │   └── services/       # 数据库和服务相关代码
 │       └── database.js # 数据库管理服务
 └── README.md           # 本说明文件
-```
 
 ## 功能特性
 
@@ -23,7 +22,8 @@ admin-panel/
 3. **分类管理** - 管理菜单分类
 4. **订单管理** - 查看和处理订单
 5. **服务请求** - 处理客户服务请求
-6. **数据库管理** - 数据库维护和管理
+6. **标签化订单** - 管理带标签的特殊订单
+7. **数据库管理** - 数据库维护和管理
 
 ## 使用方法
 
@@ -75,6 +75,15 @@ admin-panel/
 - status: 状态
 - created_at: 创建时间
 
+### tagged_orders表
+- id: UUID主键
+- table_id: 桌号
+- tag: 标签
+- items_json: 订单项JSON
+- total_amount: 总金额
+- status: 状态 (pending, printed, completed)
+- created_at: 创建时间
+
 ## 开发说明
 
 1. 管理面板使用纯HTML、CSS和JavaScript构建，无需编译步骤
@@ -90,6 +99,11 @@ admin-panel/
 4. 环境变量中的anon key必须是JWT格式的完整token
 
 ## 更新日志
+
+### v1.1.0 (2025-11-27)
+- 新增标签化订单管理功能
+- 支持生成带标签的二维码
+- 添加标签化订单打印功能
 
 ### v1.0.0 (2025-11-27)
 - 完善了数据库连接配置说明
