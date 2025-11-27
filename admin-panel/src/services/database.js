@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 class DatabaseManager {
     constructor() {
         // 从环境变量获取配置
-        this.supabaseUrl = import.meta.env.VITE_APP_DB_URL || 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-        this.supabaseKey = import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD || 'J2nkgp0cGZYF8iHk';
+        this.supabaseUrl = import.meta.env.VITE_APP_DB_URL || 'YOUR_SUPABASE_URL';
+        this.supabaseKey = import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD || 'YOUR_SUPABASE_ANON_KEY';
         
         // 创建Supabase客户端
         this.supabase = createClient(this.supabaseUrl, this.supabaseKey);
