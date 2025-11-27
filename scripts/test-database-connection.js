@@ -8,20 +8,19 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 加载环境变量
+// 加载环境变量 - 尝试多种方式
 dotenv.config({ path: join(__dirname, '../.env') });
-dotenv.config({ path: join(__dirname, '../.env.development') });
+dotenv.config({ path: join(__dirname, '../.env.development'), override: true });
+
+console.log('环境变量加载结果:');
+console.log('- VITE_APP_DB_URL:', process.env.VITE_APP_DB_URL);
+console.log('- VITE_APP_DB_POSTGRES_PASSWORD:', process.env.VITE_APP_DB_POSTGRES_PASSWORD ? `${process.env.VITE_APP_DB_POSTGRES_PASSWORD.substring(0, 10)}...` : '未设置');
 
 // 从环境变量获取Supabase配置
-const supabaseUrl = process.env.VITE_APP_DB_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.VITE_APP_DB_POSTGRES_PASSWORD || process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_APP_DB_URL || 'https://kdlhyzsihflwkwumxzfw.supabase.co';
+const supabaseKey = process.env.VITE_APP_DB_POSTGRES_PASSWORD || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('错误: 请设置环境变量 VITE_APP_DB_URL 和 VITE_APP_DB_POSTGRES_PASSWORD');
-  process.exit(1);
-}
-
-console.log('正在使用以下配置连接到 Supabase:');
+console.log('使用的配置:');
 console.log('- Supabase URL:', supabaseUrl);
 console.log('- Supabase Key:', supabaseKey ? `${supabaseKey.substring(0, 10)}...` : '未设置');
 
@@ -44,7 +43,7 @@ async function testConnection() {
       // 提供一些故障排除建议
       console.log('\n故障排除建议:');
       console.log('1. 检查 VITE_APP_DB_URL 是否正确设置为 Supabase 项目 URL (例如: https://your-project.supabase.co)');
-      console.log('2. 检查 VITE_APP_DB_POSTGRES_PASSWORD 是否正确设置为 Supabase anon key');
+      console.log('2. 检查 anon key 是否正确');
       console.log('3. 确保 Supabase 项目已正确配置并且数据库表已创建');
       console.log('4. 检查网络连接是否正常');
       return;
@@ -80,14 +79,14 @@ async function testConnection() {
     if (categoriesData.length > 0) {
       console.log('示例分类数据:');
       categoriesData.slice(0, 3).forEach(cat => {
-        console.log(`  - ${cat.name} (无英文名称)`);
+        console.log(`  - ${cat.title_zh || cat.name || cat.key} (${cat.title_en || '无英文名称'})`);
       });
     }
     
     if (dishesData.length > 0) {
       console.log('示例菜品数据:');
       dishesData.slice(0, 3).forEach(dish => {
-        console.log(`  - ${dish.name} (${dish.en_title}) - ¥${dish.price}`);
+        console.log(`  - ${dish.name_zh || dish.name} (${dish.name_en || '无英文名称'}) - ¥${dish.price}`);
       });
     }
     

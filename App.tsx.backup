@@ -1,5 +1,5 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MenuItem, CartItems, MenuCategory } from './src/types/types';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { MenuItem, CartItems, MenuCategory } from './types';
 import DishCard from './components/DishCard';
 import BottomBar from './components/BottomBar';
 import CategoryNav from './components/CategoryNav';
@@ -14,7 +14,7 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 import { api } from './services/api';
 import { ImageLoader } from './src/lib/imageLoader';
 import TestSuite from './src/components/TestSuite';
-import TestComponents from './scripts/test/test-components';
+import TestComponents from './test-components';
 import FeaturePage from './components/FeaturePage';
 
 // Types for our Page system
@@ -47,10 +47,16 @@ const ChevronRight = () => (
   </svg>
 );
 
-// 添加底部导航栏图标
+// 娣诲姞搴曢儴瀵艰埅鏍忓浘鏍?
 const SearchIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+);
+
+const BellIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
   </svg>
 );
 
@@ -94,7 +100,7 @@ const RefreshIcon = () => (
 // --- Constants ---
 const ITEMS_PER_PAGE = 6;
 
-// 添加安全的 sessionStorage 操作函数
+// 娣诲姞瀹夊叏鐨?sessionStorage 鎿嶄綔鍑芥暟
 const safeSessionStorageSet = (key: string, value: string) => {
   try {
     sessionStorage.setItem(key, value);
@@ -110,12 +116,12 @@ const safeSessionStorageGet = (key: string) => {
   }
 };
 
-// 添加安全的 localStorage 操作函数
+// 娣诲姞瀹夊叏鐨?localStorage 鎿嶄綔鍑芥暟
 const safeLocalStorageSet = (key: string, value: any) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
-    // 忽略错误，不影响主功能
+    // 蹇界暐閿欒锛屼笉褰卞搷涓诲姛鑳?
   }
 };
 
@@ -149,10 +155,9 @@ const AppContent: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isServiceOpen, setIsServiceOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
 
-  // 购物车操作函数
+  // 璐墿杞︽搷浣滃嚱鏁?
   const addToCart = (item: MenuItem) => {
     setCart(prevCart => ({
       ...prevCart,
@@ -187,7 +192,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // 添加获取数据函数
+  // 娣诲姞鑾峰彇鏁版嵁鍑芥暟
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -196,21 +201,21 @@ const AppContent: React.FC = () => {
         setMenuData(response.data || []);
         setMenu(response.data || []);
       } else {
-        setError('加载菜单失败');
+        setError('鍔犺浇鑿滃崟澶辫触');
       }
     } catch (err) {
-      setError('加载菜单时发生错误');
+      setError('鍔犺浇鑿滃崟鏃跺彂鐢熼敊璇?);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 初始化应用
+  // 鍒濆鍖栧簲鐢?
   useEffect(() => {
     loadMenu();
   }, []);
 
-  // 加载菜单数据
+  // 鍔犺浇鑿滃崟鏁版嵁
   const loadMenu = async () => {
     try {
       setIsLoading(true);
@@ -220,21 +225,21 @@ const AppContent: React.FC = () => {
         setMenu(response.data || []);
         setMenuData(response.data || []);
         
-        // 预加载菜单图片
+        // 棰勫姞杞借彍鍗曞浘鐗?
         if (response.data && response.data.length > 0) {
           ImageLoader.preloadMenuImages(response.data)
             .catch(err => {
-              // 只在开发环境记录警告
+              // 鍙湪寮€鍙戠幆澧冭褰曡鍛?
               if (import.meta.env.DEV) {
-                console.warn('图片预加载失败', err);
+                console.warn('鍥剧墖棰勫姞杞藉け璐?', err);
               }
             });
         }
       } else {
-        setError('加载菜单失败');
+        setError('鍔犺浇鑿滃崟澶辫触');
       }
     } catch (err) {
-      setError('加载菜单时发生错误');
+      setError('鍔犺浇鑿滃崟鏃跺彂鐢熼敊璇?);
     } finally {
       setIsLoading(false);
     }
@@ -267,11 +272,11 @@ const AppContent: React.FC = () => {
   const locationLabel = useMemo(() => {
     const id = tableId;
     if (id.startsWith('RM-')) {
-        return `房间 Room ${id.replace('RM-', '')}`;
+        return `鎴块棿 Room ${id.replace('RM-', '')}`;
     } else if (id.startsWith('KTV-')) {
-        return `KTV包厢 Box ${id.replace('KTV-', '')}`;
+        return `KTV鍖呭帰 Box ${id.replace('KTV-', '')}`;
     } else if (id.startsWith('T-')) {
-        return `桌号 Table ${id.replace('T-', '')}`;
+        return `妗屽彿 Table ${id.replace('T-', '')}`;
     }
     return `Table ${id}`;
   }, [tableId]);
@@ -287,18 +292,6 @@ const AppContent: React.FC = () => {
     });
     return map;
   }, [menu]);
-
-  // Derived State: Search results
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const lowerQ = searchQuery.toLowerCase();
-    const allItems = menu.flatMap(cat => cat.items || []);
-    return allItems.filter(item => 
-      item.zh.includes(searchQuery) || 
-      item.en.toLowerCase().includes(lowerQ) ||
-      item.id.toLowerCase().includes(lowerQ)
-    );
-  }, [menu, searchQuery]);
 
   // Actions
   const handleDishClick = (item: MenuItem) => {
@@ -316,7 +309,7 @@ const AppContent: React.FC = () => {
     generatedPages.push({ type: 'cover', id: 'cover', categoryKey: 'cover' });
     catMap['cover'] = 0;
     
-    // 2. 功能页面
+    // 2. 鍔熻兘椤甸潰
     generatedPages.push({ type: 'search', id: 'search', categoryKey: 'search' });
     catMap['search'] = generatedPages.length - 1;
     keys.push('search');
@@ -335,10 +328,10 @@ const AppContent: React.FC = () => {
     
     // 3. Content Pages
     if (menu && menu.length > 0) {
-      console.log('开始生成内容页面');
+      console.log('寮€濮嬬敓鎴愬唴瀹归〉闈?);
       let globalPageCount = 1;
       menu.forEach((category, index) => {
-        // 确保每个分类都有唯一的key
+        // 纭繚姣忎釜鍒嗙被閮芥湁鍞竴鐨刱ey
         const categoryKey = category.key || `category-${index}`;
         keys.push(categoryKey);
         catMap[categoryKey] = generatedPages.length;
@@ -346,7 +339,7 @@ const AppContent: React.FC = () => {
         const items = category.items || [];
         const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
         
-        // 即使分类没有菜品也要生成页面
+        // 鍗充娇鍒嗙被娌℃湁鑿滃搧涔熻鐢熸垚椤甸潰
         if (totalCatPages === 0) {
           generatedPages.push({
             type: 'content',
@@ -392,10 +385,10 @@ const AppContent: React.FC = () => {
   const totalPages = pages.length;
   const activePage = pages[currentPage] || pages[0];
   
-  // 添加调试信息
+  // 娣诲姞璋冭瘯淇℃伅
   // Debug info removed for production
 
-  // 检查是否有页面数据
+  // 妫€鏌ユ槸鍚︽湁椤甸潰鏁版嵁
   if (pages.length === 0) {
   }
 
@@ -424,7 +417,14 @@ const AppContent: React.FC = () => {
     }
   };
 
-
+  // 璺宠浆鍒扮壒瀹氬姛鑳介〉闈?
+  const goToFeaturePage = (pageType: 'search' | 'service' | 'about' | 'order') => {
+    const pageIndex = categoryPageMap[pageType];
+    if (pageIndex !== undefined) {
+      setTransition('flip-next');
+      setCurrentPage(pageIndex);
+    }
+  };
 
   const goToNextPageInCat = () => {
     if (currentPage < totalPages - 1) {
@@ -524,7 +524,7 @@ const AppContent: React.FC = () => {
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold tracking-[0.1em] text-ink font-serif mb-4 text-center leading-relaxed">
-        江西大酒店<br/>四楼会所
+        姹熻タ澶ч厭搴?br/>鍥涙ゼ浼氭墍
       </h1>
       <div className="h-px w-20 bg-gold my-6"></div>
       <p className="text-gold font-serif tracking-widest text-lg uppercase mb-12 text-center">Jinjiang Star Hotel</p>
@@ -535,7 +535,7 @@ const AppContent: React.FC = () => {
 
       <div className="mt-auto mb-12 text-center animate-pulse space-y-2">
         <div>
-            <p className="text-stone-400 text-sm tracking-widest">← 左右滑动切换分类 →</p>
+            <p className="text-stone-400 text-sm tracking-widest">鈫?宸﹀彸婊戝姩鍒囨崲鍒嗙被 鈫?/p>
             <p className="text-[10px] text-stone-300 uppercase">Swipe Horizontal for Categories</p>
         </div>
       </div>
@@ -567,7 +567,7 @@ const AppContent: React.FC = () => {
       </div>
 
       <div className="mt-2 pt-2 border-t border-stone-100 flex justify-between items-end pl-4">
-        <span className="text-[10px] text-stone-300 italic">江西大酒店四楼会所</span>
+        <span className="text-[10px] text-stone-300 italic">姹熻タ澶ч厭搴楀洓妤间細鎵€</span>
         <span className="font-serif text-stone-400 text-sm">- {page.pageNumber} -</span>
       </div>
     </div>
@@ -581,7 +581,7 @@ const AppContent: React.FC = () => {
       
       <div className="text-center space-y-8">
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-ink mb-4">联系我们 Contact Us</h3>
+          <h3 className="text-2xl font-bold text-ink mb-4">鑱旂郴鎴戜滑 Contact Us</h3>
           <div className="flex flex-col items-center gap-3 text-stone-600">
              <a href="tel:+639552461263" className="flex items-center gap-2 hover:text-gold transition-colors cursor-pointer">
                 <PhoneIcon />
@@ -599,7 +599,7 @@ const AppContent: React.FC = () => {
              >
                 <div className="flex items-center gap-2">
                    <MapPinIcon />
-                   <span className="text-sm font-bold">江西大酒店四楼会所</span>
+                   <span className="text-sm font-bold">姹熻タ澶ч厭搴楀洓妤间細鎵€</span>
                 </div>
                 <span className="text-xs text-stone-500">Metro Manila, Philippines</span>
              </a>
@@ -610,7 +610,7 @@ const AppContent: React.FC = () => {
             <img src="https://picsum.photos/seed/qrcode/200/200" className="w-full h-full grayscale contrast-125" alt="QR" />
         </div>
         
-        <p className="text-xs text-stone-400">扫码获取优惠 Scan for promotions</p>
+        <p className="text-xs text-stone-400">鎵爜鑾峰彇浼樻儬 Scan for promotions</p>
       </div>
       
       <div className="mt-auto pt-8 text-[10px] text-stone-300 text-center w-full border-t border-stone-100">
@@ -619,353 +619,77 @@ const AppContent: React.FC = () => {
     </div>
   )};
 
-  // 渲染搜索页面
+  // 娓叉煋鎼滅储椤甸潰
   const renderSearch = () => {
     return (
       <FeaturePage 
-        title="搜索菜品" 
+        title="鎼滅储鑿滃搧" 
         titleEn="Search Dishes" 
         onBack={goToPrevCategory}
       >
-        <div className="flex flex-col h-full">
-          {/* 搜索输入框 */}
-          <div className="p-4 border-b border-stone-200 bg-stone-50">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="搜索菜品 Search dishes..."
-                className="w-full bg-white border border-stone-300 rounded-full py-3 pl-4 pr-12 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold text-ink"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400 w-5 h-5">
-                <SearchIcon />
-              </div>
-            </div>
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <SearchIcon />
           </div>
-          
-          {/* 搜索结果 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {searchQuery.trim() === '' ? (
-              <div className="text-center mt-10 text-stone-400">
-                <div className="w-16 h-16 mx-auto mb-4 text-stone-300 flex items-center justify-center">
-                  <SearchIcon />
-                </div>
-                <p className="mb-2">请输入菜名或拼音进行搜索</p>
-                <p className="text-xs">Please enter dish name or pinyin</p>
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div className="text-center mt-10 text-stone-400">
-                <div className="w-16 h-16 mx-auto mb-4 text-stone-300 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                  </svg>
-                </div>
-                <p className="mb-2">未找到相关菜品</p>
-                <p className="text-xs">No dishes found</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {searchResults.map((item: MenuItem) => {
-                  const qty = cart[item.id] || 0;
-                  return (
-                    <div 
-                      key={item.id} 
-                      className="bg-white p-4 rounded shadow-sm border border-stone-100 flex gap-3 items-center"
-                      onClick={() => handleDishClick(item)}
-                    >
-                      <div className="w-16 h-16 bg-stone-200 rounded flex-shrink-0 flex items-center justify-center text-stone-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-ink truncate">{item.zh}</h4>
-                        <p className="text-xs text-stone-500 truncate">{item.en}</p>
-                        <div className="text-cinnabar font-bold mt-1">
-                          {item.price.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        {qty > 0 && (
-                          <button 
-                            onClick={() => removeFromCart(item)} 
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 active:bg-stone-200"
-                          >
-                            -
-                          </button>
-                        )}
-                        {qty > 0 && <span className="text-sm font-bold w-6 text-center">{qty}</span>}
-                        <button 
-                          onClick={() => addToCart(item)} 
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-wood text-gold active:bg-black"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+          <p className="text-stone-500 text-center">璇疯緭鍏ヨ彍鍚嶆垨鎷奸煶杩涜鎼滅储</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Please enter dish name or pinyin</p>
         </div>
       </FeaturePage>
     );
   };
 
-  // 渲染服务页面
+  // 娓叉煋鏈嶅姟椤甸潰
   const renderService = () => {
-    // 服务选项
-    const services = [
-      { id: 'waiter', zh: '呼叫服务员', en: 'Call Waiter', icon: '👋' },
-      { id: 'water', zh: '加水', en: 'Water Refill', icon: '🫗' },
-      { id: 'napkins', zh: '餐巾纸', en: 'Napkins', icon: '🧻' },
-      { id: 'bill', zh: '结账', en: 'Request Bill', icon: '🧾' },
-      { id: 'bowl', zh: '加碗筷', en: 'Extra Cutlery', icon: '🥣' },
-      { id: 'clean', zh: '清理桌面', en: 'Clean Table', icon: '✨' },
-      { id: 'ktv', zh: 'KTV点歌', en: 'Song Request', icon: '🎤' },
-    ];
-
-    const handleServiceRequest = async (service: { id: string; zh: string; en: string }) => {
-      try {
-        const response = await api.callService({
-          tableId: tableId,
-          type: service.id,
-          typeName: service.zh
-        });
-        
-        if (response.code === 200) {
-          // 显示成功消息
-          alert(`已呼叫: ${service.zh}\nRequest Sent: ${service.en}`);
-        } else {
-          alert('呼叫失败 Failed');
-        }
-      } catch (e) {
-        alert('网络错误 Network Error');
-      }
-    };
-
     return (
       <FeaturePage 
-        title="呼叫服务" 
+        title="鍛煎彨鏈嶅姟" 
         titleEn="Call Service" 
         onBack={goToPrevCategory}
       >
-        <div className="flex flex-col h-full">
-          {/* 服务选项网格 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-2 gap-4">
-              {services.map((service) => (
-                <button
-                  key={service.id}
-                  onClick={() => handleServiceRequest(service)}
-                  className="flex flex-col items-center justify-center p-6 bg-white border border-stone-100 shadow-sm rounded-sm active:scale-95 active:bg-stone-50 transition-all group hover:border-gold/30"
-                >
-                  <span className="text-3xl mb-3">{service.icon}</span>
-                  <span className="text-sm font-bold text-ink">{service.zh}</span>
-                  <span className="text-[10px] text-stone-500 uppercase mt-1">{service.en}</span>
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <BellIcon />
           </div>
-          
-          {/* 底部提示 */}
-          <div className="p-4 border-t border-stone-200 bg-stone-50 text-center">
-            <p className="text-xs text-stone-500">服务员将尽快赶到，请稍候<br/>Waiter will arrive shortly</p>
-          </div>
+          <p className="text-stone-500 text-center">鐐瑰嚮鍙充笅瑙掓寜閽懠鍙湇鍔?/p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Click the button in the bottom right to call service</p>
         </div>
       </FeaturePage>
     );
   };
 
-  // 渲染关于页面
+  // 娓叉煋鍏充簬椤甸潰
   const renderAbout = () => {
     return (
       <FeaturePage 
-        title="关于我们" 
+        title="鍏充簬鎴戜滑" 
         titleEn="About Us" 
         onBack={goToPrevCategory}
       >
-        <div className="flex flex-col h-full">
-          {/* 酒店Logo/品牌展示 */}
-          <div className="flex flex-col items-center justify-center p-6 border-b border-stone-200 bg-stone-50">
-            <div className="w-20 h-20 border-2 border-gold rounded-sm flex items-center justify-center rotate-45 mb-4 shadow-lg bg-paper">
-              <div className="w-14 h-14 bg-cinnabar -rotate-45 flex items-center justify-center text-white font-bold text-2xl shadow-inner">
-                椋?
-              </div>
-            </div>
-            <h2 className="text-xl font-bold text-ink mb-1">江西大酒店</h2>
-            <p className="text-sm text-stone-500">Jinjiang Star Hotel</p>
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <InformationIcon />
           </div>
-
-          {/* 酒店信息 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2 flex items-center">
-                <InformationIcon />
-                <span className="ml-2">酒店介绍</span>
-              </h3>
-              <p className="text-sm text-stone-600">
-                江西大酒店四楼会所提供高品质的用餐体验。我们致力于为您提供最优质的服务和最美味的菜品。
-              </p>
-              <p className="text-sm text-stone-600 mt-2">
-                Jinjiang Star Hotel 4th Floor Club provides you with a high-quality dining experience. We are committed to providing you with the finest service and delicious dishes.
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">营业时间</h3>
-              <p className="text-sm text-stone-600">每天 10:00 - 22:00</p>
-              <p className="text-xs text-stone-500 mt-1">Daily 10:00 AM - 10:00 PM</p>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">联系我们</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-stone-600 flex items-center">
-                  <PhoneIcon />
-                  <span className="ml-2">0955 246 1263</span>
-                </p>
-                <p className="text-sm text-stone-600 flex items-center">
-                  <MapPinIcon />
-                  <span className="ml-2">Metro Manila, Philippines</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">特色服务</h3>
-              <ul className="text-sm text-stone-600 list-disc list-inside space-y-1">
-                <li>免费WiFi</li>
-                <li>免费停车</li>
-                <li>外卖服务</li>
-                <li>私人包间</li>
-              </ul>
-              <ul className="text-xs text-stone-500 list-disc list-inside space-y-1 mt-1">
-                <li>Free WiFi</li>
-                <li>Free Parking</li>
-                <li>Takeout Service</li>
-                <li>Private Rooms</li>
-              </ul>
-            </div>
-          </div>
+          <p className="text-stone-500 text-center">姹熻タ澶ч厭搴楀洓妤间細鎵€</p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Jinjiang Star Hotel 4th Floor</p>
         </div>
       </FeaturePage>
     );
   };
 
-  // 渲染订单页面
+  // 娓叉煋璁㈠崟椤甸潰
   const renderOrder = () => {
-    // 计算购物车总价
-    const totalPrice = Object.entries(cart).reduce((total, [itemId, quantity]) => {
-      const item = itemsMap.get(itemId);
-      return total + (item ? item.price * quantity : 0);
-    }, 0);
-
-    // 获取购物车中的商品列表
-    const cartItems = Object.entries(cart).map(([itemId, quantity]) => {
-      const item = itemsMap.get(itemId);
-      return item ? { ...item, quantity } : null;
-    }).filter(Boolean) as (MenuItem & { quantity: number })[];
-
-    const handlePlaceOrder = async () => {
-      if (cartItems.length === 0) {
-        alert('购物车为空，请先添加菜品\nCart is empty, please add dishes first');
-        return;
-      }
-
-      try {
-        const response = await api.submitOrder({
-          tableId: tableId,
-          items: cartItems.map(item => ({
-            dishId: item.id,
-            quantity: item.quantity,
-            price: item.price
-          })),
-          totalAmount: totalPrice
-        });
-
-        if (response.code === 200) {
-          // 清空购物车
-          clearCart();
-          alert('下单成功！\nOrder placed successfully!');
-        } else {
-          alert('下单失败，请重试\nFailed to place order, please try again');
-        }
-      } catch (e) {
-        alert('网络错误，请重试\nNetwork error, please try again');
-      }
-    };
-
     return (
       <FeaturePage 
-        title="我的订单" 
+        title="鎴戠殑璁㈠崟" 
         titleEn="My Order" 
         onBack={goToPrevCategory}
       >
-        <div className="flex flex-col h-full">
-          {cartItems.length === 0 ? (
-            // 空购物车状态
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBagIcon />
-              </div>
-              <p className="text-stone-500 text-center">购物车为空</p>
-              <p className="text-xs text-stone-400 mt-1 text-center">Your cart is empty</p>
-              <p className="text-xs text-stone-500 mt-4 text-center">请先添加菜品到购物车</p>
-              <p className="text-xs text-stone-400 mt-1 text-center">Please add dishes to your cart first</p>
-            </div>
-          ) : (
-            // 购物车有商品状态
-            <>
-              {/* 商品列表 */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded shadow-sm border border-stone-100 flex gap-3 items-center">
-                    <div className="w-16 h-16 bg-stone-200 rounded flex-shrink-0 flex items-center justify-center text-stone-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-ink truncate">{item.zh}</h4>
-                      <p className="text-xs text-stone-500 truncate">{item.en}</p>
-                      <div className="text-cinnabar font-bold mt-1">
-                        {item.price.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold w-6 text-center">×{item.quantity}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 总计和下单按钮 */}
-              <div className="p-4 border-t border-stone-200 bg-stone-50">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-ink">总计 Total</span>
-                  <span className="font-bold text-cinnabar text-lg">
-                    {totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                  </span>
-                </div>
-                <button
-                  onClick={handlePlaceOrder}
-                  className="w-full bg-cinnabar hover:bg-red-700 text-white font-bold py-3 rounded-sm transition-colors active:scale-95"
-                >
-                  下单确认 Place Order
-                </button>
-                <button
-                  onClick={clearCart}
-                  className="w-full mt-2 border border-stone-300 hover:bg-stone-100 text-stone-600 font-bold py-2 rounded-sm transition-colors active:scale-95"
-                >
-                  清空购物车 Clear Cart
-                </button>
-              </div>
-            </>
-          )}
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
+            <ShoppingBagIcon />
+          </div>
+          <p className="text-stone-500 text-center">璐墿杞︿负绌?/p>
+          <p className="text-xs text-stone-400 mt-1 text-center">Your cart is empty</p>
         </div>
       </FeaturePage>
     );
@@ -983,7 +707,7 @@ const AppContent: React.FC = () => {
 
   const is3DTransition = transition === 'flip-next' || transition === 'flip-prev';
 
-  // 获取URL参数
+  // 鑾峰彇URL鍙傛暟
   const urlParams = new URLSearchParams(window.location.search);
   const isAdminMode = urlParams.get('mode') === 'admin';
   const isTestMode = urlParams.get('mode') === 'test';
@@ -1005,21 +729,21 @@ const AppContent: React.FC = () => {
       <div className="w-full h-screen bg-gray-100 p-4 overflow-y-auto">
         <h1 className="text-2xl font-bold mb-4">璋冭瘯妯″紡</h1>
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">环境变量检查</h2>
-          <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '已设置' : '未设置'}</p>
-          <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '已设置' : '未设置'}</p>
+          <h2 className="text-xl font-semibold mb-2">鐜鍙橀噺妫€鏌?</h2>
+          <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '宸茶缃? : '鏈缃?}</p>
+          <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '宸茶缃? : '鏈缃?}</p>
         </div>
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">菜单数据:</h2>
+          <h2 className="text-xl font-semibold mb-2">鑿滃崟鏁版嵁:</h2>
           <p>鑿滃崟鍒嗙被鏁伴噺: {menu.length}</p>
-          <p>菜单数据状态: {menu.length > 0 ? '已加载' : '未加载'}</p>
+          <p>鑿滃崟鏁版嵁鐘舵€? {menu.length > 0 ? '宸插姞杞? : '鏈姞杞?}</p>
           {menu.length > 0 && (
             <div className="mt-2">
-              <h3 className="font-medium">分类详情:</h3>
+              <h3 className="font-medium">鍒嗙被璇︽儏:</h3>
               <ul className="list-disc pl-5">
                 {menu.map((category, index) => (
                   <li key={index}>
-                    {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 个菜品
+                    {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 涓彍鍝?
                   </li>
                 ))}
               </ul>
@@ -1027,16 +751,16 @@ const AppContent: React.FC = () => {
           )}
         </div>
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">页面信息:</h2>
-          <p>总页面数: {pages.length}</p>
-          <p>当前页面索引: {currentPage}</p>
-          <p>当前页面类型: {activePage?.type || '无'}</p>
+          <h2 className="text-xl font-semibold mb-2">椤甸潰淇℃伅:</h2>
+          <p>鎬婚〉闈㈡暟: {pages.length}</p>
+          <p>褰撳墠椤甸潰绱㈠紩: {currentPage}</p>
+          <p>褰撳墠椤甸潰绫诲瀷: {activePage?.type || '鏃?}</p>
           {activePage && (
             <div className="mt-2">
-              <h3 className="font-medium">当前页面详情:</h3>
-              <p>分类: {activePage.categoryTitleZh || 'N/A'}</p>
-              <p>分类键: {activePage.categoryKey}</p>
-              <p>菜品数量: {activePage.items?.length || 0}</p>
+              <h3 className="font-medium">褰撳墠椤甸潰璇︽儏:</h3>
+              <p>鍒嗙被: {activePage.categoryTitleZh || 'N/A'}</p>
+              <p>鍒嗙被閿? {activePage.categoryKey}</p>
+              <p>鑿滃搧鏁伴噺: {activePage.items?.length || 0}</p>
             </div>
           )}
         </div>
@@ -1049,14 +773,14 @@ const AppContent: React.FC = () => {
           </button>
           <button 
             onClick={() => {
-              // 只在开发环境记录菜单数据
+              // 鍙湪寮€鍙戠幆澧冭褰曡彍鍗曟暟鎹?
               if (import.meta.env.DEV) {
-                console.log('菜单数据:', menu);
+                console.log('鑿滃崟鏁版嵁:', menu);
               }
             }}
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
           >
-            在控制台打印菜单数据
+            鍦ㄦ帶鍒跺彴鎵撳嵃鑿滃崟鏁版嵁
           </button>
         </div>
       </div>
@@ -1083,7 +807,7 @@ const AppContent: React.FC = () => {
       <div className="w-full h-full flex flex-col items-center justify-center bg-wood bg-wood-pattern text-gold z-50">
         <div className="w-16 h-16 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4"></div>
         <p className="tracking-widest font-serif">Loading Menu...</p>
-        <p className="text-xs text-stone-500 mt-2">正在加载菜单</p>
+        <p className="text-xs text-stone-500 mt-2">姝ｅ湪鍔犺浇鑿滃崟</p>
       </div>
     );
   }
@@ -1094,7 +818,7 @@ const AppContent: React.FC = () => {
         <div className="w-16 h-16 border-4 border-stone-600 rounded-full flex items-center justify-center mb-4 text-stone-600">
             !
         </div>
-        <h2 className="text-lg text-stone-300 mb-2">加载失败 Failed to Load</h2>
+        <h2 className="text-lg text-stone-300 mb-2">鍔犺浇澶辫触 Failed to Load</h2>
         <p className="text-xs mb-6">{error}</p>
         <button 
             onClick={fetchData}
@@ -1109,7 +833,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="w-full h-full max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col relative">
       
-      {/* 添加调试信息 */}
+      {/* 娣诲姞璋冭瘯淇℃伅 */}
       {/* Debug info removed for production */}
       
       <div 
@@ -1121,7 +845,7 @@ const AppContent: React.FC = () => {
             key={currentPage}
             className={`w-full h-full bg-paper absolute inset-0 ${is3DTransition ? 'origin-left backface-hidden preserve-3d' : ''} ${getAnimationClass()}`}
         >
-           {/* 修复页面渲染逻辑，确保所有类型的页面都能正确显示 */}
+           {/* 淇椤甸潰娓叉煋閫昏緫锛岀‘淇濇墍鏈夌被鍨嬬殑椤甸潰閮借兘姝ｇ‘鏄剧ず */}
            {activePage && (() => {
              switch (activePage.type) {
                case 'cover':
@@ -1142,7 +866,7 @@ const AppContent: React.FC = () => {
                  return (
                    <div className="h-full flex items-center justify-center p-4">
                      <div className="text-center">
-                       <p className="text-lg font-bold mb-2 text-ink">页面类型未识别</p>
+                       <p className="text-lg font-bold mb-2 text-ink">椤甸潰绫诲瀷鏈瘑鍒?/p>
                        <p className="text-stone-500">Page type not recognized: {activePage.type}</p>
                      </div>
                    </div>
@@ -1150,13 +874,13 @@ const AppContent: React.FC = () => {
              }
            })()}
            
-           {/* 如果没有活动页面或处于加载状态，显示加载指示器 */}
+           {/* 濡傛灉娌℃湁娲诲姩椤甸潰鎴栧浜庡姞杞界姸鎬侊紝鏄剧ず鍔犺浇鎸囩ず鍣?*/}
            {(!activePage || isLoading) && (
              <div className="h-full flex items-center justify-center p-4">
                <div className="text-center">
                  <div className="w-8 h-8 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4 mx-auto"></div>
-                 <p className="text-lg font-bold mb-2 text-ink">加载中...</p>
-                 <p className="text-stone-500">请稍等</p>
+                 <p className="text-lg font-bold mb-2 text-ink">鍔犺浇涓?..</p>
+                 <p className="text-stone-500">璇风◢鍊?/p>
                </div>
              </div>
            )}
@@ -1166,7 +890,7 @@ const AppContent: React.FC = () => {
         <div className="absolute inset-y-0 right-0 w-8 z-20 cursor-pointer" onClick={goToNextCategory}></div>
       </div>
 
-      {/* 移动端导航按钮 - 在小屏幕上显示 */}
+      {/* 绉诲姩绔鑸寜閽?- 鍦ㄥ皬灞忓箷涓婃樉绀?*/}
       <div className="flex md:hidden h-12 items-center justify-between px-4 text-stone-light/50 bg-wood border-t border-stone-800">
         <button 
           onClick={goToPrevCategory}
@@ -1176,7 +900,7 @@ const AppContent: React.FC = () => {
           <ChevronLeft />
         </button>
         <div className="flex flex-col items-center">
-           <span className="text-xs tracking-widest text-gold truncate max-w-[120px]">{activePage.categoryTitleZh || '首页 Home'}</span>
+           <span className="text-xs tracking-widest text-gold truncate max-w-[120px]">{activePage.categoryTitleZh || '棣栭〉 Home'}</span>
         </div>
         <button 
           onClick={goToNextCategory}
@@ -1187,7 +911,7 @@ const AppContent: React.FC = () => {
         </button>
       </div>
 
-      {/* 桌面端导航按钮 - 仅在中等及以上屏幕上显示 */}
+      {/* 妗岄潰绔鑸寜閽?- 浠呭湪涓瓑鍙婁互涓婂睆骞曚笂鏄剧ず */}
       <div className="hidden md:flex h-12 items-center justify-between px-6 text-stone-light/50 bg-wood">
         <button 
           onClick={goToPrevCategory}
@@ -1197,7 +921,7 @@ const AppContent: React.FC = () => {
           <ChevronLeft />
         </button>
         <div className="flex flex-col items-center">
-           <span className="text-xs tracking-widest text-gold">{activePage.categoryTitleZh || '首页 Home'}</span>
+           <span className="text-xs tracking-widest text-gold">{activePage.categoryTitleZh || '棣栭〉 Home'}</span>
         </div>
         <button 
           onClick={goToNextCategory}

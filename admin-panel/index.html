@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西酒店管理面板</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.expanded {
+            width: 250px;
+        }
+        .content {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed + .content {
+            margin-left: 80px;
+        }
+        .sidebar.expanded + .content {
+            margin-left: 250px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- 侧边栏 -->
+        <div id="sidebar" class="sidebar expanded bg-gray-800 text-white h-full fixed left-0 top-0 flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-xl font-bold truncate" id="sidebar-title">江西酒店管理面板</h1>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <nav class="p-2">
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1 active">
+                        <i class="fas fa-home mr-3"></i>
+                        <span id="dashboard-link">仪表板</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-utensils mr-3"></i>
+                        <span id="menu-link">菜单管理</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-list mr-3"></i>
+                        <span id="categories-link">分类管理</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-shopping-cart mr-3"></i>
+                        <span id="orders-link">订单管理</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-concierge-bell mr-3"></i>
+                        <span id="services-link">服务请求</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
+                        <i class="fas fa-database mr-3"></i>
+                        <span id="database-link">数据库管理</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-gray-700">
+                <button id="toggle-sidebar" class="w-full flex items-center justify-center p-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+                    <i class="fas fa-arrow-left mr-2" id="toggle-icon"></i>
+                    <span id="toggle-text">收起菜单</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="content flex-1 ml-250">
+            <!-- 顶部导航栏 -->
+            <header class="bg-white shadow">
+                <div class="flex items-center justify-between p-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800" id="page-title">仪表板</h1>
+                        <p class="text-gray-600" id="page-subtitle">系统概览和统计信息</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 rounded-full hover:bg-gray-200">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="ml-2 text-gray-700">管理员</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="p-6">
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                                <i class="fas fa-utensils fa-lg"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-500">菜品总数</p>
+                                <h3 class="text-2xl font-bold" id="total-dishes">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-500">
+                                <i class="fas fa-list fa-lg"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-500">分类数量</p>
+                                <h3 class="text-2xl font-bold" id="total-categories">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                                <i class="fas fa-shopping-cart fa-lg"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-500">今日订单</p>
+                                <h3 class="text-2xl font-bold" id="today-orders">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                                <i class="fas fa-concierge-bell fa-lg"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-500">待处理服务</p>
+                                <h3 class="text-2xl font-bold" id="pending-services">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图表区域 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-bold mb-4">销售趋势</h2>
+                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                            <p class="text-gray-500">销售趋势图表</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-bold mb-4">热门菜品</h2>
+                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                            <p class="text-gray-500">热门菜品排行榜</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近活动 -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4">最近活动</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start border-b pb-4">
+                            <div class="p-2 bg-blue-100 rounded-full text-blue-500 mr-3">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">新增菜品</p>
+                                <p class="text-gray-600 text-sm">水煮牛肉已添加到江湖小炒分类</p>
+                                <p class="text-gray-400 text-xs">2分钟前</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start border-b pb-4">
+                            <div class="p-2 bg-green-100 rounded-full text-green-500 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">更新菜品</p>
+                                <p class="text-gray-600 text-sm">红烧肉价格已更新为48元</p>
+                                <p class="text-gray-400 text-xs">15分钟前</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="p-2 bg-yellow-100 rounded-full text-yellow-500 mr-3">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">新订单</p>
+                                <p class="text-gray-600 text-sm">桌号T-05提交了新订单</p>
+                                <p class="text-gray-400 text-xs">32分钟前</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 侧边栏切换功能
+        const sidebar = document.getElementById('sidebar');
+        const toggleButton = document.getElementById('toggle-sidebar');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const toggleText = document.getElementById('toggle-text');
+        const sidebarTitle = document.getElementById('sidebar-title');
+        const menuLinks = document.querySelectorAll('nav a');
+
+        toggleButton.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.classList.remove('fa-arrow-left');
+                toggleIcon.classList.add('fa-arrow-right');
+                toggleText.textContent = '展开菜单';
+                sidebarTitle.classList.add('hidden');
+                document.querySelectorAll('nav span').forEach(span => {
+                    span.classList.add('hidden');
+                });
+            } else {
+                toggleIcon.classList.remove('fa-arrow-right');
+                toggleIcon.classList.add('fa-arrow-left');
+                toggleText.textContent = '收起菜单';
+                sidebarTitle.classList.remove('hidden');
+                document.querySelectorAll('nav span').forEach(span => {
+                    span.classList.remove('hidden');
+                });
+            }
+        });
+
+        // 菜单链接点击功能
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                menuLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                const page = link.querySelector('span').id.replace('-link', '');
+                updatePageContent(page);
+            });
+        });
+
+        // 更新页面内容的函数
+        function updatePageContent(page) {
+            const pageTitle = document.getElementById('page-title');
+            const pageSubtitle = document.getElementById('page-subtitle');
+            
+            switch(page) {
+                case 'dashboard':
+                    pageTitle.textContent = '仪表板';
+                    pageSubtitle.textContent = '系统概览和统计信息';
+                    break;
+                case 'menu':
+                    pageTitle.textContent = '菜单管理';
+                    pageSubtitle.textContent = '管理菜品和分类';
+                    break;
+                case 'categories':
+                    pageTitle.textContent = '分类管理';
+                    pageSubtitle.textContent = '管理菜单分类';
+                    break;
+                case 'orders':
+                    pageTitle.textContent = '订单管理';
+                    pageSubtitle.textContent = '查看和处理订单';
+                    break;
+                case 'services':
+                    pageTitle.textContent = '服务请求';
+                    pageSubtitle.textContent = '处理客户服务请求';
+                    break;
+                case 'database':
+                    pageTitle.textContent = '数据库管理';
+                    pageSubtitle.textContent = '数据库维护和管理';
+                    break;
+            }
+        }
+
+        // 模拟数据加载
+        document.addEventListener('DOMContentLoaded', () => {
+            // 模拟统计数据
+            document.getElementById('total-dishes').textContent = '128';
+            document.getElementById('total-categories').textContent = '5';
+            document.getElementById('today-orders').textContent = '24';
+            document.getElementById('pending-services').textContent = '3';
+        });
+    </script>
+</body>
+</html>

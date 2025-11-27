@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MenuItem } from '../types';
+import { MenuItem } from '../src/types/types';
 import { getDishImageUrl, getDefaultPlaceholder } from '../src/lib/imageUtils';
 
 interface DishCardProps {

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { MenuItem, CartItems } from '../types';
+import { MenuItem, CartItems } from '../src/types/types';
 
 interface PrintServiceProps {
   cart: CartItems;

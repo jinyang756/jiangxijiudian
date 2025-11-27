@@ -1,4 +1,4 @@
-import { MENU_DATA } from '../constants';
+import { MENU_DATA } from '../src/constants/constants';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('API Service Tests', () => {

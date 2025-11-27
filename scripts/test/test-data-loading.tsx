@@ -1,7 +1,7 @@
 // 测试数据加载的简单组件
-import React, { useEffect, useState } from 'react';
-import { api } from './services/api';
-import { MenuCategory } from './types';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../services/api';
+import { MenuCategory } from '../../src/types/types';
 
 const TestDataLoading: React.FC = () => {
   const [data, setData] = useState<MenuCategory[] | null>(null);

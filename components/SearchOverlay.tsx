@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MenuItem, MenuCategory } from '../types';
+import { MenuItem, MenuCategory } from '../src/types/types';
 import { getDishImageUrl } from '../src/lib/imageUtils';
 
 interface SearchOverlayProps {

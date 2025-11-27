@@ -1,5 +1,5 @@
-import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse } from '../types';
-import { MENU_DATA } from '../constants';
+import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse } from '../src/types/types';
+import { MENU_DATA } from '../src/constants/constants';
 import { supabase } from '../src/lib/supabaseClient';
 import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
 import { logger } from '../src/lib/logger';

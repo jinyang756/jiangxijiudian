@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API测试工具</h1>
+        <p>点击下面的按钮测试API调用</p>
+        <button class="button" onclick="runTest()">运行API测试</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script type="module">
+        // 重写console.log来捕获日志
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        const logElement = document.getElementById('log');
+        
+        function appendToLog(message, type = 'log') {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const formattedMessage = `[${timestamp}] ${message}\n`;
+            logElement.textContent += formattedMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            appendToLog(args.join(' '), 'log');
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            appendToLog('ERROR: ' + args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            appendToLog('WARN: ' + args.join(' '), 'warn');
+            originalWarn.apply(console, args);
+        };
+        
+        async function runTest() {
+            logElement.textContent = '';
+            appendToLog('开始API测试...\n');
+            
+            try {
+                // 动态导入测试脚本
+                const { api } = await import('./services/api.ts');
+                
+                appendToLog('正在调用API getMenu...');
+                const result = await api.getMenu();
+                appendToLog('API调用结果: ' + JSON.stringify(result, null, 2));
+                
+                if (result.code === 200) {
+                    appendToLog('✅ API调用成功');
+                    appendToLog('数据来源: ' + result.message);
+                    appendToLog('分类数量: ' + (result.data?.length || 0));
+                    
+                    if (result.data && result.data.length > 0) {
+                        appendToLog('前两个分类:');
+                        result.data.slice(0, 2).forEach((category, index) => {
+                            appendToLog(`  ${index + 1}. ${category.titleZh} (${category.items?.length || 0} 个菜品)`);
+                        });
+                    }
+                } else {
+                    appendToLog('❌ API调用失败');
+                    appendToLog('错误代码: ' + result.code);
+                    appendToLog('错误信息: ' + result.message);
+                }
+            } catch (error) {
+                appendToLog('❌ API调用异常: ' + error.message);
+                appendToLog('错误类型: ' + error.constructor.name);
+                if (error.stack) {
+                    appendToLog('错误堆栈: ' + error.stack);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

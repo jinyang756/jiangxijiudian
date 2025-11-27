@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MenuItem, CartItems } from '../types';
+import { MenuItem, CartItems } from '../src/types/types';
 import { api } from '../services/api';
 import PrintService from './PrintService';
 

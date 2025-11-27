@@ -1,12 +1,12 @@
 // 测试各个组件的简单页面
 import React, { useState, useEffect } from 'react';
-import BottomBar from './components/BottomBar';
-import SearchOverlay from './components/SearchOverlay';
-import ServiceModal from './components/ServiceModal';
-import InfoModal from './components/InfoModal';
-import CartModal from './components/CartModal';
-import CategoryNav from './components/CategoryNav';
-import { MenuCategory, MenuItem } from './types';
+import BottomBar from '../../components/BottomBar';
+import SearchOverlay from '../../components/SearchOverlay';
+import ServiceModal from '../../components/ServiceModal';
+import InfoModal from '../../components/InfoModal';
+import CartModal from '../../components/CartModal';
+import CategoryNav from '../../components/CategoryNav';
+import { MenuCategory, MenuItem } from '../../src/types/types';
 
 const TestComponents: React.FC = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);

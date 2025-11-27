@@ -1,0 +1,75 @@
+<div id="database-status" class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold">数据库连接状态</h2>
+        <button id="refresh-db-status" class="text-blue-500 hover:text-blue-700">
+            <i class="fas fa-sync-alt"></i> 刷新
+        </button>
+    </div>
+    
+    <div class="mt-4">
+        <div class="flex items-center">
+            <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-400 mr-2"></div>
+            <span id="status-text">检查中...</span>
+        </div>
+        
+        <div class="mt-4 grid grid-cols-2 gap-4">
+            <div class="border rounded p-3">
+                <h3 class="font-medium text-gray-700">分类表</h3>
+                <p id="categories-count" class="text-2xl font-bold mt-1">-</p>
+            </div>
+            <div class="border rounded p-3">
+                <h3 class="font-medium text-gray-700">菜品表</h3>
+                <p id="dishes-count" class="text-2xl font-bold mt-1">-</p>
+            </div>
+            <div class="border rounded p-3">
+                <h3 class="font-medium text-gray-700">订单表</h3>
+                <p id="orders-count" class="text-2xl font-bold mt-1">-</p>
+            </div>
+            <div class="border rounded p-3">
+                <h3 class="font-medium text-gray-700">服务请求表</h3>
+                <p id="services-count" class="text-2xl font-bold mt-1">-</p>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h3 class="font-medium text-gray-700 mb-2">最近错误</h3>
+            <div id="error-messages" class="text-sm text-gray-600">
+                <p>暂无错误信息</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 数据库状态组件的JavaScript代码
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const refreshButton = document.getElementById('refresh-db-status');
+        
+        // 刷新数据库状态
+        function refreshDatabaseStatus() {
+            statusIndicator.className = 'w-3 h-3 rounded-full bg-yellow-400 mr-2';
+            statusText.textContent = '连接中...';
+            
+            // 模拟数据库连接检查
+            setTimeout(() => {
+                // 模拟连接成功
+                statusIndicator.className = 'w-3 h-3 rounded-full bg-green-500 mr-2';
+                statusText.textContent = '连接正常';
+                
+                // 模拟数据统计
+                document.getElementById('categories-count').textContent = '5';
+                document.getElementById('dishes-count').textContent = '128';
+                document.getElementById('orders-count').textContent = '24';
+                document.getElementById('services-count').textContent = '3';
+            }, 1000);
+        }
+        
+        // 绑定刷新按钮事件
+        refreshButton.addEventListener('click', refreshDatabaseStatus);
+        
+        // 初始刷新
+        refreshDatabaseStatus();
+    });
+</script>

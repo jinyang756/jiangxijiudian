@@ -1,193 +1,220 @@
-# 江西酒店中控系统部署说明
+# 江西酒店菜单系统
 
-## 项目架构
+## 项目概述
 
-### 前端部署
-- **平台**: Vercel
-- **源码**: GitHub仓库
-- **域名**: jiangxijiudian.vercel.app
-- **特性**: 全球CDN加速、自动HTTPS、自动部署
+江西酒店菜单系统是一个现代化的餐厅点餐应用，专为江西大酒店四楼会所设计。该系统提供多语言界面（中文/菲律宾语），响应式设计适配移动设备，支持桌位号识别、菜品搜索、购物车管理等功能。
 
-### 后端部署
-- **服务器**: 154.221.19.68
-- **服务**: Supabase (已替换PocketBase)
-- **HTTP端口**: 8090
-- **HTTPS端口**: 8443
-- **证书**: Let's Encrypt SSL证书
+## 技术架构
 
-## 开发日志
+### 前端技术栈
+- **框架**: React 18 + TypeScript
+- **构建工具**: Vite 5
+- **样式**: Tailwind CSS 3
+- **状态管理**: React Hooks
+- **打包优化**: 
+  - Gzip/Brotli双重压缩
+  - 代码分割和资源优化
+  - 构建分析工具集成
 
-有关项目的完整开发历程和版本更新记录，请参考 [CHANGELOG.md](CHANGELOG.md)
+### 后端技术栈
+- **数据库**: Supabase (PostgreSQL)
+- **API**: Supabase JavaScript客户端
+- **部署平台**: Vercel (前端), Supabase (后端)
 
-## 部署状态
+### 核心功能模块
+1. **菜单浏览**: 分类展示菜品，支持左右滑动切换分类
+2. **菜品搜索**: 支持按菜名或拼音搜索
+3. **购物车系统**: 添加/删除菜品，数量管理
+4. **服务呼叫**: 呼叫服务员、加水、结账等服务
+5. **订单管理**: 提交订单，查看订单状态
+6. **关于我们**: 酒店信息展示
 
-### 后端服务状态
-- [x] Supabase服务已配置
-- [x] SSL证书已配置
-- [x] HTTPS服务正常运行
-- [x] 数据库表结构已创建
-- [x] CORS配置已完成
-
-### 前端部署状态
-- [x] 项目构建测试完成
-- [x] API连接测试通过
-
-## 部署计划
-
-### 第一阶段：文档和清理
-- [x] 创建项目自述文件
-- [x] 清理根目录无关文件
-- [x] 备份重要配置文件
-
-### 第二阶段：前端部署
-- [x] 将前端项目推送到GitHub
-- [x] 从GitHub拉取项目
-- [x] 项目构建测试
-- [x] 配置环境变量
-- [x] 更新GitHub仓库
-- [x] 部署测试完成
-
-详细部署计划请参考 [前端部署到Vercel计划.md](前端部署到Vercel计划.md)
-
-### 第三阶段：后端优化
-- [x] 完善CORS配置
-- [x] 配置API访问规则
-- [x] 测试前后端连接
-- [x] 性能优化完成
-
-### 第四阶段：安全加固
-- [x] 配置防火墙规则
-- [x] 设置API速率限制
-- [x] 完善错误处理
-- [x] 日志监控配置
-
-### 第五阶段：移动端优化
-- [x] 响应式布局优化
-- [x] 触控交互优化
-- [x] 屏幕适配测试
-- [x] 性能调优完成
-
-### 第六阶段：后端部署
-- [x] Supabase服务配置
-- [x] SSL证书配置
-- [x] 前后端连接测试
-
-### 第七阶段：后端服务检查
-- [x] 服务状态检查
-- [x] 配置文件验证
-- [x] 连接测试完成
-
-### 第八阶段：数据导入
-- [x] 创建菜品数据导入脚本
-- [ ] 导入示例菜品数据
-- [ ] 验证数据导入结果
-
-### 第九阶段：数据库设置
-- [x] 创建数据库设置文档
-- [ ] 创建数据库表结构
-- [ ] 导入初始数据
-- [ ] 验证数据完整性
-
-## 重要配置信息
-
-### 后端访问地址
-- **管理面板**: https://154.221.19.68:8443/_/
-- **API接口**: https://154.221.19.68:8443/api/
-- **HTTP备用**: http://154.221.19.68:8090
-
-### GitHub Secrets配置
-为了保护敏感信息，项目使用GitHub Secrets来存储环境变量。
-
-需要在GitHub仓库中配置以下Secrets:
+## 项目结构
 
 ```
-VITE_APP_DB_URL=your_supabase_project_url
-VITE_APP_DB_POSTGRES_PASSWORD=your_supabase_anon_key
-VITE_APP_DB_POSTGRES_PRISMA_URL=your_postgres_prisma_url
-VITE_APP_DB_POSTGRES_URL=your_postgres_url
-VITE_APP_DB_POSTGRES_URL_NON_POOLING=your_postgres_non_pooling_url
-VITE_APP_SUPABASE_STORAGE_URL=your_supabase_storage_url
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_vercel_org_id
-VERCEL_PROJECT_ID=your_vercel_project_id
-VERCEL_SCOPE=your_vercel_scope
+├── src/                    # 主应用源码
+│   ├── components/         # UI组件
+│   ├── services/           # API服务层
+│   ├── lib/                # 工具库
+│   ├── utils/              # 工具函数
+│   ├── config/             # 配置文件
+│   ├── types/              # TypeScript类型定义
+│   ├── constants/          # 常量数据
+│   ├── index.css           # 全局样式
+│   └── vite-env.d.ts       # TypeScript环境声明
+├── components/             # 可复用UI组件
+├── services/               # API服务层
+├── admin-panel/            # 管理面板
+├── sql/                    # 数据库脚本
+├── scripts/                # 工具脚本
+│   ├── test/               # 测试脚本
+│   ├── db/                 # 数据库脚本
+│   ├── deploy/             # 部署脚本
+│   └── debug/              # 调试工具
+├── public/                 # 静态资源
+├── assets/                 # 资源文件
+│   ├── images/             # 图片资源
+│   └── data/               # 数据文件
+├── docs/                   # 项目文档
+│   ├── database/           # 数据库相关文档
+│   ├── deployment/         # 部署相关文档
+│   ├── development/        # 开发相关文档
+│   ├── features/           # 功能特性文档
+│   └── integration/        # 集成相关文档
+├── App.tsx                 # 主应用组件
+├── index.tsx               # 应用入口
+├── index.html              # HTML入口
+├── package.json            # 项目配置
+├── tsconfig.json           # TypeScript配置
+├── vite.config.ts          # Vite配置
+├── tailwind.config.js      # Tailwind配置
+└── vercel.json             # Vercel部署配置
 ```
 
-### 环境变量
+## 开发环境配置
+
+### 环境变量配置
+创建 `.env` 文件并配置以下变量：
+
 ```bash
-# 前端环境变量
-NEXT_PUBLIC_API_URL=https://154.221.19.68:8443/api
-NEXT_PUBLIC_ADMIN_URL=https://154.221.19.68:8443/_
-
-# Supabase环境变量
-VITE_APP_DB_URL=postgres://postgres.kdlhyzsihflwkwumxzfw:J2nkgp0cGZYF8iHk@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true
-VITE_APP_DB_POSTGRES_PASSWORD=J2nkgp0cGZYF8iHk
+# Supabase配置
+VITE_APP_DB_URL=https://your-project.supabase.co
+VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key-jwt-token
 ```
 
-## 维护命令
-
-### 后端服务管理
+### 安装依赖
 ```bash
-# 查看服务状态
-systemctl status pocketbase
-
-# 重启服务
-systemctl restart pocketbase
-
-# 查看日志
-journalctl -u pocketbase -f
+npm install
 ```
 
-### 证书更新
+### 启动开发服务器
 ```bash
-# 复制新证书
-cp /etc/letsencrypt/live/jcstjj.top/fullchain.pem /opt/projects/jiangxijiudian/ssl/cert.pem
-cp /etc/letsencrypt/live/jcstjj.top/privkey.pem /opt/projects/jiangxijiudian/ssl/key.pem
-
-# 重启服务
-systemctl restart pocketbase
+npm run dev
 ```
 
-### 数据库管理
+### 构建生产版本
 ```bash
-# 初始化数据库（创建表结构并导入示例数据）
+npm run build
+```
+
+## 文档目录说明
+
+项目文档已按功能模块组织在 `docs/` 目录下：
+
+- **database/** - 数据库相关文档，包括设置、初始化、优化和调试指南
+- **deployment/** - 部署相关文档，涵盖环境配置、Vercel部署和安全设置
+- **development/** - 开发相关文档，包括错误处理、性能优化和类型安全指南
+- **features/** - 功能特性文档，如菜单数据导入等
+- **integration/** - 集成相关文档，如MCP集成和后端连接配置
+
+## 数据库设置
+
+### 表结构
+1. **categories**: 菜单分类
+2. **dishes**: 菜品信息
+3. **orders**: 订单记录
+4. **service_requests**: 服务请求
+
+### 数据库视图
+- `menu_view`: 前端API查询菜单数据的主要视图
+- `dishes_with_category`: 包含分类信息的菜品视图
+
+### 初始化数据库
+```bash
+# 创建表结构并导入示例数据
 npm run init-db
 
-# 导入菜品数据
-npm run import-menu
+# 或使用优化的SQL脚本
+npm run init-db-optimized
+```
 
-# 测试数据库连接
+### 导入菜单数据
+```bash
+# 从CSV文件导入菜单数据
+npm run import-menu-csv
+```
+
+## 部署配置
+
+### Vercel部署
+1. 将代码推送到GitHub仓库
+2. 在Vercel中连接GitHub仓库
+3. 配置环境变量
+4. 触发部署
+
+### Supabase配置
+1. 创建Supabase项目
+2. 执行数据库初始化脚本
+3. 创建数据库视图
+4. 配置API权限
+
+## 管理面板
+
+项目包含一个可视化管理面板，用于管理菜单、订单和服务请求。
+
+### 功能特性
+- 仪表板 - 系统概览和统计信息
+- 菜单管理 - 添加、编辑、删除菜品
+- 分类管理 - 管理菜单分类
+- 订单管理 - 查看和处理订单
+- 服务请求 - 处理客户服务请求
+- 数据库管理 - 数据库维护和管理
+
+## 测试和调试
+
+### 数据库连接测试
+```bash
 npm run test-db
 ```
 
-## 数据库设置
-有关数据库设置和数据导入的详细说明，请参考以下文档：
-- [DATABASE_SETUP.md](DATABASE_SETUP.md) - 数据库表结构和数据导入
-- [DATABASE_VIEW_SETUP.md](DATABASE_VIEW_SETUP.md) - **重要**: 数据库视图配置（部署前必读）
-- [IMAGE_MANAGEMENT.md](IMAGE_MANAGEMENT.md) - 菜品图片上传和管理指南
-- [PERFORMANCE_OPTIMIZATION.md](PERFORMANCE_OPTIMIZATION.md) - 性能优化配置说明
-- [ERROR_BOUNDARY_GUIDE.md](ERROR_BOUNDARY_GUIDE.md) - React 错误边界使用指南
-- [NETWORK_DETECTION_GUIDE.md](NETWORK_DETECTION_GUIDE.md) - 网络检测系统使用指南
-- [TYPESCRIPT_TYPE_SAFETY_GUIDE.md](TYPESCRIPT_TYPE_SAFETY_GUIDE.md) - TypeScript 类型安全最佳实践
-- [ENV_SETUP.md](ENV_SETUP.md) - 环境变量配置指南
-- [DATA_UPDATE_GUIDE.md](DATA_UPDATE_GUIDE.md) - 数据更新和修正指南
-- [VERCEL_DEPLOYMENT_GUIDE.md](VERCEL_DEPLOYMENT_GUIDE.md) - Vercel 部署配置指南
-- [VERCEL_ENV_UPDATE.md](VERCEL_ENV_UPDATE.md) - Vercel 环境变量安全配置更新
-- [ENV_PLATFORM_GUIDE.md](ENV_PLATFORM_GUIDE.md) - 环境变量配置平台说明
-- [VERCEL_SUPABASE_ARCH.md](VERCEL_SUPABASE_ARCH.md) - Vercel + Supabase 架构配置确认
-- [SECURITY_ENV_UPDATE.md](SECURITY_ENV_UPDATE.md) - 环境变量安全配置更新说明
-- [VERCEL_ENV_CONFIRM.md](VERCEL_ENV_CONFIRM.md) - Vercel 平台环境变量配置确认
-- [ENV_SECURITY_PROTECTION.md](ENV_SECURITY_PROTECTION.md) - 环境变量文件安全保护说明
-- [WORKFLOW_STATUS_CHECK.md](WORKFLOW_STATUS_CHECK.md) - GitHub Actions 工作流状态检查
-- [VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md](VERCEL_DEPLOYMENT_DIFF_ANALYSIS.md) - Vercel 部署版本差异分析
-- [CART_PERSISTENCE_FIX.md](CART_PERSISTENCE_FIX.md) - 购物车状态持久化功能修复方案
-
-### 快速验证
+### 数据库查询测试
 ```bash
-# 验证数据库视图是否已正确配置
+npm run test-db-query
+```
+
+### 浏览器数据库调试
+直接在浏览器中打开 `db-debug.html` 文件，使用图形界面测试数据库连接和查询数据。
+
+## 性能优化
+
+1. **图片优化**: 图片预加载和懒加载
+2. **代码分割**: 按功能模块分割代码
+3. **资源压缩**: Gzip/Brotli压缩
+4. **缓存策略**: 合理使用浏览器缓存
+5. **响应式设计**: 移动端优化
+
+## 安全措施
+
+1. **环境变量保护**: 敏感信息通过GitHub Secrets管理
+2. **API权限控制**: Supabase行级安全策略
+3. **错误处理**: 完善的错误边界和异常处理
+4. **输入验证**: 前后端数据验证
+
+## 维护命令
+
+```bash
+# 构建项目
+npm run build
+
+# 启动开发服务器
+npm run dev
+
+# 预览构建结果
+npm run preview
+
+# 初始化数据库
+npm run init-db
+
+# 导入菜单数据
+npm run import-menu-csv
+
+# 测试数据库连接
+npm run test-db
+
+# 验证数据库视图
 npm run verify-views
 ```
 
 ## 联系信息
 - **维护人员**: 技术支持团队
-- **最后更新**: 2025年11月25日
+- **最后更新**: 2025年11月27日

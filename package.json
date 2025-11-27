@@ -7,16 +7,23 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "import-menu": "node scripts/import-menu-data.js",
+    "import-menu-csv": "node scripts/import-menu-from-csv.js",
     "test-db": "node scripts/test-database-connection.js",
     "init-db": "node scripts/init-database.js",
+    "init-db-optimized": "psql -f sql/optimized-init.sql",
     "complete-import": "node scripts/complete-data-import.js",
     "verify-views": "node scripts/verify-views.js",
-    "security-check": "bash scripts/security-check.sh"
+    "security-check": "bash scripts/security-check.sh",
+    "test-db-query": "node test-db-query.cjs",
+    "fix-db-connection": "node fix-database-connection.cjs",
+    "verify-menu-view": "node verify-menu-view.cjs",
+    "upload-images": "node scripts/upload-dish-images.js"
   },
   "dependencies": {
     "@supabase/postgrest-js": "^2.84.0",
     "@supabase/supabase-js": "^2.84.0",
     "dotenv": "^17.2.3",
+    "pg": "^8.16.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

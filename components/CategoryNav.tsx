@@ -1,5 +1,5 @@
 import React from 'react';
-import { MenuCategory } from '../types';
+import { MenuCategory } from '../src/types/types';
 
 interface CategoryNavProps {
   isOpen: boolean;
