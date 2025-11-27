@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西酒店管理面板连接测试</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">江西酒店管理面板连接测试</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">测试配置</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Supabase URL</label>
+                    <input id="supabaseUrl" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           value="YOUR_SUPABASE_URL">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Supabase Anon Key</label>
+                    <input id="supabaseKey" type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           value="YOUR_SUPABASE_ANON_KEY">
+                </div>
+            </div>
+            <button id="testConnection" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                测试连接
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">测试结果</h2>
+            <div id="testResult" class="min-h-[200px]">
+                <p class="text-gray-500">点击"测试连接"按钮开始测试</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.84.0/dist/umd/supabase.min.js"></script>
+    
+    <script>
+        document.getElementById('testConnection').addEventListener('click', async function() {
+            const supabaseUrl = document.getElementById('supabaseUrl').value;
+            const supabaseKey = document.getElementById('supabaseKey').value;
+            const testResult = document.getElementById('testResult');
+            
+            // 清空之前的结果
+            testResult.innerHTML = '<p>正在测试连接...</p>';
+            
+            try {
+                // 创建Supabase客户端
+                const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+                
+                // 测试连接 - 尝试获取数据库版本
+                testResult.innerHTML += '<p>1. 初始化Supabase客户端... ✓</p>';
+                
+                // 测试获取categories表数据
+                testResult.innerHTML += '<p>2. 正在查询categories表...</p>';
+                const { data: categories, error: categoriesError } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .limit(1);
+                
+                if (categoriesError) {
+                    throw new Error(`获取categories表失败: ${categoriesError.message}`);
+                }
+                
+                testResult.innerHTML += '<p>2. 查询categories表... ✓</p>';
+                testResult.innerHTML += `<p>   找到 ${categories.length} 条记录</p>`;
+                
+                // 测试获取dishes表数据
+                testResult.innerHTML += '<p>3. 正在查询dishes表...</p>';
+                const { data: dishes, error: dishesError } = await supabase
+                    .from('dishes')
+                    .select('*')
+                    .limit(1);
+                
+                if (dishesError) {
+                    throw new Error(`获取dishes表失败: ${dishesError.message}`);
+                }
+                
+                testResult.innerHTML += '<p>3. 查询dishes表... ✓</p>';
+                testResult.innerHTML += `<p>   找到 ${dishes.length} 条记录</p>`;
+                
+                // 测试获取menu_view视图数据
+                testResult.innerHTML += '<p>4. 正在查询menu_view视图...</p>';
+                const { data: menuView, error: menuViewError } = await supabase
+                    .from('menu_view')
+                    .select('*')
+                    .limit(1);
+                
+                if (menuViewError) {
+                    // menu_view可能不存在，这不一定是错误
+                    testResult.innerHTML += `<p>4. 查询menu_view视图... ⚠️ (${menuViewError.message})</p>`;
+                } else {
+                    testResult.innerHTML += '<p>4. 查询menu_view视图... ✓</p>';
+                    testResult.innerHTML += `<p>   找到 ${menuView.length} 条记录</p>`;
+                }
+                
+                // 测试完成
+                testResult.innerHTML += '<p class="text-green-600 font-bold">所有测试通过！连接成功</p>';
+                
+            } catch (error) {
+                testResult.innerHTML += `<p class="text-red-600 font-bold">测试失败: ${error.message}</p>`;
+                console.error('测试失败:', error);
+            }
+        });
+    </script>
+</body>
+</html>

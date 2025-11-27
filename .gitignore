@@ -40,6 +40,7 @@ Thumbs.db
 !docs/development/reports/SECURITY_FIXES_PLAN.md
 !docs/development/reports/SECURITY_FIXES_REPORT.md
 !PRODUCTION_DEPLOYMENT_GUIDE.md
+!docs/database/COMPLETE_DATABASE_INITIALIZATION.md
 
 # Test files
 __tests__/
