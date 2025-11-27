@@ -22,3 +22,64 @@ build/
 Thumbs.db
 .vercel
 .env*.local
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Documentation files (keep only essential ones)
+*.md
+!README.md
+!CHANGELOG.md
+!DETAILED_DEPLOYMENT_INSTRUCTIONS.md
+!UPDATED_DEPLOYMENT_INSTRUCTIONS.md
+
+# Test files
+__tests__/
+*.test.*
+*.spec.*
+
+# Debug files
+*-debug*
+*debug-*
+
+# Configuration files (keep only essential ones)
+*.config.js
+!tailwind.config.js
+!postcss.config.js
+!vite.config.ts
+!tsconfig.json
+
+# Script files (keep only essential ones)
+scripts/
+!scripts/init-db-optimized.js
+!scripts/check-and-create-tables.js
+
+# Admin panel files (they have their own directory)
+admin-panel/
+
+# Supabase files
+supabase/.temp/
+
+# Empty directories
+dish-images/
+migrations/
+
+# Specific files to ignore
+api-test.html
+check-env-and-db.cjs
+direct-db-test.js
+get-supabase-config.cjs
+postgresql-test.js
+test-api-direct.js
+test-db-query.cjs
+test-menu-loading.js
+test-react-app.js
+verify-menu-view.cjs
+*.txt
+components/MCPIntegration.tsx
+components/McpIntegrationButton.tsx
+src/lib/mcp-client.ts
+src/lib/mcp-config.ts
+deploy-helper.ps1

@@ -6,6 +6,8 @@
     <title>江西酒店管理面板</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 添加Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.84.0/dist/umd/supabase.min.js"></script>
     <style>
         .sidebar {
             transition: all 0.3s ease;
@@ -203,11 +205,18 @@
         </div>
     </div>
 
+    <script>
+        // 从localStorage获取环境变量并设置到全局对象
+        window.env = {
+            VITE_APP_DB_URL: localStorage.getItem('VITE_APP_DB_URL') || 'https://kdlhyzsihflwkwumxzfw.supabase.co',
+            VITE_APP_DB_POSTGRES_PASSWORD: localStorage.getItem('VITE_APP_DB_POSTGRES_PASSWORD') || 'sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I'
+        };
+    </script>
     <script src="src/services/database.js"></script>
     <script src="src/services/taggedOrdersAPI.js"></script>
     <script>
         // 初始化数据库服务
-        const db = new DatabaseService();
+        const db = databaseManager;
         window.dbService = db; // 将数据库服务挂载到全局对象
         
         // 初始化完成后加载数据

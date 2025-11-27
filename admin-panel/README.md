@@ -35,6 +35,35 @@ admin-panel/
    ```
 3. 通过浏览器访问管理面板
 
+## 环境变量配置
+
+管理面板支持多种环境变量配置方式，具体取决于部署平台：
+
+### 1. Supabase Storage 部署（当前方式）
+由于 Supabase Storage 静态主机不支持环境变量，我们提供了以下解决方案：
+- 默认配置已嵌入在管理面板代码中
+- 用户可通过 `set-env.html` 页面自定义配置
+- 配置保存在浏览器的 localStorage 中
+
+### 2. Vercel/Netlify 部署（推荐）
+如果迁移到支持环境变量的平台，请使用以下配置：
+```
+# Vercel
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Netlify
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 3. 本地开发
+在本地开发时，可创建 `.env` 文件：
+```
+VITE_APP_DB_URL=https://your-project.supabase.co
+VITE_APP_DB_POSTGRES_PASSWORD=your-anon-key
+```
+
 ## 数据库结构
 
 ### categories表
@@ -148,3 +177,4 @@ admin-panel/
 - [数据库设置指南](../docs/database/DATABASE_SETUP.md)
 - [部署配置说明](../docs/deployment/ENV_SETUP.md)
 - [Supabase集成指南](../docs/integration/MCP_INTEGRATION_GUIDE.md)
+- [环境变量配置指南](./ENVIRONMENT_CONFIG.md)
