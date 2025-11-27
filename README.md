@@ -11,29 +11,10 @@ jiangxijiudian/
 ├── public/                # 静态资源
 ├── scripts/               # 数据库脚本
 ├── sql/                   # SQL 文件
-├── docs/                  # 文档
+├── docs/                  # 详细文档
 ├── README.md              # 本说明文件
 └── package.json           # 项目配置
 ```
-
-## 功能特性
-
-### 前端展示
-1. **响应式设计** - 适配各种设备屏幕
-2. **菜品展示** - 分类展示菜品信息
-3. **购物车功能** - 添加、删除、修改菜品数量
-4. **订单提交** - 提交订单到后台
-5. **桌面二维码** - 每桌独立二维码点餐
-
-### 后台管理
-1. **仪表板** - 系统概览和统计信息
-2. **菜单管理** - 添加、编辑、删除菜品
-3. **分类管理** - 管理菜单分类
-4. **订单管理** - 查看和处理订单
-5. **服务请求** - 处理客户服务请求
-6. **标签化订单** - 管理带标签的特殊订单
-7. **用户认证** - 多角色用户登录和权限管理
-8. **性能监控** - 实时监控应用性能和警报
 
 ## 快速开始
 
@@ -61,16 +42,29 @@ npm run preview
    npm run deploy-admin-panel
    ```
 
-2. **手动部署**：
-   ```bash
-   # 使用手动部署脚本
-   node deploy-admin-panel.js
-   ```
-
-3. **访问管理面板**：
+2. **访问管理面板**：
    ```
    https://kdlhyzsihflwkwumxzfw.supabase.co/storage/v1/object/public/admin-panel/index.html
    ```
+
+## 核心功能
+
+### 前端展示
+1. **响应式设计** - 适配各种设备屏幕
+2. **菜品展示** - 分类展示菜品信息
+3. **购物车功能** - 添加、删除、修改菜品数量
+4. **订单提交** - 提交订单到后台
+5. **桌面二维码** - 每桌独立二维码点餐
+
+### 后台管理
+1. **仪表板** - 系统概览和统计信息
+2. **菜单管理** - 添加、编辑、删除菜品
+3. **分类管理** - 管理菜单分类
+4. **订单管理** - 查看和处理订单
+5. **服务请求** - 处理客户服务请求
+6. **标签化订单** - 管理带标签的特殊订单
+7. **用户认证** - 多角色用户登录和权限管理
+8. **性能监控** - 实时监控应用性能和警报
 
 ## 环境变量配置
 
@@ -82,114 +76,20 @@ VITE_APP_DB_URL=https://kdlhyzsihflwkwumxzfw.supabase.co
 VITE_APP_DB_POSTGRES_PASSWORD=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8
 ```
 
-详细配置步骤请参考 [Vercel 环境变量配置指南](VERCEL_ENV_SETUP.md)
-
 ### 管理面板环境变量
 管理面板通过浏览器界面配置：
 1. 访问 `set-env.html` 页面
 2. 输入 Supabase URL 和 Anon Key
 3. 保存配置
 
-## 数据库设置
+## 更多信息
 
-### 初始化数据库
-```bash
-# 创建数据库表和视图
-npm run init-db-optimized
-```
+有关项目的详细信息，请参阅 [docs](docs/) 目录下的文档：
 
-### 验证数据库连接
-```bash
-# 验证数据库连接和 menu_view 视图
-npm run verify-db
-```
+- [部署说明](docs/deployment/)
+- [数据库设置](docs/database/)
+- [开发文档](docs/development/)
+- [功能特性](docs/features/)
 
-### 数据库结构
-- `categories` - 菜单分类
-- `dishes` - 菜品信息
-- `orders` - 订单数据
-- `service_requests` - 服务请求
-- `tagged_orders` - 标签化订单
-- `menu_view` - 菜单视图（自动生成）
-
-## 性能优化
-
-### 分页加载
-系统实现了分页加载机制，避免一次性加载大量数据。
-
-### 图片懒加载
-图片采用懒加载技术，只在需要时加载图片资源。
-
-### 内存管理
-系统会自动清理不再需要的资源，防止内存泄漏。
-
-## 安全特性
-
-### 用户认证
-- 多角色用户系统（管理员、经理、员工）
-- 本地存储用户会话
-- 操作日志记录
-
-### 权限管理
-- 基于角色的访问控制
-- 细粒度权限设置
-
-## 监控和报警
-
-### 性能监控
-- 页面加载时间监控
-- API调用成功率监控
-- 用户行为跟踪
-
-### 警报系统
-- 错误率过高警报
-- 响应时间过长警报
-- 系统异常警报
-
-## 开发说明
-
-### 技术栈
-- **前端框架**: React + Vite
-- **样式框架**: Tailwind CSS
-- **数据库**: Supabase
-- **状态管理**: React Hooks
-- **构建工具**: Vite
-
-### 代码规范
-- 使用 TypeScript 进行类型检查
-- 遵循 ESLint 和 Prettier 规范
-- 组件化开发，提高代码复用性
-
-## 部署指南
-
-### Vercel 部署（推荐）
-1. 连接 GitHub 仓库到 Vercel
-2. 设置环境变量（参考 [Vercel 环境变量配置指南](VERCEL_ENV_SETUP.md)）
-3. 自动部署完成
-
-### 手动部署
-1. 构建项目：`npm run build`
-2. 上传 `dist/` 目录到服务器
-3. 配置 Web 服务器指向 `dist/` 目录
-
-## 故障排除
-
-### 常见问题
-1. **页面空白**：检查环境变量配置
-2. **数据库连接失败**：验证 Supabase 配置
-3. **管理面板404**：确认 Supabase Storage 部署
-4. **菜单数据不显示**：验证 menu_view 视图是否存在
-5. **登录失败**：检查用户名和密码
-
-### 调试工具
-- 浏览器开发者工具
-- Supabase Dashboard
-- 项目根目录的调试脚本
-
-## 相关文档
-
-详细信息请参阅 `docs/` 目录下的文档：
-- [部署说明](ADMIN_PANEL_DEPLOYMENT_GUIDE.html)
-- [数据库设置](docs/database/DATABASE_DEPLOYMENT_GUIDE.md)
-- [环境变量配置](VERCEL_ENV_SETUP.md)
-- [项目进展分析](PROJECT_PROGRESS_ANALYSIS.md)
+---
+*文档最后更新于 2025年11月27日*
