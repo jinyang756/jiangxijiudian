@@ -1,0 +1,43 @@
+江西酒店管理面板 Supabase 部署步骤（更新版）
+
+==========================================
+
+重要通知：
+Supabase CLI 不再支持直接部署静态网站功能。我们将使用 Supabase Storage 手动上传文件的方式进行部署。
+
+新的部署步骤：
+
+1. 登录 Supabase 账户
+   - 打开浏览器并访问: https://app.supabase.com
+   - 登录您的 Supabase 账户
+   - 选择您的江西酒店项目
+
+2. 通过 Supabase Dashboard 上传文件到 Storage
+   - 进入 Storage 部分
+   - 创建名为 'admin-panel' 的存储桶
+   - 上传 admin-panel 目录中的所有文件
+
+3. 配置存储桶权限
+   - 在 Storage 页面，选择您的 'admin-panel' 存储桶
+   - 点击 "Settings" (设置) 标签
+   - 在 "Public URLs" 部分，启用 "Public access" (公开访问)
+   - 保存设置
+
+4. 设置环境变量
+   - 进入 Settings -> Configuration
+   - 在 Environment Variables 部分添加以下变量:
+     
+     名称: VITE_APP_DB_URL
+     值: YOUR_SUPABASE_URL
+     
+     名称: VITE_APP_DB_POSTGRES_PASSWORD
+     值: YOUR_SUPABASE_ANON_KEY
+
+5. 访问部署的管理面板
+   部署完成后，通过以下 URL 访问:
+   YOUR_SUPABASE_URL/storage/v1/object/public/admin-panel/index.html
+
+注意事项:
+- 如果遇到权限问题，请确保您有足够的权限访问 Supabase 项目
+- 如果部署失败，请检查网络连接和 Supabase CLI 是否正常工作
+- 详细的操作指南请参考 UPDATED_DEPLOYMENT_INSTRUCTIONS.md 文件

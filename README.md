@@ -44,7 +44,7 @@ npm run preview
 
 2. **访问管理面板**：
    ```
-   https://kdlhyzsihflwkwumxzfw.supabase.co/storage/v1/object/public/admin-panel/index.html
+   YOUR_SUPABASE_URL/storage/v1/object/public/admin-panel/index.html
    ```
 
 ## 核心功能
@@ -72,8 +72,8 @@ npm run preview
 在 Vercel 项目设置中配置以下环境变量：
 
 ```
-VITE_APP_DB_URL=https://kdlhyzsihflwkwumxzfw.supabase.co
-VITE_APP_DB_POSTGRES_PASSWORD=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8
+VITE_APP_DB_URL=YOUR_SUPABASE_URL
+VITE_APP_DB_POSTGRES_PASSWORD=YOUR_SUPABASE_ANON_KEY
 ```
 
 ### 管理面板环境变量

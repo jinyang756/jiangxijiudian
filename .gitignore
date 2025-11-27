@@ -37,6 +37,9 @@ Thumbs.db
 !REPOSITORY_CLEANUP_REPORT.md
 !DIRECTORY_REORGANIZATION_REPORT.md
 !docs/development/reports/DOCUMENTATION_OPTIMIZATION_REPORT.md
+!docs/development/reports/SECURITY_FIXES_PLAN.md
+!docs/development/reports/SECURITY_FIXES_REPORT.md
+!PRODUCTION_DEPLOYMENT_GUIDE.md
 
 # Test files
 __tests__/
@@ -87,6 +90,8 @@ test-menu-loading.js
 test-react-app.js
 verify-menu-view.cjs
 *.txt
+!部署步骤.txt
+!更新版部署步骤.txt
 components/MCPIntegration.tsx
 components/McpIntegrationButton.tsx
 src/lib/mcp-client.ts
