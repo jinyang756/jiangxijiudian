@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西酒店管理面板环境变量设置</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">江西酒店管理面板环境变量设置</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">环境变量设置</h2>
+            <p class="mb-4">请在下方输入您的 Supabase 环境变量：</p>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="supabaseUrl">
+                    Supabase URL
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="supabaseUrl" type="text" placeholder="https://your-project.supabase.co"
+                       value="https://your-project.supabase.co">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="supabaseKey">
+                    Supabase Anon Key
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       id="supabaseKey" type="password" placeholder="Your Supabase anon key"
+                       value="your_supabase_anon_key">
+            </div>
+            
+            <button onclick="saveEnvVars()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">
+                保存环境变量
+            </button>
+            <button onclick="checkEnvVars()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">
+                检查环境变量
+            </button>
+            <button onclick="testConnection()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                测试连接
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">环境变量状态</h2>
+            <div id="envStatus" class="text-gray-500">
+                点击"检查环境变量"按钮查看当前设置状态
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">连接测试结果</h2>
+            <div id="connectionStatus" class="text-gray-500">
+                点击"测试连接"按钮测试数据库连接
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">访问管理面板</h2>
+            <p class="mb-4">环境变量设置完成后，您可以访问管理面板：</p>
+            <a href="index.html" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
+                打开管理面板
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 保存环境变量到 localStorage
+        function saveEnvVars() {
+            const supabaseUrlInput = document.getElementById('supabaseUrl');
+            const supabaseKeyInput = document.getElementById('supabaseKey');
+            
+            const supabaseUrl = supabaseUrlInput.value.trim();
+            const supabaseKey = supabaseKeyInput.value.trim();
+            
+            if (!supabaseUrl || !supabaseKey) {
+                alert('请填写完整的 Supabase URL 和 Anon Key');
+                return;
+            }
+            
+            localStorage.setItem('VITE_APP_DB_URL', supabaseUrl);
+            localStorage.setItem('VITE_APP_DB_POSTGRES_PASSWORD', supabaseKey);
+            
+            // 更新输入框的值以反映保存的内容
+            supabaseUrlInput.value = supabaseUrl;
+            supabaseKeyInput.value = supabaseKey;
+            
+            alert('环境变量已保存！现在您可以访问管理面板了。');
+        }
+        
+        // 检查环境变量
+        function checkEnvVars() {
+            const supabaseUrl = localStorage.getItem('VITE_APP_DB_URL');
+            const supabaseKey = localStorage.getItem('VITE_APP_DB_POSTGRES_PASSWORD');
+            const statusDiv = document.getElementById('envStatus');
+            
+            if (supabaseUrl && supabaseKey) {
+                statusDiv.innerHTML = `
+                    <p class="text-green-600 font-bold">✅ 环境变量已正确设置</p>
+                    <p><strong>Supabase URL:</strong> ${supabaseUrl}</p>
+                    <p><strong>Supabase Anon Key:</strong> ${supabaseKey.substring(0, 20)}... (已设置)</p>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <p class="text-red-600 font-bold">❌ 环境变量未设置或不完整</p>
+                    <p><strong>Supabase URL:</strong> ${supabaseUrl || '未设置'}</p>
+                    <p><strong>Supabase Anon Key:</strong> ${supabaseKey ? supabaseKey.substring(0, 20) + '...' : '未设置'}</p>
+                    <p class="mt-2">请填写上方表单并点击"保存环境变量"按钮</p>
+                `;
+            }
+        }
+        
+        // 测试数据库连接
+        async function testConnection() {
+            const connectionStatusDiv = document.getElementById('connectionStatus');
+            connectionStatusDiv.innerHTML = '<p class="text-yellow-600">🔄 正在测试连接...</p>';
+            
+            try {
+                // 获取环境变量
+                const supabaseUrl = document.getElementById('supabaseUrl').value || localStorage.getItem('VITE_APP_DB_URL') || 'https://your-project.supabase.co';
+                const supabaseKey = document.getElementById('supabaseKey').value || localStorage.getItem('VITE_APP_DB_POSTGRES_PASSWORD') || 'your_supabase_anon_key';
+                
+                // 创建Supabase客户端
+                const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+                
+                // 测试连接 - 获取categories表数据
+                connectionStatusDiv.innerHTML = '<p class="text-yellow-600">🔄 正在查询categories表...</p>';
+                const { data: categories, error: categoriesError } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .limit(1);
+                
+                if (categoriesError) {
+                    connectionStatusDiv.innerHTML = `
+                        <p class="text-red-600 font-bold">❌ 连接测试失败</p>
+                        <p><strong>错误信息:</strong> ${categoriesError.message}</p>
+                        <p class="mt-2">请检查Supabase URL和Anon Key是否正确</p>
+                    `;
+                    return;
+                }
+                
+                connectionStatusDiv.innerHTML = `
+                    <p class="text-green-600 font-bold">✅ 连接测试成功</p>
+                    <p><strong>Supabase URL:</strong> ${supabaseUrl}</p>
+                    <p><strong>categories表:</strong> 可访问 (${categories.length} 条记录)</p>
+                    <p class="mt-2 text-green-600">🎉 环境变量配置正确，可以正常使用管理面板</p>
+                `;
+            } catch (error) {
+                connectionStatusDiv.innerHTML = `
+                    <p class="text-red-600 font-bold">❌ 连接测试失败</p>
+                    <p><strong>错误信息:</strong> ${error.message}</p>
+                    <p class="mt-2">请检查网络连接和Supabase配置</p>
+                `;
+            }
+        }
+        
+        // 页面加载时，如果已保存环境变量，则自动填充表单
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('VITE_APP_DB_URL');
+            const savedKey = localStorage.getItem('VITE_APP_DB_POSTGRES_PASSWORD');
+            
+            const supabaseUrlInput = document.getElementById('supabaseUrl');
+            const supabaseKeyInput = document.getElementById('supabaseKey');
+            
+            if (savedUrl) {
+                supabaseUrlInput.value = savedUrl;
+            }
+            
+            if (savedKey) {
+                supabaseKeyInput.value = savedKey;
+            }
+        }
+    </script>
+</body>
+</html>

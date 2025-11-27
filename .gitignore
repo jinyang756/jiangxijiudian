@@ -67,6 +67,10 @@ scripts/
 
 # Admin panel files (they have their own directory)
 admin-panel/
+!admin-panel/set-env.html
+!admin-panel/index.html
+!admin-panel/style.css
+!admin-panel/script.js
 
 # Supabase files
 supabase/.temp/
