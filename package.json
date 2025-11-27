@@ -25,7 +25,8 @@
     "check-and-create-direct": "node scripts/check-and-create-tables-direct.js",
     "final-data-init": "node scripts/final-data-init.js",
     "deploy-admin-panel": "echo 请通过 Supabase Dashboard 手动部署管理面板: https://app.supabase.com",
-    "deploy-helper": "powershell -ExecutionPolicy Bypass -File deploy-helper.ps1"
+    "deploy-helper": "powershell -ExecutionPolicy Bypass -File deploy-helper.ps1",
+    "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\""
   },
   "dependencies": {
     "@supabase/postgrest-js": "^2.84.0",

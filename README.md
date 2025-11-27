@@ -95,12 +95,19 @@ VITE_APP_DB_POSTGRES_PASSWORD=sb_publishable_kn0X93DL4ljLdimMM0TkEg_U6qATZ1I
 npm run init-db-optimized
 ```
 
+### 验证数据库连接
+```bash
+# 验证数据库连接和 menu_view 视图
+npm run verify-db
+```
+
 ### 数据库结构
 - `categories` - 菜单分类
 - `dishes` - 菜品信息
 - `orders` - 订单数据
 - `service_requests` - 服务请求
 - `tagged_orders` - 标签化订单
+- `menu_view` - 菜单视图（自动生成）
 
 ## 开发说明
 
@@ -134,6 +141,7 @@ npm run init-db-optimized
 1. **页面空白**：检查环境变量配置
 2. **数据库连接失败**：验证 Supabase 配置
 3. **管理面板404**：确认 Supabase Storage 部署
+4. **菜单数据不显示**：验证 menu_view 视图是否存在
 
 ### 调试工具
 - 浏览器开发者工具
@@ -144,5 +152,6 @@ npm run init-db-optimized
 
 详细信息请参阅 `docs/` 目录下的文档：
 - [部署说明](ADMIN_PANEL_DEPLOYMENT_GUIDE.html)
-- [数据库设置](docs/database/DATABASE_SETUP.md)
+- [数据库设置](docs/database/DATABASE_DEPLOYMENT_GUIDE.md)
 - [环境变量配置](VERCEL_ENV_SETUP.md)
+- [项目进展分析](PROJECT_PROGRESS_ANALYSIS.md)
