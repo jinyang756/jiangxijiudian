@@ -19,9 +19,24 @@ class Logger {
   };
 
   constructor() {
-    // 根据环境配置日志
-    const isDev = import.meta.env.DEV;
-    const isDebugMode = import.meta.env.MODE === 'debug';
+    // 检查是否在浏览器环境
+    const isBrowser = typeof window !== 'undefined';
+    
+    // 获取环境变量
+    let isDev: boolean;
+    let mode: string;
+    
+    if (isBrowser) {
+      // 浏览器环境
+      isDev = (window as any).importMetaEnv?.DEV || false;
+      mode = (window as any).importMetaEnv?.MODE || 'production';
+    } else {
+      // Node.js环境
+      isDev = process.env.NODE_ENV === 'development';
+      mode = process.env.NODE_ENV || 'production';
+    }
+    
+    const isDebugMode = mode === 'debug';
     
     this.config = {
       enabled: isDev || isDebugMode,
@@ -67,9 +82,21 @@ class Logger {
 
   // 用于敏感信息的日志（仅开发环境）
   sensitive(message: string, data?: any): void {
-    if (import.meta.env.DEV && this.shouldLog('debug')) {
+    const isBrowser = typeof window !== 'undefined';
+    let isDev: boolean;
+    let mode: string;
+    
+    if (isBrowser) {
+      isDev = (window as any).importMetaEnv?.DEV || false;
+      mode = (window as any).importMetaEnv?.MODE || 'production';
+    } else {
+      isDev = process.env.NODE_ENV === 'development';
+      mode = process.env.NODE_ENV || 'production';
+    }
+    
+    if (isDev && this.shouldLog('debug')) {
       console.log(...this.formatMessage('debug', `[SENSITIVE] ${message}`, data ? '***' : ''));
-      if (data && import.meta.env.MODE === 'debug') {
+      if (data && mode === 'debug') {
         console.log('详细数据:', data);
       }
     }

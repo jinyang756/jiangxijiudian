@@ -73,7 +73,30 @@ YOUR_SUPABASE_URL/storage/v1/object/public/admin-panel/index.html
 npm run init-db-optimized
 ```
 
-### 2. 验证数据库连接
+### 2. 创建 menu_view 视图
+为了确保前端能够正确显示菜单数据，必须创建 `menu_view` 视图：
+
+```bash
+psql -f sql/create-menu-view.sql
+```
+
+或者使用 Supabase SQL 编辑器执行 `sql/create-menu-view.sql` 文件中的内容。
+
+### 3. 应用索引优化
+为了提升数据库查询性能，建议应用索引优化：
+
+```bash
+psql -f sql/index-optimization.sql
+```
+
+### 4. 应用增强安全策略
+为了确保数据安全，建议应用增强的安全策略：
+
+```bash
+psql -f sql/enhanced-security-policies.sql
+```
+
+### 5. 验证数据库连接
 ```bash
 npm run verify-db
 ```
@@ -114,6 +137,14 @@ YOUR_SUPABASE_URL/storage/v1/object/public/admin-panel/index.html
 4. **菜单数据不显示**
    - 验证 `menu_view` 视图是否存在
    - 检查数据库表是否已正确初始化
+
+5. **性能问题**
+   - 确认已应用索引优化
+   - 检查数据库查询日志
+
+6. **安全问题**
+   - 验证RLS策略是否正确应用
+   - 检查用户权限配置
 
 ### 需要帮助？
 如果在部署过程中遇到问题，请检查浏览器控制台的错误信息，或联系技术支持。

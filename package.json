@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:config": "npx tsx test-config.ts",
-    "test:db": "npx tsx test-database-connection.ts",
+    "test:db": "npx tsx test-db-connection.ts",
     "verify-setup": "npx tsx verify-setup.ts",
     "sync-menu-data": "node scripts/sync-menu-data.js",
     "final-data-init": "node scripts/final-data-init.js",
