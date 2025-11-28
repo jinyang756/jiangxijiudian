@@ -27,9 +27,8 @@ function shouldIgnoreError(error: any): boolean {
   // 忽略某些特定的错误消息
   const ignoredMessages = [
     'ResizeObserver loop limit exceeded',
-    'Script error',
-    'Network Error',
-    'Failed to fetch'
+    'Script error'
+    // 移除 'Network Error' 和 'Failed to fetch'，这些错误需要上报
   ];
   
   const message = typeof error === 'string' ? error : error?.message || '';
@@ -75,6 +74,8 @@ function handleGlobalError(
 
   // 生产环境发送到监控服务
   if (import.meta.env.PROD) {
+    // 上报错误到监控平台
+    console.error('上报错误:', error);
     // 可以在这里集成 Sentry、LogRocket 等
     // Sentry.captureException(error);
   }
@@ -112,6 +113,8 @@ function handleUnhandledRejection(event: PromiseRejectionEvent) {
 
   // 生产环境发送到监控服务
   if (import.meta.env.PROD) {
+    // 上报错误到监控平台
+    console.error('上报错误:', error);
     // Sentry.captureException(error);
   }
 }

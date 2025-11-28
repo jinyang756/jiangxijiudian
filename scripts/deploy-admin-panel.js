@@ -8,7 +8,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 // 检查Supabase CLI是否已安装
@@ -86,6 +86,40 @@ async function deployAdminPanel() {
   }
 }
 
+// 自动化部署（用于CI/CD）
+async function autoDeploy() {
+  console.log('🔄 开始自动化部署管理面板...');
+  
+  // 检查环境变量
+  const supabaseToken = process.env.SUPABASE_TOKEN;
+  if (!supabaseToken) {
+    console.error('❌ 未设置SUPABASE_TOKEN环境变量');
+    console.error('请在GitHub Secrets中设置SUPABASE_TOKEN');
+    return false;
+  }
+  
+  try {
+    // 安装Supabase CLI
+    console.log('📥 安装Supabase CLI...');
+    execSync('npm install -g supabase', { stdio: 'inherit' });
+    
+    // 登录Supabase
+    console.log('🔑 登录Supabase...');
+    execSync(`npx supabase login --token ${supabaseToken}`, { stdio: 'inherit' });
+    
+    // 部署管理面板
+    console.log('📤 部署管理面板...');
+    const deployCommand = `cd admin-panel && npx supabase deploy`;
+    execSync(deployCommand, { stdio: 'inherit' });
+    
+    console.log('✅ 管理面板自动化部署成功!');
+    return true;
+  } catch (error) {
+    console.error('❌ 自动化部署失败:', error.message);
+    return false;
+  }
+}
+
 // 生成部署说明
 function generateDeploymentInstructions() {
   console.log('\n📋 Supabase静态网站托管部署说明');
@@ -125,6 +159,15 @@ async function main() {
   console.log('🔧 江西酒店管理面板Supabase部署工具');
   console.log('====================================');
   
+  // 检查是否为自动化部署模式
+  const isAutoDeploy = process.argv.includes('--auto');
+  
+  if (isAutoDeploy) {
+    // 自动化部署模式
+    return await autoDeploy();
+  }
+  
+  // 手动部署模式
   // 检查Supabase CLI
   if (!checkSupabaseCLI()) {
     generateDeploymentInstructions();
@@ -143,7 +186,11 @@ async function main() {
 }
 
 // 执行主函数
-main().catch(error => {
-  console.error('❌ 部署过程中发生错误:', error.message);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(error => {
+    console.error('❌ 部署过程中发生错误:', error.message);
+    process.exit(1);
+  });
+}
+
+export { autoDeploy, deployAdminPanel };
