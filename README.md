@@ -33,6 +33,23 @@ npm run build
 1. 安装 Node.js 和 npm
 2. 安装 Vercel CLI: `npm install -g vercel`
 
+### 环境变量配置
+在部署之前，您需要配置环境变量：
+
+1. 复制 `.env.example` 文件并重命名为 `.env`
+2. 在 `.env` 文件中填入您的 Supabase 凭据：
+   ```
+   VITE_APP_DB_URL=您的Supabase项目URL
+   VITE_APP_DB_POSTGRES_PASSWORD=您的Supabase anon key
+   VITE_APP_SUPABASE_STORAGE_URL=您的Supabase项目URL
+   ```
+
+获取凭据的方法：
+1. 登录您的 Supabase 账户
+2. 进入您的项目
+3. 点击左侧菜单 "Project Settings" → "API"
+4. 复制 "Project URL" 和 "anon key"
+
 ### 部署步骤
 
 #### 1. 登录 Vercel
@@ -70,7 +87,7 @@ vercel
 2. 在 GitHub 仓库的 Secrets 中添加 `VERCEL_TOKEN`
 3. 推送代码到 main 分支即可自动触发部署
 
-### 环境变量配置
+### Vercel 环境变量配置
 在 Vercel 项目设置中添加以下环境变量：
 - `VITE_APP_DB_URL` = 您的 Supabase 项目 URL
 - `VITE_APP_DB_POSTGRES_PASSWORD` = 您的 Supabase anon key
