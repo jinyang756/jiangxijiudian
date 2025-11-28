@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
 // 从环境变量获取 Supabase 配置
-const supabaseUrl = process.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || import.meta.env?.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY;
 
 // 检查环境变量是否存在
 if (!supabaseUrl || !supabaseKey) {
   console.error('缺少必要的环境变量: VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY');
+  console.log('请确保设置了以下环境变量:');
+  console.log('VITE_SUPABASE_URL=https://kdlhyzsihflwkwumxzfw.supabase.co');
+  console.log('VITE_SUPABASE_ANON_KEY=你的Supabase anon key');
   process.exit(1);
 }
+
+console.log('使用Supabase URL:', supabaseUrl);
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
