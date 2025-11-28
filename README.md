@@ -64,6 +64,12 @@ cd admin-panel
 vercel
 ```
 
+### 自动化部署
+本项目配置了 GitHub Actions 工作流，可以自动部署到 Vercel：
+1. 在 Vercel 账户中生成访问令牌
+2. 在 GitHub 仓库的 Secrets 中添加 `VERCEL_TOKEN`
+3. 推送代码到 main 分支即可自动触发部署
+
 ### 环境变量配置
 在 Vercel 项目设置中添加以下环境变量：
 - `VITE_APP_DB_URL` = 您的 Supabase 项目 URL
@@ -74,12 +80,12 @@ vercel
 .
 ├── admin-panel/           # 后台管理面板
 ├── components/            # React 组件
-├── services/              # API 服务
-├── src/                   # 前端源代码
-│   ├── lib/               # 工具库
-│   └── types/             # TypeScript 类型定义
-├── sql/                   # 数据库脚本
-└── dist/                  # 构建输出目录
+├── services/             # API 服务
+├── src/                  # 前端源代码
+│   ├── lib/              # 工具库
+│   └── types/            # TypeScript 类型定义
+├── sql/                  # 数据库脚本
+└── dist/                 # 构建输出目录
 ```
 
 ## 开发指南
