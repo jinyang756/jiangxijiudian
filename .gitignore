@@ -102,3 +102,4 @@ components/McpIntegrationButton.tsx
 src/lib/mcp-client.ts
 src/lib/mcp-config.ts
 deploy-helper.ps1
+.env*.local
