@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// App.tsx
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// App.tsx
 // 江西酒店智能菜单系统 - 前端展示页面与后台管理面板
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -12,7 +12,6 @@ import InfoModal from './components/InfoModal';
 import DishDetailModal from './components/DishDetailModal';
 import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
-import ErrorBoundary from './src/components/ErrorBoundary';
 import { api } from './services/api';
 import { ImageLoader } from './src/lib/imageLoader';
 
