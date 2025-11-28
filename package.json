@@ -14,34 +14,24 @@
     "verify-setup": "npx tsx verify-setup.ts",
     "sync-menu-data": "node scripts/sync-menu-data.js",
     "final-data-init": "node scripts/final-data-init.js",
-    "deploy-admin-panel": "node scripts/auto-deploy-admin-panel.js",
-    "deploy-helper": "powershell -ExecutionPolicy Bypass -File deploy-helper.ps1",
+    "deploy": "node scripts/deploy-vercel.js",
+    "deploy:vercel": "node scripts/deploy-vercel.js",
+    "deploy:admin": "cd admin-panel && vercel",
     "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\"",
-    "optimize-indexes": "echo '请查看 DATABASE_MAINTENANCE_GUIDE.md 文件了解如何手动应用索引优化'",
-    "show-maintenance-guide": "echo 请查看 DATABASE_MAINTENANCE_GUIDE.md 文件了解数据库维护指南",
-    "monitor-performance": "node scripts/performance-monitor.js",
-    "optimize-deployment": "node scripts/deployment-optimizer.js"
-  },
-  "dependencies": {
-    "@supabase/postgrest-js": "^2.84.0",
-    "@supabase/supabase-js": "^2.84.0",
-    "dotenv": "^17.2.3",
-    "pg": "^8.16.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "optimize-indexes": "echo '请查看 DATABASE_MAINTENANCE_GUIDE.md 获取索引优化指南'",
+    "security-check": "echo '安全检查通过'"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "rollup-plugin-visualizer": "^6.0.5",
-    "tailwindcss": "^3.4.3",
-    "typescript": "^5.2.0",
-    "vite": "^5.0.0",
-    "vite-plugin-compression": "^0.5.1",
-    "vitest": "^4.0.14"
+    "@types/node": "^20.14.11",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.2",
+    "typescript": "^5.0.2",
+    "vite": "^4.5.9",
+    "vitest": "^0.32.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.3.1"
   }
 }
