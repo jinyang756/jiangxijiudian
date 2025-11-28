@@ -26,23 +26,6 @@ Thumbs.db
 *.temp
 *~
 
-# Documentation files (keep only essential ones)
-*.md
-!README.md
-!CHANGELOG.md
-!DETAILED_DEPLOYMENT_INSTRUCTIONS.md
-!UPDATED_DEPLOYMENT_INSTRUCTIONS.md
-!REPOSITORY_CLEANUP_REPORT.md
-!DIRECTORY_REORGANIZATION_REPORT.md
-!docs/development/reports/DOCUMENTATION_OPTIMIZATION_REPORT.md
-!docs/development/reports/SECURITY_FIXES_PLAN.md
-!docs/development/reports/SECURITY_FIXES_REPORT.md
-!PRODUCTION_DEPLOYMENT_GUIDE.md
-!docs/database/COMPLETE_DATABASE_INITIALIZATION.md
-!docs/database/DATABASE_MAINTENANCE_GUIDE.md
-!docs/development/ENVIRONMENT_CONFIGURATION_GUIDE.md
-!docs/development/DEVELOPMENT_GUIDE.md
-
 # Test files
 __tests__/
 *.test.*
@@ -52,22 +35,23 @@ __tests__/
 *-debug*
 *debug-*
 
-# Configuration files (keep only essential ones)
+# Configuration files
 *.config.js
 !tailwind.config.js
 !postcss.config.js
 !vite.config.ts
 !tsconfig.json
 
-# Script files (keep only essential ones)
+# Script files
 scripts/
 !scripts/init-db-optimized.js
 !scripts/check-and-create-tables.js
 !scripts/init-database-via-api.js
 !scripts/setup-database-tables.js
 !scripts/auto-deploy-admin-panel.js
+!scripts/validate-env.js
 
-# Admin panel files (they have their own directory)
+# Admin panel files
 admin-panel/
 !admin-panel/set-env.html
 !admin-panel/index.html
@@ -80,27 +64,3 @@ supabase/.temp/
 # Empty directories
 dish-images/
 migrations/
-
-# Angular directory (should not be in project)
-angular/
-
-# Specific files to ignore
-api-test.html
-check-env-and-db.cjs
-direct-db-test.js
-get-supabase-config.cjs
-postgresql-test.js
-test-api-direct.js
-test-db-query.cjs
-test-menu-loading.js
-test-react-app.js
-verify-menu-view.cjs
-*.txt
-!部署步骤.txt
-!更新版部署步骤.txt
-components/MCPIntegration.tsx
-components/McpIntegrationButton.tsx
-src/lib/mcp-client.ts
-src/lib/mcp-config.ts
-deploy-helper.ps1
-.env*.local
