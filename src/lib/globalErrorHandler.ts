@@ -1,45 +1,47 @@
+// src/lib/globalErrorHandler.ts
+// 全局错误处理器
+
 import { logger } from './logger';
 
-/**
- * 全局错误处理器
- * 捕获未被 React 错误边界捕获的错误
- */
-
-// 错误信息缓存，防止重复报告
+// 错误缓存，防止重复报告
 const errorCache = new Set<string>();
 const CACHE_DURATION = 5000; // 5秒内相同错误只报告一次
 
 /**
- * 生成错误的唯一键
+ * 生成错误唯一键
  */
-function getErrorKey(error: Error | string, source?: string): string {
-  const message = typeof error === 'string' ? error : error.message;
-  return `${source || 'unknown'}:${message}`;
+function getErrorKey(error: any, source: string): string {
+  const message = typeof error === 'string' ? error : error?.message || 'Unknown error';
+  return `${source}:${message}`;
 }
 
 /**
- * 检查错误是否应该被忽略
+ * 判断是否应该忽略错误
  */
-function shouldIgnoreError(error: Error | string): boolean {
-  const message = typeof error === 'string' ? error : error.message;
+function shouldIgnoreError(error: any): boolean {
+  // 忽略网络中断错误
+  if (error?.name === 'AbortError') {
+    return true;
+  }
   
-  // 忽略的错误模式
-  const ignorePatterns = [
-    /ResizeObserver loop limit exceeded/i,
-    /ResizeObserver loop completed with undelivered notifications/i,
-    /Script error/i,
-    /Non-Error promise rejection captured/i,
+  // 忽略某些特定的错误消息
+  const ignoredMessages = [
+    'ResizeObserver loop limit exceeded',
+    'Script error',
+    'Network Error',
+    'Failed to fetch'
   ];
   
-  return ignorePatterns.some(pattern => pattern.test(message));
+  const message = typeof error === 'string' ? error : error?.message || '';
+  return ignoredMessages.some(ignored => message.includes(ignored));
 }
 
 /**
- * 处理全局错误
+ * 处理全局 JavaScript 错误
  */
 function handleGlobalError(
-  error: Error | string,
-  source: string,
+  error: any,
+  source?: string,
   lineno?: number,
   colno?: number,
   stack?: string
@@ -49,7 +51,7 @@ function handleGlobalError(
     return;
   }
 
-  const errorKey = getErrorKey(error, source);
+  const errorKey = getErrorKey(error, source || 'unknown');
 
   // 防止重复报告
   if (errorCache.has(errorKey)) {
@@ -149,39 +151,7 @@ export function initGlobalErrorHandler() {
         });
       }
     }
-  }, true); // 使用捕获阶段
+  });
 
   logger.info('Global error handler initialized');
 }
-
-/**
- * 清理全局错误处理器
- */
-export function cleanupGlobalErrorHandler() {
-  // 注意：这些事件监听器在实际应用中通常不需要清理
-  // 因为它们应该在整个应用生命周期中保持活动
-  errorCache.clear();
-  logger.info('Global error handler cleaned up');
-}
-
-/**
- * 手动报告错误
- */
-export function reportError(error: Error, context?: Record<string, any>) {
-  logger.error('Manual error report:', {
-    message: error.message,
-    stack: error.stack,
-    context,
-    userAgent: navigator.userAgent,
-    url: window.location.href,
-    timestamp: new Date().toISOString()
-  });
-
-  // 生产环境发送到监控服务
-  if (import.meta.env.PROD) {
-    // Sentry.captureException(error, { extra: context });
-  }
-}
-
-// 导出用于测试
-export { errorCache, shouldIgnoreError, getErrorKey };

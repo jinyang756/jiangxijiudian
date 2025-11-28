@@ -1,92 +1,92 @@
-// 错误处理和重试机制模块
+// src/lib/errorHandler.ts
+// 错误处理和重试机制
+
+import { logger } from './logger';
+
 export interface ApiError extends Error {
-  status?: number;
   code?: string;
+  status?: number;
   retryable?: boolean;
 }
 
-// 错误分类
-export const ERROR_CODES = {
-  NETWORK_ERROR: 'NETWORK_ERROR' as const,
-  TIMEOUT_ERROR: 'TIMEOUT_ERROR' as const,
-  SERVER_ERROR: 'SERVER_ERROR' as const,
-  UNAUTHORIZED: 'UNAUTHORIZED' as const,
-  NOT_FOUND: 'NOT_FOUND' as const
-};
-
-// 可重试的错误类型
-const RETRYABLE_ERRORS: readonly string[] = [
-  ERROR_CODES.NETWORK_ERROR,
-  ERROR_CODES.TIMEOUT_ERROR,
-  ERROR_CODES.SERVER_ERROR
-] as const;
-
-// 创建API错误
-export const createApiError = (
-  message: string,
-  options: {
-    status?: number;
-    code?: string;
-    retryable?: boolean;
-  } = {}
-): ApiError => {
-  const error = new Error(message) as ApiError;
-  error.status = options.status;
-  error.code = options.code;
-  error.retryable = options.retryable ?? (options.code ? RETRYABLE_ERRORS.includes(options.code) : false);
-  return error;
-};
-
-// 重试机制配置
-interface RetryOptions {
+export interface RetryConfig {
   maxRetries: number;
   delay: number;
   backoffMultiplier: number;
-  timeout: number;
+  retryableErrors: string[];
 }
 
-// 默认重试配置
-const DEFAULT_RETRY_OPTIONS: RetryOptions = {
-  maxRetries: 3,
-  delay: 1000,
-  backoffMultiplier: 2,
-  timeout: 10000
+export const ERROR_CODES = {
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  SERVER_ERROR: 'SERVER_ERROR',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  NOT_FOUND: 'NOT_FOUND',
+  TIMEOUT: 'TIMEOUT'
+} as const;
+
+// 创建API错误
+export const createApiError = (
+  message: string, 
+  options: { code?: string; status?: number; retryable?: boolean } = {}
+): ApiError => {
+  const error = new Error(message) as ApiError;
+  error.code = options.code;
+  error.status = options.status;
+  error.retryable = options.retryable ?? false;
+  return error;
 };
 
 // 延迟函数
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// 检查是否应该重试
-const shouldRetry = (error: ApiError, attempt: number, maxRetries: number): boolean => {
-  return !!error.retryable && attempt < maxRetries;
+export const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-// 带重试机制的异步函数执行器
+// 判断是否应该重试
+export const shouldRetry = (error: ApiError, attempt: number, maxRetries: number): boolean => {
+  // 超过最大重试次数
+  if (attempt >= maxRetries) {
+    return false;
+  }
+
+  // 如果明确标记为不可重试
+  if (error.retryable === false) {
+    return false;
+  }
+
+  // 网络错误通常可以重试
+  if (error.code === ERROR_CODES.NETWORK_ERROR) {
+    return true;
+  }
+
+  // 服务器错误（5xx）通常可以重试
+  if (error.status && error.status >= 500 && error.status < 600) {
+    return true;
+  }
+
+  // 请求超时可以重试
+  if (error.code === ERROR_CODES.TIMEOUT) {
+    return true;
+  }
+
+  return false;
+};
+
+// 执行带重试机制的异步操作
 export const executeWithRetry = async <T>(
-  fn: () => Promise<T>,
-  options: Partial<RetryOptions> = {}
+  operation: () => Promise<T>,
+  config: RetryConfig
 ): Promise<T> => {
-  const config = { ...DEFAULT_RETRY_OPTIONS, ...options };
   let lastError: ApiError | null = null;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
-      // 设置超时
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(createApiError('Request timeout', {
-            code: ERROR_CODES.TIMEOUT_ERROR,
-            retryable: true
-          }));
-        }, config.timeout);
-      });
-
-      // 执行函数并设置超时
-      const result = await Promise.race([fn(), timeoutPromise]);
-      return result;
+      return await operation();
     } catch (error) {
-      lastError = createApiError(
-        error instanceof Error ? error.message : 'Unknown error',
+      lastError = error as ApiError;
+      
+      logger.warn(
+        `Operation failed (attempt ${attempt + 1}/${config.maxRetries + 1}):`, 
+        error,
         {
           status: error instanceof Error && 'status' in error ? (error as any).status : undefined,
           code: error instanceof Error && 'code' in error ? (error as any).code : ERROR_CODES.NETWORK_ERROR,

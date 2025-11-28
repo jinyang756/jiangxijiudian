@@ -6,14 +6,16 @@
 
 ```
 jiangxijiudian/
-├── admin-panel/           # 管理面板目录
-├── src/                   # 前端源代码
-├── public/                # 静态资源
-├── scripts/               # 数据库脚本
-├── sql/                   # SQL 文件
-├── docs/                  # 详细文档
+├── components/            # React组件目录
+├── config/                # 配置文件目录
+├── public/                # 静态资源目录
+├── services/              # 服务层目录
+├── sql/                   # SQL 文件目录
+├── src/                   # 主要源代码目录
+├── supabase/              # Supabase配置目录
+├── docs/                  # 详细文档目录
 ├── README.md              # 本说明文件
-└── package.json           # 项目配置
+└── package.json           # 项目配置文件
 ```
 
 ## 快速开始
@@ -68,13 +70,37 @@ npm run preview
 
 ## 环境变量配置
 
-### 前端环境变量 (Vercel)
-在 Vercel 项目设置中配置以下环境变量：
+### 本地开发环境配置
+1. 复制 `.env.example` 文件并重命名为 `.env`：
+   ```bash
+   cp .env.example .env
+   ```
 
+2. 编辑 `.env` 文件，替换占位符为您的实际 Supabase 凭据：
+   ```
+   VITE_APP_DB_URL=https://your-project.supabase.co
+   VITE_APP_DB_POSTGRES_PASSWORD=your_supabase_anon_key
+   ```
+
+### 生产环境配置
+在 Vercel 项目设置中配置以下环境变量：
 ```
 VITE_APP_DB_URL=YOUR_SUPABASE_URL
 VITE_APP_DB_POSTGRES_PASSWORD=YOUR_SUPABASE_ANON_KEY
+VITE_APP_SUPABASE_STORAGE_URL=YOUR_SUPABASE_STORAGE_URL
 ```
+
+### 环境文件说明
+- `.env` - 本地开发环境变量（不提交到版本控制）
+- `.env.example` - 环境变量示例文件（提交到版本控制）
+- `.env.development` - 开发环境特定变量（不提交到版本控制）
+- `.env.production` - 生产环境特定变量（不提交到版本控制）
+- `.env.local` - 本地覆盖变量（不提交到版本控制）
+
+### 安全注意事项
+- 永远不要在版本控制系统中提交包含真实凭据的环境文件
+- 使用 `.env.local` 文件存储敏感信息
+- 定期轮换API密钥和访问令牌
 
 ### 管理面板环境变量
 管理面板通过浏览器界面配置：

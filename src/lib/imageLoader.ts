@@ -1,4 +1,5 @@
-// 图片预加载工具函数
+import { MenuCategory, MenuItem } from '../types/types';
+
 export class ImageLoader {
   private static cache: Map<string, boolean> = new Map();
 
@@ -43,13 +44,13 @@ export class ImageLoader {
   }
 
   // 预加载菜单图片
-  static async preloadMenuImages(menuData: any[]): Promise<void> {
+  static async preloadMenuImages(menuData: MenuCategory[]): Promise<void> {
     const imageUrls: string[] = [];
     
     // 收集所有菜品图片URL
     menuData.forEach(category => {
       if (category.items) {
-        category.items.forEach((item: any) => {
+        category.items.forEach((item: MenuItem) => {
           if (item.imageUrl) {
             imageUrls.push(item.imageUrl);
           } else {

@@ -1,8 +1,30 @@
-import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse } from '../src/types/types';
+import { MenuCategory, SubmitOrderPayload, ServiceRequestPayload, ApiResponse, MenuItem } from '../src/types/types';
 import { MENU_DATA } from '../src/constants/constants';
 import { supabase } from '../src/lib/supabaseClient';
 import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
 import { logger } from '../src/lib/logger';
+
+// 定义menu_view返回的数据类型（适配当前数据库结构）
+interface MenuViewRow {
+  category_id: string;
+  category_name: string;
+  items: MenuItem[];
+}
+
+// 定义重试配置
+const DEFAULT_RETRY_CONFIG = {
+  maxRetries: 3,
+  delay: 1000,
+  backoffMultiplier: 2,
+  retryableErrors: ['NETWORK_ERROR', 'SERVER_ERROR', 'TIMEOUT']
+};
+
+const SERVICE_RETRY_CONFIG = {
+  maxRetries: 2,
+  delay: 1500,
+  backoffMultiplier: 2,
+  retryableErrors: ['NETWORK_ERROR', 'SERVER_ERROR', 'TIMEOUT']
+};
 
 export const api = {
   /**
@@ -21,38 +43,77 @@ export const api = {
     try {
       // 使用重试机制执行API调用
       const result = await executeWithRetry(async () => {
-        // 使用您创建的 menu_view 视图来获取菜单数据
+        // 首先尝试使用 menu_view 视图获取菜单数据
         const { data: menuData, error: menuError } = await supabase
           .from('menu_view')
           .select('category_id, category_name, items')
           .order('category_name');
 
-        if (menuError) {
-          throw createApiError('Failed to fetch menu data', {
-            code: menuError.code || ERROR_CODES.SERVER_ERROR,
+        if (!menuError && menuData && menuData.length > 0) {
+          // Transform the view data to App Data Structure
+          const categories: MenuCategory[] = menuData.map((row: MenuViewRow) => {
+            return {
+              key: row.category_id,
+              titleZh: row.category_name || '',
+              titleEn: row.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
+              items: row.items || [],
+            };
+          });
+
+          return categories;
+        }
+
+        // 如果 menu_view 不存在或没有数据，尝试直接查询表
+        logger.info('menu_view 不存在或没有数据，尝试直接查询表...');
+        
+        // 获取所有分类
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name');
+
+        if (categoriesError) {
+          throw createApiError('Failed to fetch categories data', {
+            code: categoriesError.code || ERROR_CODES.SERVER_ERROR,
             retryable: true
           });
         }
 
-        // Transform the view data to App Data Structure
-        const categories: MenuCategory[] = menuData.map((row) => {
-          // 定义row的类型，基于Supabase查询结果
-          const typedRow = row as {
-            category_id: string;
-            category_name: string;
-            items: any[];
-          };
+        // 获取所有菜品
+        const { data: dishesData, error: dishesError } = await supabase
+          .from('dishes')
+          .select('*');
+
+        if (dishesError) {
+          throw createApiError('Failed to fetch dishes data', {
+            code: dishesError.code || ERROR_CODES.SERVER_ERROR,
+            retryable: true
+          });
+        }
+
+        // 构建菜单结构
+        const categories: MenuCategory[] = categoriesData.map(category => {
+          const categoryDishes = dishesData.filter(dish => dish.category_id === category.id);
           
           return {
-            key: typedRow.category_id,
-            titleZh: typedRow.category_name || '',
-            titleEn: typedRow.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
-            items: typedRow.items || [],
+            key: category.id,
+            titleZh: category.name,
+            titleEn: category.name, // 暂时使用中文名称
+            items: categoryDishes.map(dish => ({
+              id: dish.id,
+              dish_id: dish.dish_id,
+              zh: dish.name_zh,
+              en: dish.name_en,
+              price: dish.price,
+              spicy: dish.is_spicy,
+              vegetarian: dish.is_vegetarian,
+              available: dish.available
+            }))
           };
         });
 
         return categories;
-      }, { maxRetries: 3, delay: 1000 });
+      }, DEFAULT_RETRY_CONFIG);
 
       return { code: 200, message: 'success', data: result };
     } catch (error) {
@@ -91,22 +152,14 @@ export const api = {
         }
         
         return { orderId: data.id };
-      }, { maxRetries: 2, delay: 1500 });
+      }, SERVICE_RETRY_CONFIG);
 
-      return {
-        code: 200,
-        message: 'success',
-        data: result
-      };
+      return { code: 200, message: 'success', data: result };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.warn('[API] Order submission failed (Offline Mode). Simulating success.', errorMessage);
-      // Simulate success for UI testing
-      return { 
-        code: 200, 
-        message: 'Offline order simulated', 
-        data: { orderId: `OFFLINE-${Date.now().toString().slice(-6)}` } 
-      };
+      // In offline mode, we simulate a successful order submission
+      return { code: 200, message: 'Offline order simulated', data: { orderId: 'offline-' + Date.now() } };
     }
   },
 
@@ -135,7 +188,7 @@ export const api = {
         }
         
         return null;
-      }, { maxRetries: 2, delay: 1500 });
+      }, SERVICE_RETRY_CONFIG);
 
       return { code: 200, message: 'success', data: null };
     } catch (error) {

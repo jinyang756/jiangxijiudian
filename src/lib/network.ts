@@ -106,6 +106,7 @@ export class NetworkMonitor {
       }
     }
 
+    // 使用本地资源检查网络质量，避免依赖外部服务
     try {
       const start = Date.now();
       const img = new Image();
@@ -125,6 +126,7 @@ export class NetworkMonitor {
           reject(new Error('Image load failed'));
         };
 
+        // 使用本地 favicon 作为网络检测资源
         img.src = `${window.location.origin}/favicon.ico?t=${Date.now()}`;
       });
 
@@ -134,7 +136,7 @@ export class NetworkMonitor {
       if (duration < 500) return 'good';
       return 'poor';
     } catch (error) {
-      logger.warn('Image load test failed:', error);
+      logger.warn('Local resource network test failed:', error);
       return 'poor';
     }
   }

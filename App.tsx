@@ -1,4 +1,7 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// App.tsx
+// 江西酒店智能菜单系统 - 前端展示页面与后台管理面板
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MenuItem, CartItems, MenuCategory } from './src/types/types';
 import DishCard from './components/DishCard';
 import BottomBar from './components/BottomBar';
@@ -9,17 +12,12 @@ import InfoModal from './components/InfoModal';
 import DishDetailModal from './components/DishDetailModal';
 import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
-import AdminQRCodeGenerator from './components/AdminQRCodeGenerator';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { api } from './services/api';
-import { supabase } from './src/lib/supabaseClient';
 import { ImageLoader } from './src/lib/imageLoader';
-import TestSuite from './src/components/TestSuite';
-import TestComponents from './scripts/test/test-components';
-import FeaturePage from './components/FeaturePage';
 
 // Types for our Page system
-type PageType = 'cover' | 'content' | 'back' | 'search' | 'service' | 'about' | 'order';
+type PageType = 'cover' | 'content' | 'back' | 'search' | 'service' | 'about' | 'order' | 'admin';
 
 interface PageData {
   type: PageType;
@@ -29,131 +27,53 @@ interface PageData {
   categoryTitleZh?: string;
   categoryTitleEn?: string;
   pageNumber?: number;
-  totalPages?: number;
-  categoryIndex?: number;
 }
 
-type TransitionType = 'flip-next' | 'flip-prev' | 'slide-up' | 'slide-down' | null;
-
-// Icons
-const ChevronLeft = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-  </svg>
-);
-
-const ChevronRight = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-  </svg>
-);
-
-// 添加底部导航栏图标
-const SearchIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-  </svg>
-);
-
-const InformationIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-  </svg>
-);
-
-const ShoppingBagIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-  </svg>
-);
-
-const TelegramIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-  </svg>
-);
-
-const RefreshIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-  </svg>
-);
-
-// --- Constants ---
-const ITEMS_PER_PAGE = 6;
-
-// 添加安全的 sessionStorage 操作函数
-const safeSessionStorageSet = (key: string, value: string) => {
-  try {
-    sessionStorage.setItem(key, value);
-  } catch (e) {
-  }
-};
-
-const safeSessionStorageGet = (key: string) => {
-  try {
-    return sessionStorage.getItem(key);
-  } catch (e) {
-    return null;
-  }
-};
-
-// 添加安全的 localStorage 操作函数
-const safeLocalStorageSet = (key: string, value: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (e) {
-    // 忽略错误，不影响主功能
-  }
-};
-
-const safeLocalStorageGet = (key: string, defaultValue: any) => {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (e) {
-    return defaultValue;
-  }
-};
-
-const AppContent: React.FC = () => {
+// 应用主组件
+const App: React.FC = () => {
+  // 状态管理
   const [menu, setMenu] = useState<MenuCategory[]>([]);
-  const [menuData, setMenuData] = useState<MenuCategory[]>([]);
-
-  const [error, setError] = useState<string | null>(null);
-  const [cart, setCart] = useState<CartItems>(() => {
-    return safeLocalStorageGet('cart', {});
-  });
-
-
-  const [tableId, setTableId] = useState('');
-
+  const [cart, setCart] = useState<CartItems>({});
   const [currentPage, setCurrentPage] = useState(0);
-  const [transition, setTransition] = useState<TransitionType>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [isServiceOpen, setIsServiceOpen] = useState(false);
+  const [pages, setPages] = useState<PageData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCart, setShowCart] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [showService, setShowService] = useState(false);
+  const [showDishDetail, setShowDishDetail] = useState(false);
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminView, setAdminView] = useState<'dashboard' | 'menu' | 'orders' | 'settings'>('dashboard');
+  const [showCategoryNav, setShowCategoryNav] = useState(false);
+  const [dbOperations] = useState({
+    createView: false,
+    updatePolicies: false,
+    syncData: false
+  });
+  const [operationResult, setOperationResult] = useState<string>('');
 
+  // 引用
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // 购物车操作函数
+  // 计算属性
+  const cartCount = useMemo(() => {
+    return Object.values(cart).reduce((sum, count) => sum + count, 0);
+  }, [cart]);
+
+  const cartTotal = useMemo(() => {
+    return Object.entries(cart).reduce((total, [itemId, count]) => {
+      const item = menu.flatMap(category => category.items).find(dish => dish.id === itemId);
+      return item ? total + (item.price * count) : total;
+    }, 0);
+  }, [cart, menu]);
+
+  // 获取当前页面数据
+  const activePage = pages[currentPage];
+
+  // 添加到购物车
   const addToCart = (item: MenuItem) => {
     setCart(prevCart => ({
       ...prevCart,
@@ -161,6 +81,7 @@ const AppContent: React.FC = () => {
     }));
   };
 
+  // 从购物车移除
   const removeFromCart = (item: MenuItem) => {
     setCart(prevCart => {
       const newCart = { ...prevCart };
@@ -173,10 +94,12 @@ const AppContent: React.FC = () => {
     });
   };
 
+  // 清空购物车
   const clearCart = () => {
     setCart({});
   };
 
+  // 更新购物车数量
   const updateCartQuantity = (item: MenuItem, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(item);
@@ -194,7 +117,6 @@ const AppContent: React.FC = () => {
     try {
       const response = await api.getMenu();
       if (response.code === 200) {
-        setMenuData(response.data || []);
         setMenu(response.data || []);
       } else {
         setError('加载菜单失败');
@@ -211,6 +133,13 @@ const AppContent: React.FC = () => {
     loadMenu();
   }, []);
 
+  // 监听菜单变化，重新生成页面
+  useEffect(() => {
+    if (menu.length > 0) {
+      generatePages(menu);
+    }
+  }, [menu]);
+
   // 加载菜单数据
   const loadMenu = async () => {
     try {
@@ -219,18 +148,18 @@ const AppContent: React.FC = () => {
       
       if (response.code === 200) {
         setMenu(response.data || []);
-        setMenuData(response.data || []);
         
         // 预加载菜单图片
-        if (response.data && response.data.length > 0) {
-          ImageLoader.preloadMenuImages(response.data)
-            .catch(err => {
-              // 只在开发环境记录警告
-              if (import.meta.env.DEV) {
-                console.warn('图片预加载失败', err);
-              }
-            });
-        }
+        response.data?.forEach(category => {
+          category.items.forEach(item => {
+            if (item.imageUrl) {
+              ImageLoader.preloadImage(item.imageUrl);
+            }
+          });
+        });
+        
+        // 生成页面数据
+        generatePages(response.data || []);
       } else {
         setError('加载菜单失败');
       }
@@ -241,1085 +170,677 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // --- Location / Table Persistence Logic ---
-  useEffect(() => {
-    // 1. Try URL Param
-    const params = new URLSearchParams(window.location.search);
-    const urlTableId = params.get('table');
-    const urlTag = params.get('tag'); // 获取标签参数
-
-    // 处理标签参数
-    if (urlTag) {
-      // 将标签保存到sessionStorage
-      safeSessionStorageSet('orderTag', urlTag);
-    }
-
-    if (urlTableId) {
-        setTableId(urlTableId);
-        safeSessionStorageSet('tableId', urlTableId);
-    } else {
-        // 2. Try Session Storage (Persist on Refresh)
-        const savedTableId = safeSessionStorageGet('tableId');
-        if (savedTableId) {
-            setTableId(savedTableId);
+  // 生成页面数据
+  const generatePages = (menuData: MenuCategory[]) => {
+    const newPages: PageData[] = [];
+    
+    // 封面页
+    newPages.push({
+      type: 'cover',
+      id: 'cover',
+      categoryKey: 'cover'
+    });
+    
+    // 内容页
+    menuData.forEach(category => {
+      // 每个分类作为一页
+      newPages.push({
+        type: 'content',
+        id: category.key,
+        categoryKey: category.key,
+        categoryTitleZh: category.titleZh,
+        categoryTitleEn: category.titleEn
+      });
+      
+      // 如果分类下的菜品很多，可以分页显示
+      if (category.items.length > 8) {
+        const itemsPerPage = 8;
+        const totalPages = Math.ceil(category.items.length / itemsPerPage);
+        
+        for (let i = 0; i < totalPages; i++) {
+          const start = i * itemsPerPage;
+          const end = start + itemsPerPage;
+          const pageItems = category.items.slice(start, end);
+          
+          newPages.push({
+            type: 'content',
+            id: `${category.key}-page-${i+1}`,
+            categoryKey: category.key,
+            items: pageItems,
+            categoryTitleZh: category.titleZh,
+            categoryTitleEn: category.titleEn,
+            pageNumber: i+1
+          });
         }
+      }
+    });
+    
+    // 关于页
+    newPages.push({
+      type: 'about',
+      id: 'about',
+      categoryKey: 'about'
+    });
+    
+    console.log('Generated pages:', newPages);
+    setPages(newPages);
+  };
+
+  // 页面导航
+  const goToPage = (index: number) => {
+    setCurrentPage(Math.max(0, Math.min(index, pages.length - 1)));
+    if (menuRef.current) {
+      menuRef.current.scrollTop = 0;
     }
-  }, []);
+  };
 
-  // Save cart to localStorage
-  useEffect(() => {
-    safeLocalStorageSet('cart', cart);
-  }, [cart]);
+  // 添加一个函数来导航到首页
 
-  // Derived Location Label
-  const locationLabel = useMemo(() => {
-    const id = tableId;
-    if (id.startsWith('RM-')) {
-        return `房间 Room ${id.replace('RM-', '')}`;
-    } else if (id.startsWith('KTV-')) {
-        return `KTV包厢 Box ${id.replace('KTV-', '')}`;
-    } else if (id.startsWith('T-')) {
-        return `桌号 Table ${id.replace('T-', '')}`;
+  // 显示菜品详情
+  const showDishDetails = (dish: MenuItem) => {
+    setSelectedDish(dish);
+    setShowDishDetail(true);
+  };
+
+  // 提交订单
+  const submitOrder = async () => {
+    if (cartCount === 0) return;
+    
+    try {
+      // 转换购物车数据格式
+      const itemsPayload = Object.entries(cart).map(([dishId, quantity]) => ({
+        dishId,
+        quantity
+      }));
+      
+      const response = await api.submitOrder({
+        tableId: 'TABLE_1', // 在实际应用中，这应该从某个地方获取
+        items: itemsPayload,
+        totalAmount: cartTotal
+      });
+      
+      if (response.code === 200) {
+        clearCart();
+        alert('订单提交成功！');
+      } else {
+        alert('订单提交失败，请重试');
+      }
+    } catch (err) {
+      alert('订单提交失败，请重试');
     }
-    return `Table ${id}`;
-  }, [tableId]);
+  };
 
-  // Derived State: Total Cart Count
-  const cartCount = useMemo(() => Object.values(cart).reduce((a: number, b: number) => a + b, 0), [cart]);
+  // 呼叫服务
+  const callService = async (serviceType: string, details?: string) => {
+    try {
+      const serviceTypes: Record<string, { type: string; typeName: string }> = {
+        'water': { type: 'water', typeName: '加水' },
+        'napkin': { type: 'napkin', typeName: '纸巾' },
+        'bill': { type: 'bill', typeName: '结账' },
+        'other': { type: 'other', typeName: '其他' }
+      };
+      
+      const serviceInfo = serviceTypes[serviceType] || serviceTypes['other'];
+      
+      const response = await api.callService({
+        tableId: 'TABLE_1', // 在实际应用中，这应该从某个地方获取
+        type: serviceInfo.type,
+        typeName: serviceInfo.typeName,
+        details: details || ''
+      });
+      
+      if (response.code === 200) {
+        alert('服务请求已提交！');
+      } else {
+        alert('服务请求失败，请重试');
+      }
+    } catch (err) {
+      alert('服务请求失败，请重试');
+    }
+  };
 
-  // Derived State: Map for quick item lookup
+  // 管理员登录
+  const handleAdminLogin = () => {
+    // 简单的密码验证（在实际应用中应该使用更安全的方法）
+    if (adminPassword === 'admin123') { // 简单的默认密码
+      setIsAuthenticated(true);
+    } else {
+      alert('密码错误');
+    }
+  };
+
+  // 管理员登出
+  const handleAdminLogout = () => {
+    setIsAuthenticated(false);
+    setAdminPassword('');
+    setAdminView('dashboard');
+  };
+
+  // 执行数据库操作
+  const executeDbOperation = async (operation: keyof typeof dbOperations) => {
+    setOperationResult('执行中...');
+    
+    try {
+      switch (operation) {
+        case 'createView':
+          // 这里应该通过某种方式执行 SQL 脚本
+          // 由于我们无法直接从客户端执行 DDL，我们会在 UI 中显示 SQL 脚本
+          setOperationResult('请在 Supabase 控制台中执行以下 SQL:\n\n' + 
+            'DROP VIEW IF EXISTS menu_view;\n\n' +
+            'CREATE OR REPLACE VIEW menu_view AS\n' +
+            'SELECT \n' +
+            '    c.id as category_id,\n' +
+            '    c.name as category_name,\n' +
+            '    json_agg(\n' +
+            '        json_build_object(\n' +
+            "            'id', d.id,\n" +
+            "            'dish_id', d.dish_id,\n" +
+            "            'name_zh', d.name_zh,\n" +
+            "            'name_en', d.name_en,\n" +
+            "            'price', d.price,\n" +
+            "            'is_spicy', d.is_spicy,\n" +
+            "            'is_vegetarian', d.is_vegetarian,\n" +
+            "            'available', d.available\n" +
+            '        ) ORDER BY d.name_zh\n' +
+            '    ) FILTER (WHERE d.id IS NOT NULL) as items\n' +
+            'FROM categories c\n' +
+            'LEFT JOIN dishes d ON c.id = d.category_id\n' +
+            'GROUP BY c.id, c.name\n' +
+            'ORDER BY c.name;');
+          break;
+          
+        case 'updatePolicies':
+          // 显示更新策略的 SQL
+          setOperationResult('请在 Supabase 控制台中执行以下 SQL:\n\n' +
+            '-- 为 dishes 表添加插入策略\n' +
+            'CREATE POLICY "public can insert dishes"\n' +
+            'ON dishes\n' +
+            'FOR INSERT TO anon\n' +
+            'WITH CHECK (true);\n\n' +
+            '-- 为 categories 表添加插入策略\n' +
+            'CREATE POLICY "public can insert categories"\n' +
+            'ON categories\n' +
+            'FOR INSERT TO anon\n' +
+            'WITH CHECK (true);\n\n' +
+            '-- 为 orders 表添加插入策略\n' +
+            'CREATE POLICY "public can insert orders"\n' +
+            'ON orders\n' +
+            'FOR INSERT TO anon\n' +
+            'WITH CHECK (true);\n\n' +
+            '-- 为 service_requests 表添加插入策略\n' +
+            'CREATE POLICY "public can insert service_requests"\n' +
+            'ON service_requests\n' +
+            'FOR INSERT TO anon\n' +
+            'WITH CHECK (true);');
+          break;
+          
+        case 'syncData':
+          // 触发数据同步
+          await fetchData();
+          setOperationResult('数据同步完成');
+          break;
+      }
+    } catch (error) {
+      setOperationResult(`操作失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  };
+
+  // 渲染当前页面
+  const renderCurrentPage = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">加载中...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center p-8 bg-red-50 rounded-lg">
+            <h2 className="text-xl font-bold text-red-800 mb-2">加载失败</h2>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button 
+              onClick={loadMenu}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+            >
+              重新加载
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!activePage) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">页面不存在</p>
+        </div>
+      );
+    }
+
+    switch (activePage.type) {
+      case 'cover':
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+            <div className="mb-8">
+              <div className="w-24 h-24 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-4xl text-white">酒</span>
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">江西酒店</h1>
+              <p className="text-xl text-gray-600">智能菜单系统</p>
+            </div>
+            <div className="text-gray-500 mb-8">
+              <p className="mb-2">欢迎光临江西酒店</p>
+              <p>请翻页浏览我们的精美菜单</p>
+            </div>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => goToPage(1)}
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                开始浏览
+              </button>
+              <button
+                onClick={() => setShowInfo(true)}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              >
+                餐厅信息
+              </button>
+            </div>
+          </div>
+        );
+
+      case 'content':
+        return (
+          <div className="h-full flex flex-col">
+            <SectionHeader 
+              zh={activePage.categoryTitleZh || ''} 
+              en={activePage.categoryTitleEn || ''} 
+            />
+            <div 
+              ref={menuRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+            >
+              {(activePage.items || menu.find(c => c.key === activePage.categoryKey)?.items || [])
+                .map((item: any) => (
+                  <DishCard 
+                    key={item.id} 
+                    item={item}
+                    quantity={cart[item.id] || 0}
+                    onAdd={addToCart}
+                    onRemove={removeFromCart}
+                    onClick={() => showDishDetails(item)}
+                  />
+                ))
+              }
+            </div>
+          </div>
+        );
+
+      case 'about':
+        return (
+          <div className="h-full flex flex-col p-8 overflow-y-auto">
+            <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">关于我们</h1>
+            
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">餐厅介绍</h2>
+              <p className="text-gray-600 mb-4">
+                江西酒店是一家专注于提供正宗江西菜的餐厅。我们致力于为顾客提供最地道的江西美食体验，
+                所有菜品均采用传统工艺精心制作。
+              </p>
+              <p className="text-gray-600">
+                我们的厨师团队拥有丰富的经验，精选优质食材，确保每一道菜都能让您感受到江西的独特风味。
+              </p>
+            </div>
+            
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">联系方式</h2>
+              <div className="space-y-2 text-gray-600">
+                <p>地址：江西省南昌市某某路123号</p>
+                <p>电话：0791-12345678</p>
+                <p>营业时间：11:00 - 22:00</p>
+              </div>
+            </div>
+            
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">特色服务</h2>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                <li>免费WiFi</li>
+                <li>包间预订</li>
+                <li>外卖服务</li>
+                <li>生日优惠</li>
+              </ul>
+            </div>
+            
+            <div className="mt-auto pt-4 border-t border-gray-200">
+              <p className="text-center text-gray-500 text-sm">
+                © 2025 江西酒店. 保留所有权利.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'admin':
+        if (!isAuthenticated) {
+          return (
+            <div className="h-full flex flex-col items-center justify-center p-8">
+              <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">管理员登录</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                      密码
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="请输入管理员密码"
+                    />
+                  </div>
+                  <button
+                    onClick={handleAdminLogin}
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  >
+                    登录
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="h-full flex flex-col">
+            <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
+              <h1 className="text-xl font-bold">管理面板</h1>
+              <button
+                onClick={handleAdminLogout}
+                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
+              >
+                登出
+              </button>
+            </div>
+            
+            <div className="flex flex-1 overflow-hidden">
+              {/* 侧边栏 */}
+              <div className="w-64 bg-gray-100 p-4">
+                <nav className="space-y-2">
+                  <button
+                    onClick={() => setAdminView('dashboard')}
+                    className={`w-full text-left px-4 py-2 rounded ${
+                      adminView === 'dashboard' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    仪表板
+                  </button>
+                  <button
+                    onClick={() => setAdminView('menu')}
+                    className={`w-full text-left px-4 py-2 rounded ${
+                      adminView === 'menu' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    菜单管理
+                  </button>
+                  <button
+                    onClick={() => setAdminView('orders')}
+                    className={`w-full text-left px-4 py-2 rounded ${
+                      adminView === 'orders' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    订单管理
+                  </button>
+                  <button
+                    onClick={() => setAdminView('settings')}
+                    className={`w-full text-left px-4 py-2 rounded ${
+                      adminView === 'settings' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                    }`}
+                  >
+                    系统设置
+                  </button>
+                </nav>
+              </div>
+              
+              {/* 主内容区 */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {adminView === 'dashboard' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">仪表板</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      <div className="bg-white p-6 rounded-lg shadow">
+                        <h3 className="text-lg font-semibold mb-2">今日订单</h3>
+                        <p className="text-3xl font-bold text-red-600">24</p>
+                      </div>
+                      <div className="bg-white p-6 rounded-lg shadow">
+                        <h3 className="text-lg font-semibold mb-2">总销售额</h3>
+                        <p className="text-3xl font-bold text-green-600">¥2,480</p>
+                      </div>
+                      <div className="bg-white p-6 rounded-lg shadow">
+                        <h3 className="text-lg font-semibold mb-2">待处理服务</h3>
+                        <p className="text-3xl font-bold text-blue-600">3</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow mb-8">
+                      <h3 className="text-lg font-semibold mb-4">数据库操作</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <button
+                            onClick={() => executeDbOperation('createView')}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                          >
+                            创建菜单视图
+                          </button>
+                          <span className="text-gray-600">创建 menu_view 视图以优化菜单查询</span>
+                        </div>
+                        
+                        <div>
+                          <button
+                            onClick={() => executeDbOperation('updatePolicies')}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                          >
+                            更新安全策略
+                          </button>
+                          <span className="text-gray-600">更新行级安全策略以允许数据插入</span>
+                        </div>
+                        
+                        <div>
+                          <button
+                            onClick={() => executeDbOperation('syncData')}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                          >
+                            同步数据
+                          </button>
+                          <span className="text-gray-600">从本地数据同步到数据库</span>
+                        </div>
+                        
+                        {operationResult && (
+                          <div className="mt-4 p-4 bg-gray-100 rounded">
+                            <pre className="whitespace-pre-wrap text-sm">{operationResult}</pre>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-semibold mb-4">系统信息</h3>
+                      <div className="space-y-2">
+                        <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '已设置' : '未设置'}</p>
+                        <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '已设置' : '未设置'}</p>
+                      </div>
+                      <div className="mt-4">
+                        <h4 className="font-medium mb-2">菜单数据:</h4>
+                        <p>菜单分类数量: {menu.length}</p>
+                        <p>菜单数据状态: {menu.length > 0 ? '已加载' : '未加载'}</p>
+                        {menu.length > 0 && (
+                          <div className="mt-2">
+                            <h5 className="font-medium">分类详情:</h5>
+                            <ul className="list-disc pl-5">
+                              {menu.map((category, index) => (
+                                <li key={index}>
+                                  {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 个菜品
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {adminView === 'menu' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">菜单管理</h2>
+                    <p>菜单管理功能正在开发中...</p>
+                  </div>
+                )}
+                
+                {adminView === 'orders' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">订单管理</h2>
+                    <p>订单管理功能正在开发中...</p>
+                  </div>
+                )}
+                
+                {adminView === 'settings' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">系统设置</h2>
+                    <p>系统设置功能正在开发中...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">页面类型未实现</p>
+          </div>
+        );
+    }
+  };
+
+  // 创建菜品映射表供购物车使用
   const itemsMap = useMemo(() => {
     const map = new Map<string, MenuItem>();
-    menu.forEach(cat => {
-        cat.items.forEach(item => map.set(item.id, item));
+    menu.forEach(category => {
+      category.items.forEach(item => {
+        map.set(item.id, item);
+      });
     });
     return map;
   }, [menu]);
 
-  // Derived State: Search results
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const lowerQ = searchQuery.toLowerCase();
-    const allItems = menu.flatMap(cat => cat.items || []);
-    return allItems.filter(item => 
-      item.zh.includes(searchQuery) || 
-      item.en.toLowerCase().includes(lowerQ) ||
-      item.id.toLowerCase().includes(lowerQ)
-    );
-  }, [menu, searchQuery]);
-
-  // Actions
-  const handleDishClick = (item: MenuItem) => {
-    setSelectedDish(item);
-  };
-
-  // Generate Pages & Category Mapping
-  const { pages, categoryPageMap, categoryKeys } = useMemo(() => {
-    
-    const generatedPages: PageData[] = [];
-    const catMap: {[key: string]: number} = {};
-    const keys: string[] = ['cover'];
-    
-    // 1. Cover Page
-    generatedPages.push({ type: 'cover', id: 'cover', categoryKey: 'cover' });
-    catMap['cover'] = 0;
-    
-    // 2. 功能页面
-    generatedPages.push({ type: 'search', id: 'search', categoryKey: 'search' });
-    catMap['search'] = generatedPages.length - 1;
-    keys.push('search');
-    
-    generatedPages.push({ type: 'service', id: 'service', categoryKey: 'service' });
-    catMap['service'] = generatedPages.length - 1;
-    keys.push('service');
-    
-    generatedPages.push({ type: 'about', id: 'about', categoryKey: 'about' });
-    catMap['about'] = generatedPages.length - 1;
-    keys.push('about');
-    
-    generatedPages.push({ type: 'order', id: 'order', categoryKey: 'order' });
-    catMap['order'] = generatedPages.length - 1;
-    keys.push('order');
-    
-    // 3. Content Pages
-    if (menu && menu.length > 0) {
-      console.log('开始生成内容页面');
-      let globalPageCount = 1;
-      menu.forEach((category, index) => {
-        // 确保每个分类都有唯一的key
-        const categoryKey = category.key || `category-${index}`;
-        keys.push(categoryKey);
-        catMap[categoryKey] = generatedPages.length;
-        
-        const items = category.items || [];
-        const totalCatPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-        
-        // 即使分类没有菜品也要生成页面
-        if (totalCatPages === 0) {
-          generatedPages.push({
-            type: 'content',
-            id: `${categoryKey}-0`,
-            categoryKey: categoryKey,
-            items: [],
-            categoryTitleZh: category.titleZh,
-            categoryTitleEn: category.titleEn,
-            pageNumber: globalPageCount++,
-            totalPages: 1,
-            categoryIndex: 1
-          });
-        } else {
-          for (let i = 0; i < totalCatPages; i++) {
-            const start = i * ITEMS_PER_PAGE;
-            const end = start + ITEMS_PER_PAGE;
-            const pageItems = items.slice(start, end);
-            
-            generatedPages.push({
-              type: 'content',
-              id: `${categoryKey}-${i}`,
-              categoryKey: categoryKey,
-              items: pageItems,
-              categoryTitleZh: category.titleZh,
-              categoryTitleEn: category.titleEn,
-              pageNumber: globalPageCount++,
-              totalPages: totalCatPages,
-              categoryIndex: i + 1
-            });
-          }
-        }
-      });
-    }
-    
-    // 4. Back Cover
-    keys.push('back');
-    catMap['back'] = generatedPages.length;
-    generatedPages.push({ type: 'back', id: 'back', categoryKey: 'back' });
-    
-    return { pages: generatedPages, categoryPageMap: catMap, categoryKeys: keys };
-  }, [menu]);
-
-  const totalPages = pages.length;
-  const activePage = pages[currentPage] || pages[0];
-  
-  // 添加调试信息
-  // Debug info removed for production
-
-  // 检查是否有页面数据
-  if (pages.length === 0) {
-  }
-
-  if (activePage) {
-  } else {
-  }
-
-  // Navigation Logic
-  const goToNextCategory = () => {
-    const currentCatKey = activePage.categoryKey;
-    const currentCatIndex = categoryKeys.indexOf(currentCatKey);
-    if (currentCatIndex < categoryKeys.length - 1) {
-      const nextCatKey = categoryKeys[currentCatIndex + 1];
-      setTransition('flip-next');
-      setCurrentPage(categoryPageMap[nextCatKey]);
-    }
-  };
-
-  const goToPrevCategory = () => {
-    const currentCatKey = activePage.categoryKey;
-    const currentCatIndex = categoryKeys.indexOf(currentCatKey);
-    if (currentCatIndex > 0) {
-      const prevCatKey = categoryKeys[currentCatIndex - 1];
-      setTransition('flip-prev');
-      setCurrentPage(categoryPageMap[prevCatKey]);
-    }
-  };
-
-
-
-  const goToNextPageInCat = () => {
-    if (currentPage < totalPages - 1) {
-      const nextPage = pages[currentPage + 1];
-      if (nextPage.categoryKey === activePage.categoryKey) {
-        setTransition('slide-up');
-        setCurrentPage(currentPage + 1);
-      }
-    }
-  };
-
-  const goToPrevPageInCat = () => {
-    if (currentPage > 0) {
-      const prevPage = pages[currentPage - 1];
-      if (prevPage.categoryKey === activePage.categoryKey) {
-        setTransition('slide-down');
-        setCurrentPage(currentPage - 1);
-      }
-    }
-  };
-
-  const jumpToCategory = (key: string) => {
-    const pageIndex = categoryPageMap[key];
-    if (pageIndex !== undefined) {
-        const targetPage = pages[pageIndex];
-        const currentKey = activePage.categoryKey;
-        const targetCatIndex = categoryKeys.indexOf(targetPage.categoryKey);
-        const currentCatIndex = categoryKeys.indexOf(currentKey);
-        
-        setTransition(targetCatIndex > currentCatIndex ? 'flip-next' : 'flip-prev');
-        setCurrentPage(pageIndex);
-        setIsMenuOpen(false);
-    }
-  };
-
-  // Touch / Swipe Logic
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    
-    const diffX = touchStartX.current - touchEndX;
-    const diffY = touchStartY.current - touchEndY;
-    
-    const absDiffX = Math.abs(diffX);
-    const absDiffY = Math.abs(diffY);
-
-    if (absDiffX > absDiffY) {
-      if (absDiffX > 50) {
-        if (diffX > 0) goToNextCategory();
-        else goToPrevCategory();
-      }
-    } else {
-      if (absDiffY > 50) {
-        if (diffY > 0) goToNextPageInCat();
-        else goToPrevPageInCat();
-      }
-    }
-
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isSearchOpen || isMenuOpen || isCartOpen || isInfoOpen || isServiceOpen || selectedDish || isLoading) return; 
-      if (e.key === 'ArrowRight') goToNextCategory();
-      if (e.key === 'ArrowLeft') goToPrevCategory();
-      if (e.key === 'ArrowDown') goToNextPageInCat();
-      if (e.key === 'ArrowUp') goToPrevPageInCat();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, isSearchOpen, isMenuOpen, isCartOpen, isInfoOpen, isServiceOpen, activePage, selectedDish, isLoading]);
-
-  // --- Render Page Types ---
-
-  const renderCover = () => (
-    <div className="h-full flex flex-col items-center justify-center p-6 border-4 border-double border-gold/40 outline outline-2 outline-offset-4 outline-gold/20 relative bg-paper bg-texture shadow-[inset_20px_0_20px_-10px_rgba(0,0,0,0.1)]">
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none z-10"></div>
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-5"></div>
-      
-      <div className="w-24 h-24 border-2 border-gold rounded-sm flex items-center justify-center rotate-45 mb-12 shadow-lg bg-paper">
-        <div className="w-16 h-16 bg-cinnabar -rotate-45 flex items-center justify-center text-white font-bold text-4xl shadow-inner">
-          椋?
-        </div>
-      </div>
-
-      <h1 className="text-3xl md:text-4xl font-bold tracking-[0.1em] text-ink font-serif mb-4 text-center leading-relaxed">
-        江西大酒店<br/>四楼会所
-      </h1>
-      <div className="h-px w-20 bg-gold my-6"></div>
-      <p className="text-gold font-serif tracking-widest text-lg uppercase mb-12 text-center">Jinjiang Star Hotel</p>
-      <div className="text-center text-sm text-gold font-bold border-2 border-gold/30 px-6 py-2 rounded-sm shadow-sm bg-paper/50 backdrop-blur-sm">
-        <span className="text-xs text-stone-400 block mb-1 font-sans">褰撳墠浣嶇疆 Location</span>
-        <span className="text-cinnabar">{locationLabel}</span>
-      </div>
-
-      <div className="mt-auto mb-12 text-center animate-pulse space-y-2">
-        <div>
-            <p className="text-stone-400 text-sm tracking-widest">← 左右滑动切换分类 →</p>
-            <p className="text-[10px] text-stone-300 uppercase">Swipe Horizontal for Categories</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContent = (page: PageData) => (
-    <div className="h-full flex flex-col p-2 md:p-6 bg-paper bg-texture relative shadow-inner">
-      <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-stone-400/20 to-transparent pointer-events-none z-10"></div>
-
-      <SectionHeader 
-        zh={page.categoryTitleZh || ''} 
-        en={page.categoryTitleEn || ''} 
-        pageIndex={page.categoryIndex}
-        totalPages={page.totalPages}
-      />
-
-      <div className="flex-1 grid grid-cols-2 gap-3 content-start pl-2">
-        {page.items?.map((item) => (
-          <DishCard 
-            key={item.id} 
-            item={item} 
-            quantity={cart[item.id] || 0}
-            onAdd={addToCart}
-            onRemove={removeFromCart}
-            onClick={handleDishClick}
-          />
-        ))}
-      </div>
-
-      <div className="mt-2 pt-2 border-t border-stone-100 flex justify-between items-end pl-4">
-        <span className="text-[10px] text-stone-300 italic">江西大酒店四楼会所</span>
-        <span className="font-serif text-stone-400 text-sm">- {page.pageNumber} -</span>
-      </div>
-    </div>
-  );
-
-  const renderBack = () => {
-    const mapUrl = "https://www.google.com/maps/search/?api=1&query=Jinjiang+Star+Hotel+Jiangxi+Grand+Hotel";
-    return (
-    <div className="h-full flex flex-col items-center justify-center p-8 bg-paper bg-texture relative border-4 border-stone-200 border-double shadow-[inset_20px_0_20px_-10px_rgba(0,0,0,0.1)]">
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none z-10"></div>
-      
-      <div className="text-center space-y-8">
-        <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-ink mb-4">联系我们 Contact Us</h3>
-          <div className="flex flex-col items-center gap-3 text-stone-600">
-             <a href="tel:+639552461263" className="flex items-center gap-2 hover:text-gold transition-colors cursor-pointer">
-                <PhoneIcon />
-                <span className="tracking-widest font-mono">0955 246 1263</span>
-             </a>
-             <a href="https://t.me/jx555999" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-gold transition-colors cursor-pointer">
-                <TelegramIcon />
-                <span className="tracking-widest font-mono">@jx555999</span>
-             </a>
-             <a 
-                href={mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-center hover:text-gold transition-colors cursor-pointer flex-col"
-             >
-                <div className="flex items-center gap-2">
-                   <MapPinIcon />
-                   <span className="text-sm font-bold">江西大酒店四楼会所</span>
-                </div>
-                <span className="text-xs text-stone-500">Metro Manila, Philippines</span>
-             </a>
-          </div>
-        </div>
-
-        <div className="w-32 h-32 bg-white p-2 mx-auto shadow-lg transform rotate-3">
-            <img src="https://picsum.photos/seed/qrcode/200/200" className="w-full h-full grayscale contrast-125" alt="QR" />
-        </div>
-        
-        <p className="text-xs text-stone-400">扫码获取优惠 Scan for promotions</p>
-      </div>
-      
-      <div className="mt-auto pt-8 text-[10px] text-stone-300 text-center w-full border-t border-stone-100">
-        漏 2024 Jinjiang Star Hotel. All rights reserved.
-      </div>
-    </div>
-  )};
-
-  // 渲染搜索页面
-  const renderSearch = () => {
-    return (
-      <FeaturePage 
-        title="搜索菜品" 
-        titleEn="Search Dishes" 
-        onBack={goToPrevCategory}
-      >
-        <div className="flex flex-col h-full">
-          {/* 搜索输入框 */}
-          <div className="p-4 border-b border-stone-200 bg-stone-50">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="搜索菜品 Search dishes..."
-                className="w-full bg-white border border-stone-300 rounded-full py-3 pl-4 pr-12 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold text-ink"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400 w-5 h-5">
-                <SearchIcon />
-              </div>
-            </div>
-          </div>
-          
-          {/* 搜索结果 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {searchQuery.trim() === '' ? (
-              <div className="text-center mt-10 text-stone-400">
-                <div className="w-16 h-16 mx-auto mb-4 text-stone-300 flex items-center justify-center">
-                  <SearchIcon />
-                </div>
-                <p className="mb-2">请输入菜名或拼音进行搜索</p>
-                <p className="text-xs">Please enter dish name or pinyin</p>
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div className="text-center mt-10 text-stone-400">
-                <div className="w-16 h-16 mx-auto mb-4 text-stone-300 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                  </svg>
-                </div>
-                <p className="mb-2">未找到相关菜品</p>
-                <p className="text-xs">No dishes found</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {searchResults.map((item: MenuItem) => {
-                  const qty = cart[item.id] || 0;
-                  return (
-                    <div 
-                      key={item.id} 
-                      className="bg-white p-4 rounded shadow-sm border border-stone-100 flex gap-3 items-center"
-                      onClick={() => handleDishClick(item)}
-                    >
-                      <div className="w-16 h-16 bg-stone-200 rounded flex-shrink-0 flex items-center justify-center text-stone-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-ink truncate">{item.zh}</h4>
-                        <p className="text-xs text-stone-500 truncate">{item.en}</p>
-                        <div className="text-cinnabar font-bold mt-1">
-                          {item.price.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        {qty > 0 && (
-                          <button 
-                            onClick={() => removeFromCart(item)} 
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-600 active:bg-stone-200"
-                          >
-                            -
-                          </button>
-                        )}
-                        {qty > 0 && <span className="text-sm font-bold w-6 text-center">{qty}</span>}
-                        <button 
-                          onClick={() => addToCart(item)} 
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-wood text-gold active:bg-black"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </FeaturePage>
-    );
-  };
-
-  // 渲染服务页面
-  const renderService = () => {
-    // 服务选项
-    const services = [
-      { id: 'waiter', zh: '呼叫服务员', en: 'Call Waiter', icon: '👋' },
-      { id: 'water', zh: '加水', en: 'Water Refill', icon: '🫗' },
-      { id: 'napkins', zh: '餐巾纸', en: 'Napkins', icon: '🧻' },
-      { id: 'bill', zh: '结账', en: 'Request Bill', icon: '🧾' },
-      { id: 'bowl', zh: '加碗筷', en: 'Extra Cutlery', icon: '🥣' },
-      { id: 'clean', zh: '清理桌面', en: 'Clean Table', icon: '✨' },
-      { id: 'ktv', zh: 'KTV点歌', en: 'Song Request', icon: '🎤' },
-    ];
-
-    const handleServiceRequest = async (service: { id: string; zh: string; en: string }) => {
-      try {
-        const response = await api.callService({
-          tableId: tableId,
-          type: service.id,
-          typeName: service.zh
-        });
-        
-        if (response.code === 200) {
-          // 显示成功消息
-          alert(`已呼叫: ${service.zh}\nRequest Sent: ${service.en}`);
-        } else {
-          alert('呼叫失败 Failed');
-        }
-      } catch (e) {
-        alert('网络错误 Network Error');
-      }
-    };
-
-    return (
-      <FeaturePage 
-        title="呼叫服务" 
-        titleEn="Call Service" 
-        onBack={goToPrevCategory}
-      >
-        <div className="flex flex-col h-full">
-          {/* 服务选项网格 */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-2 gap-4">
-              {services.map((service) => (
-                <button
-                  key={service.id}
-                  onClick={() => handleServiceRequest(service)}
-                  className="flex flex-col items-center justify-center p-6 bg-white border border-stone-100 shadow-sm rounded-sm active:scale-95 active:bg-stone-50 transition-all group hover:border-gold/30"
-                >
-                  <span className="text-3xl mb-3">{service.icon}</span>
-                  <span className="text-sm font-bold text-ink">{service.zh}</span>
-                  <span className="text-[10px] text-stone-500 uppercase mt-1">{service.en}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* 底部提示 */}
-          <div className="p-4 border-t border-stone-200 bg-stone-50 text-center">
-            <p className="text-xs text-stone-500">服务员将尽快赶到，请稍候<br/>Waiter will arrive shortly</p>
-          </div>
-        </div>
-      </FeaturePage>
-    );
-  };
-
-  // 渲染关于页面
-  const renderAbout = () => {
-    return (
-      <FeaturePage 
-        title="关于我们" 
-        titleEn="About Us" 
-        onBack={goToPrevCategory}
-      >
-        <div className="flex flex-col h-full">
-          {/* 酒店Logo/品牌展示 */}
-          <div className="flex flex-col items-center justify-center p-6 border-b border-stone-200 bg-stone-50">
-            <div className="w-20 h-20 border-2 border-gold rounded-sm flex items-center justify-center rotate-45 mb-4 shadow-lg bg-paper">
-              <div className="w-14 h-14 bg-cinnabar -rotate-45 flex items-center justify-center text-white font-bold text-2xl shadow-inner">
-                椋?
-              </div>
-            </div>
-            <h2 className="text-xl font-bold text-ink mb-1">江西大酒店</h2>
-            <p className="text-sm text-stone-500">Jinjiang Star Hotel</p>
-          </div>
-
-          {/* 酒店信息 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2 flex items-center">
-                <InformationIcon />
-                <span className="ml-2">酒店介绍</span>
-              </h3>
-              <p className="text-sm text-stone-600">
-                江西大酒店四楼会所提供高品质的用餐体验。我们致力于为您提供最优质的服务和最美味的菜品。
-              </p>
-              <p className="text-sm text-stone-600 mt-2">
-                Jinjiang Star Hotel 4th Floor Club provides you with a high-quality dining experience. We are committed to providing you with the finest service and delicious dishes.
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">营业时间</h3>
-              <p className="text-sm text-stone-600">每天 10:00 - 22:00</p>
-              <p className="text-xs text-stone-500 mt-1">Daily 10:00 AM - 10:00 PM</p>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">联系我们</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-stone-600 flex items-center">
-                  <PhoneIcon />
-                  <span className="ml-2">0955 246 1263</span>
-                </p>
-                <p className="text-sm text-stone-600 flex items-center">
-                  <MapPinIcon />
-                  <span className="ml-2">Metro Manila, Philippines</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded shadow-sm border border-stone-100">
-              <h3 className="font-bold text-ink mb-2">特色服务</h3>
-              <ul className="text-sm text-stone-600 list-disc list-inside space-y-1">
-                <li>免费WiFi</li>
-                <li>免费停车</li>
-                <li>外卖服务</li>
-                <li>私人包间</li>
-              </ul>
-              <ul className="text-xs text-stone-500 list-disc list-inside space-y-1 mt-1">
-                <li>Free WiFi</li>
-                <li>Free Parking</li>
-                <li>Takeout Service</li>
-                <li>Private Rooms</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </FeaturePage>
-    );
-  };
-
-  // 渲染订单页面
-  const renderOrder = () => {
-    // 计算购物车总价
-    const totalPrice = Object.entries(cart).reduce((total, [itemId, quantity]) => {
-      const item = itemsMap.get(itemId);
-      return total + (item ? item.price * quantity : 0);
-    }, 0);
-
-    // 获取购物车中的商品列表
-    const cartItems = Object.entries(cart).map(([itemId, quantity]) => {
-      const item = itemsMap.get(itemId);
-      return item ? { ...item, quantity } : null;
-    }).filter(Boolean) as (MenuItem & { quantity: number })[];
-
-    const handlePlaceOrder = async () => {
-      if (cartItems.length === 0) {
-        alert('购物车为空，请先添加菜品\nCart is empty, please add dishes first');
-        return;
-      }
-
-      try {
-        // 检查是否有标签参数
-        const orderTag = safeSessionStorageGet('orderTag');
-        
-        if (orderTag) {
-          // 如果有标签，则提交到tagged_orders表
-          const { error } = await supabase
-            .from('tagged_orders')
-            .insert({
-              table_id: tableId,
-              tag: orderTag,
-              items_json: JSON.stringify(cartItems.map(item => ({
-                id: item.id,
-                zh: item.zh,
-                en: item.en,
-                price: item.price,
-                quantity: item.quantity
-              }))),
-              total_amount: totalPrice,
-              status: 'pending'
-            })
-            .select();
-
-          if (!error) {
-            // 清空购物车
-            clearCart();
-            alert(`标签化订单已提交！标签: ${orderTag}\nTagged order placed successfully! Tag: ${orderTag}`);
-            // 清除标签参数
-            sessionStorage.removeItem('orderTag');
-          } else {
-            alert('标签化订单提交失败，请重试\nFailed to place tagged order, please try again');
-          }
-        } else {
-          // 没有标签，使用普通订单提交
-          const response = await api.submitOrder({
-            tableId: tableId,
-            items: cartItems.map(item => ({
-              dishId: item.id,
-              quantity: item.quantity,
-              price: item.price
-            })),
-            totalAmount: totalPrice
-          });
-
-          if (response.code === 200) {
-            // 清空购物车
-            clearCart();
-            alert('下单成功！\nOrder placed successfully!');
-          } else {
-            alert('下单失败，请重试\nFailed to place order, please try again');
-          }
-        }
-      } catch (e) {
-        alert('网络错误，请重试\nNetwork error, please try again');
-      }
-    };
-
-    return (
-      <FeaturePage 
-        title="我的订单" 
-        titleEn="My Order" 
-        onBack={goToPrevCategory}
-      >
-        <div className="flex flex-col h-full">
-          {cartItems.length === 0 ? (
-            // 空购物车状态
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              <div className="w-16 h-16 bg-stone-200 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBagIcon />
-              </div>
-              <p className="text-stone-500 text-center">购物车为空</p>
-              <p className="text-xs text-stone-400 mt-1 text-center">Your cart is empty</p>
-              <p className="text-xs text-stone-500 mt-4 text-center">请先添加菜品到购物车</p>
-              <p className="text-xs text-stone-400 mt-1 text-center">Please add dishes to your cart first</p>
-            </div>
-          ) : (
-            // 购物车有商品状态
-            <>
-              {/* 商品列表 */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded shadow-sm border border-stone-100 flex gap-3 items-center">
-                    <div className="w-16 h-16 bg-stone-200 rounded flex-shrink-0 flex items-center justify-center text-stone-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-ink truncate">{item.zh}</h4>
-                      <p className="text-xs text-stone-500 truncate">{item.en}</p>
-                      <div className="text-cinnabar font-bold mt-1">
-                        {item.price.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold w-6 text-center">×{item.quantity}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 总计和下单按钮 */}
-              <div className="p-4 border-t border-stone-200 bg-stone-50">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-ink">总计 Total</span>
-                  <span className="font-bold text-cinnabar text-lg">
-                    {totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
-                  </span>
-                </div>
-                <button
-                  onClick={handlePlaceOrder}
-                  className="w-full bg-cinnabar hover:bg-red-700 text-white font-bold py-3 rounded-sm transition-colors active:scale-95"
-                >
-                  下单确认 Place Order
-                </button>
-                <button
-                  onClick={clearCart}
-                  className="w-full mt-2 border border-stone-300 hover:bg-stone-100 text-stone-600 font-bold py-2 rounded-sm transition-colors active:scale-95"
-                >
-                  清空购物车 Clear Cart
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </FeaturePage>
-    );
-  };
-
-  const getAnimationClass = () => {
-    switch (transition) {
-      case 'flip-next': return 'animate-flip-next';
-      case 'flip-prev': return 'animate-flip-prev';
-      case 'slide-up': return 'animate-slide-up';
-      case 'slide-down': return 'animate-slide-down';
-      default: return 'animate-fade-in';
-    }
-  };
-
-  const is3DTransition = transition === 'flip-next' || transition === 'flip-prev';
-
-  // 获取URL参数
-  const urlParams = new URLSearchParams(window.location.search);
-  const isAdminMode = urlParams.get('mode') === 'admin';
-  const isTestMode = urlParams.get('mode') === 'test';
-  const isDebugMode = urlParams.get('mode') === 'debug';
-  const isComponentTestMode = urlParams.get('mode') === 'components';
-
-  // --- Component Test Mode Render ---
-  if (isComponentTestMode) {
-    return (
-      <div className="w-full h-screen">
-        <TestComponents />
-      </div>
-    );
-  }
-
-  // --- Debug Mode Render ---
-  if (isDebugMode) {
-    return (
-      <div className="w-full h-screen bg-gray-100 p-4 overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-4">璋冭瘯妯″紡</h1>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">环境变量检查</h2>
-          <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '已设置' : '未设置'}</p>
-          <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '已设置' : '未设置'}</p>
-        </div>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">菜单数据:</h2>
-          <p>鑿滃崟鍒嗙被鏁伴噺: {menu.length}</p>
-          <p>菜单数据状态: {menu.length > 0 ? '已加载' : '未加载'}</p>
-          {menu.length > 0 && (
-            <div className="mt-2">
-              <h3 className="font-medium">分类详情:</h3>
-              <ul className="list-disc pl-5">
-                {menu.map((category, index) => (
-                  <li key={index}>
-                    {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 个菜品
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2">页面信息:</h2>
-          <p>总页面数: {pages.length}</p>
-          <p>当前页面索引: {currentPage}</p>
-          <p>当前页面类型: {activePage?.type || '无'}</p>
-          {activePage && (
-            <div className="mt-2">
-              <h3 className="font-medium">当前页面详情:</h3>
-              <p>分类: {activePage.categoryTitleZh || 'N/A'}</p>
-              <p>分类键: {activePage.categoryKey}</p>
-              <p>菜品数量: {activePage.items?.length || 0}</p>
-            </div>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={loadMenu}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            閲嶆柊鍔犺浇鑿滃崟鏁版嵁
-          </button>
-          <button 
-            onClick={() => {
-              // 只在开发环境记录菜单数据
-              if (import.meta.env.DEV) {
-                console.log('菜单数据:', menu);
-              }
-            }}
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          >
-            在控制台打印菜单数据
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // --- Admin Mode Render ---
-  if (isAdminMode) {
-    return <AdminQRCodeGenerator />;
-  }
-  
-  // --- Test Mode Render ---
-  if (isTestMode) {
-    return (
-      <div className="w-full h-screen bg-gray-100 p-4">
-        <TestSuite />
-      </div>
-    );
-  }
-
-  // Loading & Error Screens
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-wood bg-wood-pattern text-gold z-50">
-        <div className="w-16 h-16 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4"></div>
-        <p className="tracking-widest font-serif">Loading Menu...</p>
-        <p className="text-xs text-stone-500 mt-2">正在加载菜单</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-wood bg-wood-pattern text-stone-400 z-50 p-6 text-center">
-        <div className="w-16 h-16 border-4 border-stone-600 rounded-full flex items-center justify-center mb-4 text-stone-600">
-            !
-        </div>
-        <h2 className="text-lg text-stone-300 mb-2">加载失败 Failed to Load</h2>
-        <p className="text-xs mb-6">{error}</p>
-        <button 
-            onClick={fetchData}
-            className="flex items-center gap-2 bg-gold text-wood px-6 py-2 rounded-sm font-bold hover:bg-white transition-colors"
-        >
-            <RefreshIcon /> 閲嶈瘯 Retry
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full h-full max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col relative">
-      
-      {/* 添加调试信息 */}
-      {/* Debug info removed for production */}
-      
-      <div 
-        className="flex-1 relative w-full perspective-1500 overflow-hidden shadow-2xl mt-4 mb-0 md:my-8 rounded-t-sm bg-wood"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div 
-            key={currentPage}
-            className={`w-full h-full bg-paper absolute inset-0 ${is3DTransition ? 'origin-left backface-hidden preserve-3d' : ''} ${getAnimationClass()}`}
-        >
-           {/* 修复页面渲染逻辑，确保所有类型的页面都能正确显示 */}
-           {activePage && (() => {
-             switch (activePage.type) {
-               case 'cover':
-                 return renderCover();
-               case 'search':
-                 return renderSearch();
-               case 'service':
-                 return renderService();
-               case 'about':
-                 return renderAbout();
-               case 'order':
-                 return renderOrder();
-               case 'content':
-                 return renderContent(activePage);
-               case 'back':
-                 return renderBack();
-               default:
-                 return (
-                   <div className="h-full flex items-center justify-center p-4">
-                     <div className="text-center">
-                       <p className="text-lg font-bold mb-2 text-ink">页面类型未识别</p>
-                       <p className="text-stone-500">Page type not recognized: {activePage.type}</p>
-                     </div>
-                   </div>
-                 );
-             }
-           })()}
-           
-           {/* 如果没有活动页面或处于加载状态，显示加载指示器 */}
-           {(!activePage || isLoading) && (
-             <div className="h-full flex items-center justify-center p-4">
-               <div className="text-center">
-                 <div className="w-8 h-8 border-4 border-gold/30 border-t-gold rounded-full animate-spin mb-4 mx-auto"></div>
-                 <p className="text-lg font-bold mb-2 text-ink">加载中...</p>
-                 <p className="text-stone-500">请稍等</p>
-               </div>
-             </div>
-           )}
-        </div>
-
-        <div className="absolute inset-y-0 left-0 w-8 z-20 cursor-pointer" onClick={goToPrevCategory}></div>
-        <div className="absolute inset-y-0 right-0 w-8 z-20 cursor-pointer" onClick={goToNextCategory}></div>
-      </div>
-
-      {/* 移动端导航按钮 - 在小屏幕上显示 */}
-      <div className="flex md:hidden h-12 items-center justify-between px-4 text-stone-light/50 bg-wood border-t border-stone-800">
-        <button 
-          onClick={goToPrevCategory}
-          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
-          title="Previous Category"
-        >
-          <ChevronLeft />
-        </button>
-        <div className="flex flex-col items-center">
-           <span className="text-xs tracking-widest text-gold truncate max-w-[120px]">{activePage.categoryTitleZh || '首页 Home'}</span>
-        </div>
-        <button 
-          onClick={goToNextCategory}
-          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
-          title="Next Category"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      {/* 桌面端导航按钮 - 仅在中等及以上屏幕上显示 */}
-      <div className="hidden md:flex h-12 items-center justify-between px-6 text-stone-light/50 bg-wood">
-        <button 
-          onClick={goToPrevCategory}
-          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
-          title="Previous Category"
-        >
-          <ChevronLeft />
-        </button>
-        <div className="flex flex-col items-center">
-           <span className="text-xs tracking-widest text-gold">{activePage.categoryTitleZh || '首页 Home'}</span>
-        </div>
-        <button 
-          onClick={goToNextCategory}
-          className="p-2 rounded-full border border-current hover:bg-stone-800 hover:text-white transition-all"
-          title="Next Category"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      <BottomBar 
-        cartCount={cartCount}
-        onOpenMenu={() => setIsMenuOpen(true)}
-        onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenCart={() => setIsCartOpen(true)}
-        onOpenInfo={() => setIsInfoOpen(true)}
-        onOpenService={() => setIsServiceOpen(true)}
-      />
-
-      <CategoryNav 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        categories={menuData} 
-        onSelectCategory={jumpToCategory}
-      />
-
-      <CartModal 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cart={cart}
-        itemsMap={itemsMap}
-        onAdd={addToCart}
-        onRemove={removeFromCart}
-        onUpdateQuantity={updateCartQuantity}
-        onClear={clearCart}
-        tableId={tableId}
-        locationLabel={locationLabel}
-      />
-
-      <SearchOverlay 
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        menuData={menuData}
-        cart={cart}
-        onAdd={addToCart}
-        onRemove={removeFromCart}
-        onItemClick={handleDishClick}
-      />
-
-      <InfoModal 
-        isOpen={isInfoOpen}
-        onClose={() => setIsInfoOpen(false)}
-        onOpen={() => {}}
-        tableId={tableId}
-        locationLabel={locationLabel}
-      />
-
-      <DishDetailModal 
-        item={selectedDish}
-        quantity={selectedDish ? (cart[selectedDish.id] || 0) : 0}
-        onClose={() => setSelectedDish(null)}
-        onAdd={addToCart}
-        onRemove={removeFromCart}
-      />
-
-      <ServiceModal
-        isOpen={isServiceOpen}
-        onClose={() => setIsServiceOpen(false)}
-        tableId={tableId}
-        locationLabel={locationLabel}
-      />
-
-    </div>
-  );
-};
-
-const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <AppContent />
+      <div className="h-screen flex flex-col bg-gray-50">
+        {/* 主内容区 */}
+        <div className="flex-1 overflow-hidden">
+          {renderCurrentPage()}
+        </div>
+
+        {/* 底部导航栏 */}
+        <BottomBar 
+          cartCount={cartCount}
+          onOpenMenu={() => setShowCategoryNav(true)}
+          onOpenSearch={() => setShowSearch(true)}
+          onOpenCart={() => setShowCart(true)}
+          onOpenInfo={() => setShowInfo(true)}
+          onOpenService={() => setShowService(true)}
+        />
+
+        {/* 分类导航 */}
+        <CategoryNav
+          isOpen={showCategoryNav}
+          onClose={() => setShowCategoryNav(false)}
+          categories={menu}
+          onSelectCategory={(key: string) => {
+            // Find the page index for this category
+            const categoryPageIndex = pages.findIndex(page => page.categoryKey === key);
+            if (categoryPageIndex !== -1) {
+              goToPage(categoryPageIndex);
+            }
+            // 关闭分类导航
+            setShowCategoryNav(false);
+          }}
+        />
+
+        {/* 购物车模态框 */}
+        {showCart && (
+          <CartModal
+            isOpen={showCart}
+            cart={cart}
+            itemsMap={itemsMap}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+            onUpdateQuantity={updateCartQuantity}
+            onClear={clearCart}
+            onClose={() => setShowCart(false)}
+            tableId="TABLE_1"
+            locationLabel="Table 1"
+          />
+        )}
+
+        {/* 搜索模态框 */}
+        {showSearch && (
+          <SearchOverlay
+            isOpen={showSearch}
+            menuData={menu}
+            cart={cart}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+            onClose={() => setShowSearch(false)}
+          />
+        )}
+
+        {/* 信息模态框 */}
+        {showInfo && (
+          <InfoModal 
+            isOpen={showInfo} 
+            onClose={() => setShowInfo(false)} 
+            onOpen={function (): void {
+              throw new Error('Function not implemented.');
+            }} 
+            tableId="TABLE_1" 
+            locationLabel="Table 1" 
+          />
+        )}
+
+        {/* 服务模态框 */}
+        {showService && (
+          <ServiceModal 
+            isOpen={showService}
+            onClose={() => setShowService(false)} 
+            tableId="TABLE_1"
+            locationLabel="Table 1"
+          />
+        )}
+
+        {/* 菜品详情模态框 */}
+        {showDishDetail && selectedDish && (
+          <DishDetailModal 
+            item={selectedDish}
+            onClose={() => {
+              setShowDishDetail(false);
+              setSelectedDish(null);
+            }}
+            quantity={cart[selectedDish.id] || 0}
+            onAdd={addToCart}
+            onRemove={removeFromCart}
+          />
+        )}
+      </div>
     </ErrorBoundary>
   );
 };

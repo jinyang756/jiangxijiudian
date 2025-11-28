@@ -1,6 +1,8 @@
 // src/lib/api.ts
 // API配置和工具函数
 
+import { logger } from './logger';
+
 // 从环境变量获取API基础URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8090/api';
 const ADMIN_BASE_URL = import.meta.env.VITE_ADMIN_BASE_URL || 'http://localhost:8090/_';
@@ -28,7 +30,7 @@ export const fetchFromAPI = async <T = unknown>(endpoint: string, options: Reque
 
     return await response.json();
   } catch (error) {
-    console.error('API request error:', error);
+    logger.error('API request error:', error);
     throw error;
   }
 };
