@@ -69,6 +69,14 @@ class AuthManager {
 
   // 确定用户角色
   private determineUserRole(user: User): UserRole {
+    // 从 Supabase 用户元数据 user.user_metadata.role 读取角色
+    if (user.user_metadata?.role) {
+      const metadataRole = user.user_metadata.role.toLowerCase();
+      if (['admin', 'staff', 'readonly'].includes(metadataRole)) {
+        return metadataRole as UserRole;
+      }
+    }
+    
     // 这里应该根据实际的用户数据或配置来确定角色
     // 目前简化处理，后续可以从用户元数据或外部配置获取
     const email = user.email || '';

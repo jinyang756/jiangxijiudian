@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-// 配置 Supabase 客户端
-const supabaseUrl = 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
+// 从环境变量获取 Supabase 配置
+const supabaseUrl = process.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// 检查环境变量是否存在
+if (!supabaseUrl || !supabaseKey) {
+  console.error('缺少必要的环境变量: VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

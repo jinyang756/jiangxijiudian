@@ -24,7 +24,9 @@
     "validate-env": "node scripts/validate-env.js",
     "create:view": "npx tsx scripts/create-menu-view.ts",
     "execute:sql": "npx tsx scripts/execute-sql.ts",
-    "create:view:direct": "npx tsx scripts/create-menu-view-direct.ts"
+    "create:view:direct": "npx tsx scripts/create-menu-view-direct.ts",
+    "db:migrate": "node scripts/run-migrations.js",
+    "db:migrate:push": "npx supabase db push"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",

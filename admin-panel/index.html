@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>江西酒店管理面板</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -309,9 +311,80 @@
             animation: fadeIn 0.3s ease forwards;
         }
     </style>
+    <script>
+        // 初始化 Supabase 客户端
+        const supabaseUrl = localStorage.getItem('supabaseUrl') || 'YOUR_SUPABASE_URL';
+        const supabaseAnonKey = localStorage.getItem('supabaseAnonKey') || 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        
+        // 检查用户认证状态
+        async function checkAuth() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    // 用户未登录，重定向到登录页面
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // 检查用户角色
+                const userRole = user.user_metadata?.role || 'readonly';
+                if (userRole !== 'admin') {
+                    // 非管理员用户，显示权限不足页面
+                    document.body.innerHTML = `
+                        <div class="min-h-screen flex items-center justify-center bg-gray-50">
+                            <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
+                                <div class="text-red-500 text-5xl mb-4">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h1 class="text-2xl font-bold text-gray-800 mb-2">权限不足</h1>
+                                <p class="text-gray-600 mb-6">您没有访问管理面板的权限。请联系系统管理员。</p>
+                                <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                                    退出登录
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 用户认证通过，显示管理面板
+                document.getElementById('admin-panel').style.display = 'block';
+            } catch (error) {
+                console.error('认证检查失败:', error);
+                alert('系统错误，请刷新页面重试');
+            }
+        }
+        
+        // 用户登出
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('登出失败:', error);
+                alert('登出失败，请重试');
+            }
+        }
+        
+        // 页面加载完成后检查认证状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
 </head>
 <body class="bg-gray-50">
-    <div class="flex h-screen">
+    <!-- 认证检查中提示 -->
+    <div id="loading" class="min-h-screen flex items-center justify-center">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">正在验证身份...</p>
+        </div>
+    </div>
+    
+    <!-- 管理面板内容（默认隐藏，认证通过后显示） -->
+    <div id="admin-panel" style="display: none;" class="flex h-screen">
         <!-- 侧边栏 -->
         <div id="sidebar" class="sidebar expanded bg-gray-800 text-white h-full fixed left-0 top-0 flex flex-col shadow-xl">
             <div class="p-4 border-b border-gray-700">

@@ -41,11 +41,23 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, tableId, l
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(message);
-      utterance.lang = 'en-US';
+      // 增加判断，优先使用中文
+      utterance.lang = 'zh-CN';
+      // 可选：根据用户设置切换语言
+      // utterance.lang = navigator.language.startsWith('zh') ? 'zh-CN' : 'en-US';
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
       
+      // 添加不支持时的文字提示 fallback
+      utterance.onerror = (event) => {
+        console.warn('语音合成失败:', event.error);
+        // 如果需要，可以在这里添加其他提示方式
+      };
+      
       window.speechSynthesis.speak(utterance);
+    } else {
+      console.warn('当前浏览器不支持语音合成功能');
+      // 如果需要，可以在这里添加其他提示方式
     }
   };
 

@@ -112,6 +112,8 @@ function generateDeploymentInstructions() {
   console.log('- 使用HTTPS保护数据传输');
   console.log('- 限制对管理面板的访问');
   console.log('- 定期更新访问令牌');
+  console.log('- 在管理面板入口页添加Supabase Auth验证');
+  console.log('- 仅允许admin角色访问');
   
   console.log('\n🔗 访问地址:');
   console.log('部署后，管理面板可通过以下URL访问:');

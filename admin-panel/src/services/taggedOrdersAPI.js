@@ -113,15 +113,15 @@ class TaggedOrdersAPI {
                                 <tr>
                                     <td>${item.name_zh || item.name_en || item.zh || item.en}</td>
                                     <td>${item.quantity}</td>
-                                    <td>₱${parseFloat(item.price).toFixed(2)}</td>
-                                    <td>₱${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+                                    <td>¥${parseFloat(item.price).toFixed(2)}</td>
+                                    <td>¥${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
                     
                     <div style="text-align: right; font-weight: bold; font-size: 16px;">
-                        <p>总计: ₱${parseFloat(order.total_amount).toFixed(2)}</p>
+                        <p>总计: ¥${parseFloat(order.total_amount).toFixed(2)}</p>
                     </div>
                     
                     <div class="footer">
