@@ -63,12 +63,6 @@ const App: React.FC = () => {
     return Object.values(cart).reduce((sum, count) => sum + count, 0);
   }, [cart]);
 
-  const cartTotal = useMemo(() => {
-    return Object.entries(cart).reduce((total, [itemId, count]) => {
-      const item = menu.flatMap(category => category.items).find(dish => dish.id === itemId);
-      return item ? total + (item.price * count) : total;
-    }, 0);
-  }, [cart, menu]);
 
   // 获取当前页面数据
   const activePage = pages[currentPage];
@@ -243,7 +237,8 @@ const App: React.FC = () => {
   };
 
   // 提交订单
-  const submitOrder = async () => {
+  // 注意：此函数未被使用，因为CartModal组件直接调用API
+  /*const submitOrder = async () => {
     if (cartCount === 0) return;
     
     try {
@@ -268,10 +263,11 @@ const App: React.FC = () => {
     } catch (err) {
       alert('订单提交失败，请重试');
     }
-  };
+  };*/
 
   // 呼叫服务
-  const callService = async (serviceType: string, details?: string) => {
+  // 注意：此函数未被使用，因为ServiceModal组件直接调用API
+  /*const callService = async (serviceType: string, details?: string) => {
     try {
       const serviceTypes: Record<string, { type: string; typeName: string }> = {
         'water': { type: 'water', typeName: '加水' },
@@ -297,7 +293,7 @@ const App: React.FC = () => {
     } catch (err) {
       alert('服务请求失败，请重试');
     }
-  };
+  };*/
 
   // 管理员登录
   const handleAdminLogin = () => {

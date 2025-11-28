@@ -28,7 +28,7 @@ describe('Error Handler Tests', () => {
 
     it('should set retryable based on error code', () => {
       const error = createApiError('Test error', {
-        code: ERROR_CODES.TIMEOUT_ERROR
+        code: ERROR_CODES.TIMEOUT
       });
       
       expect(error.retryable).toBe(true);
@@ -39,7 +39,12 @@ describe('Error Handler Tests', () => {
     it('should execute function successfully without retries', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       
-      const result = await executeWithRetry(fn);
+      const result = await executeWithRetry(fn, {
+        maxRetries: 3,
+        delay: 100,
+        backoffMultiplier: 2,
+        retryableErrors: [ERROR_CODES.NETWORK_ERROR]
+      });
       
       expect(result).toBe('success');
       expect(fn).toHaveBeenCalledTimes(1);
@@ -53,7 +58,12 @@ describe('Error Handler Tests', () => {
         }))
         .mockResolvedValue('success');
       
-      const result = await executeWithRetry(fn, { maxRetries: 5, delay: 10 });
+      const result = await executeWithRetry(fn, { 
+        maxRetries: 5, 
+        delay: 10,
+        backoffMultiplier: 2,
+        retryableErrors: [ERROR_CODES.NETWORK_ERROR]
+      });
       
       expect(result).toBe('success');
       expect(fn).toHaveBeenCalledTimes(2);
@@ -67,7 +77,12 @@ describe('Error Handler Tests', () => {
         })
       );
       
-      await expect(executeWithRetry(fn, { maxRetries: 2, delay: 10 }))
+      await expect(executeWithRetry(fn, { 
+        maxRetries: 2, 
+        delay: 10,
+        backoffMultiplier: 2,
+        retryableErrors: [ERROR_CODES.NETWORK_ERROR]
+      }))
         .rejects
         .toThrow('Persistent error');
       
@@ -82,7 +97,12 @@ describe('Error Handler Tests', () => {
         })
       );
       
-      await expect(executeWithRetry(fn, { maxRetries: 5, delay: 10 }))
+      await expect(executeWithRetry(fn, { 
+        maxRetries: 5, 
+        delay: 10,
+        backoffMultiplier: 2,
+        retryableErrors: [ERROR_CODES.NETWORK_ERROR]
+      }))
         .rejects
         .toThrow('Non-retryable error');
       
@@ -94,7 +114,13 @@ describe('Error Handler Tests', () => {
         return new Promise(resolve => setTimeout(() => resolve('success'), 100));
       });
       
-      await expect(executeWithRetry(fn, { timeout: 50, maxRetries: 1, delay: 10 }))
+      await expect(executeWithRetry(fn, { 
+        maxRetries: 1, 
+        delay: 10,
+        backoffMultiplier: 2,
+        retryableErrors: [ERROR_CODES.NETWORK_ERROR],
+        timeout: 50
+      } as any))
         .rejects
         .toThrow('Request timeout');
     });

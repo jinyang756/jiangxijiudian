@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "江西酒店智能菜单系统 - 前端展示页面与后台管理面板",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
