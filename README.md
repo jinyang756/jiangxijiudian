@@ -34,7 +34,9 @@ npm run build
 2. 安装 Vercel CLI: `npm install -g vercel`
 
 ### 环境变量配置
-在部署之前，您需要配置环境变量：
+
+#### 前端环境变量 (VITE_* 前缀)
+这些变量会被打包到前端代码中，必须是公开安全的：
 
 1. 复制 `.env.example` 文件并重命名为 `.env`
 2. 在 `.env` 文件中填入您的 Supabase 凭据：
@@ -49,6 +51,12 @@ npm run build
 2. 进入您的项目
 3. 点击左侧菜单 "Project Settings" → "API"
 4. 复制 "Project URL" 和 "anon key"
+
+#### 后端/服务器环境变量 (无 VITE_ 前缀)
+这些变量仅在服务器端使用，不应出现在前端代码中，在部署平台的 Secrets 中配置：
+
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase 服务角色密钥（私密）
+- `SUPABASE_DB_URL`: 数据库连接字符串（私密）
 
 ### 部署步骤
 
@@ -120,6 +128,23 @@ npm run test
 # 运行测试并查看 UI
 npm run test:ui
 ```
+
+## 安全注意事项
+
+### 环境变量安全
+- ✅ 前端安全变量 (VITE_* 前缀):
+  - `VITE_SUPABASE_URL`: Supabase 项目 URL (公开)
+  - `VITE_SUPABASE_ANON_KEY`: Supabase 匿名密钥 (公开)
+
+- ❌ 绝不放在前端的变量 (无 VITE_ 前缀):
+  - `SUPABASE_SERVICE_ROLE_KEY`: 服务角色密钥 (私密)
+  - `SUPABASE_DB_URL`: 数据库连接字符串 (私密)
+
+### 最佳实践
+1. 前端只使用 VITE_* 前缀的变量
+2. 后端/服务器端使用无前缀的私密变量
+3. 私密变量只能通过部署平台的 Secrets 配置
+4. 永远不要将 .env 文件提交到 Git 仓库
 
 ## 常见问题
 
