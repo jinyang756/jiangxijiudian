@@ -4,11 +4,27 @@ import { supabase } from '../src/lib/supabaseClient';
 import { executeWithRetry, createApiError, ERROR_CODES } from '../src/lib/errorHandler';
 import { logger } from '../src/lib/logger';
 
+// 定义数据库中的菜品结构
+interface DatabaseDish {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  category_id: string;
+  available: boolean;
+  metadata: {
+    spicy?: boolean;
+    vegetarian?: boolean;
+    imageUrl?: string;
+  };
+}
+
 // 定义menu_view返回的数据类型（适配当前数据库结构）
 interface MenuViewRow {
   category_id: string;
   category_name: string;
-  items: MenuItem[];
+  items: DatabaseDish[];
 }
 
 // 定义重试配置
@@ -52,11 +68,23 @@ export const api = {
         if (!menuError && menuData && menuData.length > 0) {
           // Transform the view data to App Data Structure
           const categories: MenuCategory[] = menuData.map((row: MenuViewRow) => {
+            // Transform items to match MenuItem interface
+            const transformedItems: MenuItem[] = (row.items || []).map(item => ({
+              id: item.id,
+              zh: item.name || '',
+              en: item.name || '',
+              price: item.price || 0,
+              spicy: item.metadata?.spicy || false,
+              vegetarian: item.metadata?.vegetarian || false,
+              available: item.available !== undefined ? item.available : true,
+              imageUrl: item.metadata?.imageUrl || ''
+            }));
+
             return {
               key: row.category_id,
               titleZh: row.category_name || '',
               titleEn: row.category_name || '', // 暂时使用中文名称，因为没有单独的英文字段
-              items: row.items || [],
+              items: transformedItems,
             };
           });
 
@@ -99,15 +127,15 @@ export const api = {
             key: category.id,
             titleZh: category.name,
             titleEn: category.name, // 暂时使用中文名称
-            items: categoryDishes.map(dish => ({
+            items: categoryDishes.map((dish: DatabaseDish) => ({
               id: dish.id,
-              dish_id: dish.dish_id,
-              zh: dish.name_zh,
-              en: dish.name_en,
-              price: dish.price,
-              spicy: dish.is_spicy,
-              vegetarian: dish.is_vegetarian,
-              available: dish.available
+              zh: dish.name,
+              en: dish.name,
+              price: dish.price || 0,
+              spicy: dish.metadata?.spicy || false,
+              vegetarian: dish.metadata?.vegetarian || false,
+              available: dish.available !== undefined ? dish.available : true,
+              imageUrl: dish.metadata?.imageUrl || ''
             }))
           };
         });

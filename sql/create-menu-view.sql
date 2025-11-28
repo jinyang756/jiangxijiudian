@@ -12,14 +12,13 @@ SELECT
     json_agg(
         json_build_object(
             'id', d.id,
-            'dish_id', d.dish_id,
-            'name_zh', d.name_zh,
-            'name_en', d.name_en,
+            'name', d.name,
+            'description', d.description,
             'price', d.price,
-            'is_spicy', d.is_spicy,
-            'is_vegetarian', d.is_vegetarian,
-            'available', d.available
-        ) ORDER BY d.name_zh
+            'currency', d.currency,
+            'available', d.available,
+            'metadata', d.metadata
+        ) ORDER BY d.name
     ) FILTER (WHERE d.id IS NOT NULL) as items
 FROM categories c
 LEFT JOIN dishes d ON c.id = d.category_id

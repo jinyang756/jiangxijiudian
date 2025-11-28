@@ -38,6 +38,7 @@ Thumbs.db
 !docs/development/reports/SECURITY_FIXES_REPORT.md
 !PRODUCTION_DEPLOYMENT_GUIDE.md
 !docs/database/COMPLETE_DATABASE_INITIALIZATION.md
+!docs/database/DATABASE_MAINTENANCE_GUIDE.md
 !docs/development/ENVIRONMENT_CONFIGURATION_GUIDE.md
 
 # Test files
