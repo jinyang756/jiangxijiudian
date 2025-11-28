@@ -65,3 +65,4 @@ supabase/.temp/
 # Empty directories
 dish-images/
 migrations/
+.env*.local
