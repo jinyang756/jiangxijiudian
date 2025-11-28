@@ -1,0 +1,110 @@
+name: 部署江西酒店管理系统
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 使用 Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: 安装依赖
+      run: npm ci
+    
+    - name: 运行测试
+      run: npm test
+    
+    - name: 检查类型
+      run: npx tsc --noEmit
+
+  build-and-deploy-frontend:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: 安装依赖
+      run: npm ci
+    
+    - name: 构建项目
+      run: npm run build
+      env:
+        VITE_APP_DB_URL: ${{ secrets.SUPABASE_URL }}
+        VITE_APP_DB_POSTGRES_PASSWORD: ${{ secrets.SUPABASE_ANON_KEY }}
+    
+    - name: 部署到 Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./
+
+  deploy-admin-panel:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: 安装依赖
+      run: npm ci
+    
+    - name: 部署管理面板到 Supabase
+      run: npm run deploy-admin-panel
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+  monitor-performance:
+    needs: [build-and-deploy-frontend, deploy-admin-panel]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: 安装依赖
+      run: npm ci
+    
+    - name: 运行性能监控
+      run: npm run monitor-performance
+      env:
+        VITE_APP_DB_URL: ${{ secrets.SUPABASE_URL }}
+        VITE_APP_DB_POSTGRES_PASSWORD: ${{ secrets.SUPABASE_ANON_KEY }}

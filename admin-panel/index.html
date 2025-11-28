@@ -7,75 +7,361 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .sidebar {
-            transition: all 0.3s ease;
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #818cf8;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --success-dark: #059669;
+            --warning-color: #f59e0b;
+            --warning-dark: #d97706;
+            --danger-color: #ef4444;
+            --danger-dark: #dc2626;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #4f46e5;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition-speed: 0.3s;
         }
+        
+        .sidebar {
+            transition: all var(--transition-speed) ease;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #0f172a 100%);
+            box-shadow: var(--card-shadow);
+            z-index: 100;
+        }
+        
         .sidebar.collapsed {
             width: 80px;
         }
+        
         .sidebar.expanded {
             width: 250px;
         }
+        
         .content {
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
         }
+        
         .sidebar.collapsed + .content {
             margin-left: 80px;
         }
+        
         .sidebar.expanded + .content {
             margin-left: 250px;
         }
+        
+        /* 导航链接样式 */
+        .nav-link {
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+            margin-bottom: 0.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(90deg, var(--sidebar-active) 0%, var(--primary-light) 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+        
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: white;
+        }
+        
+        .nav-link:hover:not(.active) {
+            background-color: var(--sidebar-hover);
+            color: #f1f5f9;
+            transform: translateX(5px);
+        }
+        
+        /* 卡片样式 */
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem;
+            background: white;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, var(--success-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color) 0%, var(--warning-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        /* 表格样式 */
+        .data-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .data-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* 加载动画 */
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(79, 70, 229, 0.2);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 搜索框样式 */
+        .search-input {
+            border-radius: 0.5rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        /* 徽章样式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .badge-success {
+            background-color: #d1fae5;
+            color: var(--success-dark);
+        }
+        
+        .badge-warning {
+            background-color: #fef3c7;
+            color: var(--warning-dark);
+        }
+        
+        .badge-danger {
+            background-color: #fee2e2;
+            color: var(--danger-dark);
+        }
+        
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            .sidebar.expanded {
+                width: 80px;
+            }
+            
+            .sidebar.expanded + .content {
+                margin-left: 80px;
+            }
+            
+            .sidebar.collapsed + .content {
+                margin-left: 80px;
+            }
+            
+            .sidebar.expanded .nav-text {
+                display: none;
+            }
+            
+            .sidebar.expanded #sidebar-title {
+                font-size: 0.8rem;
+                text-align: center;
+            }
+            
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* 页面切换动画 */
+        .page-content {
+            animation: fadeIn 0.3s ease forwards;
+        }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
     <div class="flex h-screen">
         <!-- 侧边栏 -->
-        <div id="sidebar" class="sidebar expanded bg-gray-800 text-white h-full fixed left-0 top-0 flex flex-col">
+        <div id="sidebar" class="sidebar expanded bg-gray-800 text-white h-full fixed left-0 top-0 flex flex-col shadow-xl">
             <div class="p-4 border-b border-gray-700">
-                <h1 class="text-xl font-bold truncate" id="sidebar-title">江西酒店管理面板</h1>
+                <h1 class="text-xl font-bold truncate flex items-center" id="sidebar-title">
+                    <i class="fas fa-hotel mr-2 text-primary-light"></i>
+                    <span>江西酒店管理</span>
+                </h1>
             </div>
-            <div class="flex-1 overflow-y-auto">
-                <nav class="p-2">
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1 active">
-                        <i class="fas fa-home mr-3"></i>
-                        <span id="dashboard-link">仪表板</span>
+            <div class="flex-1 overflow-y-auto py-4">
+                <nav class="px-2">
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1 active" data-page="dashboard">
+                        <i class="fas fa-home mr-3 text-lg"></i>
+                        <span class="nav-text" id="dashboard-link">仪表板</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-utensils mr-3"></i>
-                        <span id="menu-link">菜单管理</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="menu">
+                        <i class="fas fa-utensils mr-3 text-lg"></i>
+                        <span class="nav-text" id="menu-link">菜单管理</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-list mr-3"></i>
-                        <span id="categories-link">分类管理</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="categories">
+                        <i class="fas fa-list mr-3 text-lg"></i>
+                        <span class="nav-text" id="categories-link">分类管理</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-shopping-cart mr-3"></i>
-                        <span id="orders-link">订单管理</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="orders">
+                        <i class="fas fa-shopping-cart mr-3 text-lg"></i>
+                        <span class="nav-text" id="orders-link">订单管理</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-concierge-bell mr-3"></i>
-                        <span id="services-link">服务请求</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="services">
+                        <i class="fas fa-concierge-bell mr-3 text-lg"></i>
+                        <span class="nav-text" id="services-link">服务请求</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-database mr-3"></i>
-                        <span id="database-link">数据库管理</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="database">
+                        <i class="fas fa-database mr-3 text-lg"></i>
+                        <span class="nav-text" id="database-link">数据库管理</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-chart-line mr-3"></i>
-                        <span id="monitoring-link">性能监控</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="monitoring">
+                        <i class="fas fa-chart-line mr-3 text-lg"></i>
+                        <span class="nav-text" id="monitoring-link">性能监控</span>
                     </a>
-                    <a href="#" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg mb-1">
-                        <i class="fas fa-user-shield mr-3"></i>
-                        <span id="users-link">用户管理</span>
+                    <a href="#" class="nav-link flex items-center p-3 text-gray-300 rounded-lg mb-1" data-page="performance">
+                        <i class="fas fa-tachometer-alt mr-3 text-lg"></i>
+                        <span class="nav-text" id="performance-link">性能优化</span>
                     </a>
                 </nav>
             </div>
             <div class="p-4 border-t border-gray-700">
-                <button id="toggle-sidebar" class="w-full flex items-center justify-center p-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+                <button id="toggle-sidebar" class="w-full flex items-center justify-center p-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors mb-2">
                     <i class="fas fa-arrow-left mr-2" id="toggle-icon"></i>
                     <span id="toggle-text">收起菜单</span>
                 </button>
-                <button id="logout-btn" class="w-full flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 rounded-lg mt-2">
+                <button id="logout-btn" class="w-full flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     <span>退出登录</span>
                 </button>
@@ -85,21 +371,29 @@
         <!-- 主内容区 -->
         <div class="content flex-1 ml-250">
             <!-- 顶部导航栏 -->
-            <header class="bg-white shadow">
+            <header class="bg-white shadow-sm">
                 <div class="flex items-center justify-between p-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800" id="page-title">仪表板</h1>
+                        <h1 class="text-2xl font-bold text-gray-800 flex items-center" id="page-title">
+                            <i class="fas fa-home mr-2 text-primary"></i>
+                            <span>仪表板</span>
+                        </h1>
                         <p class="text-gray-600" id="page-subtitle">系统概览和统计信息</p>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button class="p-2 rounded-full hover:bg-gray-200">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索..." class="search-input py-2 px-4 pr-10 rounded-lg">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                        <button class="p-2 rounded-full hover:bg-gray-200 transition-colors relative">
                             <i class="fas fa-bell"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
                         <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white">
                                 <i class="fas fa-user"></i>
                             </div>
-                            <span class="ml-2 text-gray-700" id="current-user">管理员</span>
+                            <span class="ml-2 text-gray-700 font-medium" id="current-user">管理员</span>
                         </div>
                     </div>
                 </div>
@@ -107,102 +401,574 @@
 
             <!-- 主要内容 -->
             <main class="p-6">
-                <!-- 统计卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-blue-100 text-blue-500">
-                                <i class="fas fa-utensils fa-lg"></i>
+                <!-- 仪表板页面 -->
+                <div id="dashboard-page" class="page-content">
+                    <!-- 统计卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                                    <i class="fas fa-utensils fa-lg"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500 text-sm">菜品总数</p>
+                                    <h3 class="text-2xl font-bold" id="total-dishes">0</h3>
+                                </div>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-gray-500">菜品总数</p>
-                                <h3 class="text-2xl font-bold" id="total-dishes">0</h3>
+                            <div class="mt-4">
+                                <div class="flex items-center text-sm text-green-600">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>12% 较上周</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-100 text-green-500">
+                                    <i class="fas fa-list fa-lg"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500 text-sm">分类数量</p>
+                                    <h3 class="text-2xl font-bold" id="total-categories">0</h3>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center text-sm text-green-600">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>5% 较上周</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
+                                    <i class="fas fa-shopping-cart fa-lg"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500 text-sm">今日订单</p>
+                                    <h3 class="text-2xl font-bold" id="today-orders">0</h3>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center text-sm text-red-600">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    <span>3% 较昨日</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                                    <i class="fas fa-concierge-bell fa-lg"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500 text-sm">待处理服务</p>
+                                    <h3 class="text-2xl font-bold" id="pending-services">0</h3>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center text-sm text-green-600">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>8% 较昨日</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-green-100 text-green-500">
-                                <i class="fas fa-list fa-lg"></i>
+
+                    <!-- 图表区域 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-bold">销售趋势</h2>
+                                <div class="flex space-x-2">
+                                    <button class="text-sm px-3 py-1 bg-gray-100 rounded-lg">7天</button>
+                                    <button class="text-sm px-3 py-1 bg-primary text-white rounded-lg">30天</button>
+                                    <button class="text-sm px-3 py-1 bg-gray-100 rounded-lg">90天</button>
+                                </div>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-gray-500">分类数量</p>
-                                <h3 class="text-2xl font-bold" id="total-categories">0</h3>
+                            <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-line fa-2x text-gray-400 mb-2"></i>
+                                    <p class="text-gray-500">销售趋势图表</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-bold">热门菜品</h2>
+                                <button class="text-sm px-3 py-1 bg-gray-100 rounded-lg">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                            <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                                <div class="text-center">
+                                    <i class="fas fa-fire fa-2x text-gray-400 mb-2"></i>
+                                    <p class="text-gray-500">热门菜品排行榜</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
-                                <i class="fas fa-shopping-cart fa-lg"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-gray-500">今日订单</p>
-                                <h3 class="text-2xl font-bold" id="today-orders">0</h3>
-                            </div>
+
+                    <!-- 最近活动 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold">最近活动</h2>
+                            <button class="text-sm text-primary font-medium">查看全部</button>
                         </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-purple-100 text-purple-500">
-                                <i class="fas fa-concierge-bell fa-lg"></i>
+                        <div class="space-y-4">
+                            <div class="flex items-start border-b pb-4">
+                                <div class="p-2 bg-blue-100 rounded-full text-blue-500 mr-3">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">新增菜品</p>
+                                    <p class="text-gray-600 text-sm">水煮牛肉已添加到江湖小炒分类</p>
+                                    <p class="text-gray-400 text-xs">2分钟前</p>
+                                </div>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-gray-500">待处理服务</p>
-                                <h3 class="text-2xl font-bold" id="pending-services">0</h3>
+                            <div class="flex items-start border-b pb-4">
+                                <div class="p-2 bg-green-100 rounded-full text-green-500 mr-3">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">更新菜品</p>
+                                    <p class="text-gray-600 text-sm">红烧肉价格已更新为48元</p>
+                                    <p class="text-gray-400 text-xs">15分钟前</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start border-b pb-4">
+                                <div class="p-2 bg-yellow-100 rounded-full text-yellow-500 mr-3">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">新订单</p>
+                                    <p class="text-gray-600 text-sm">桌号T-05提交了新订单</p>
+                                    <p class="text-gray-400 text-xs">32分钟前</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="p-2 bg-purple-100 rounded-full text-purple-500 mr-3">
+                                    <i class="fas fa-concierge-bell"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">服务请求</p>
+                                    <p class="text-gray-600 text-sm">桌号T-12请求加水服务</p>
+                                    <p class="text-gray-400 text-xs">45分钟前</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 图表区域 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-xl font-bold mb-4">销售趋势</h2>
-                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                            <p class="text-gray-500">销售趋势图表</p>
+                <!-- 菜单管理页面 -->
+                <div id="menu-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">菜单管理</h2>
+                                <p class="text-gray-600 mt-1">管理您的菜品和分类</p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索菜品..." class="search-input py-2 px-4 pr-10 rounded-lg">
+                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                </div>
+                                <button class="btn btn-primary font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-plus mr-2"></i>添加菜品
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-xl font-bold mb-4">热门菜品</h2>
-                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                            <p class="text-gray-500">热门菜品排行榜</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium">全部菜品</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">热销</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">新品</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">折扣</button>
+                        </div>
+                        <div id="dish-list-container">
+                            <!-- 菜品列表将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 最近活动 -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-bold mb-4">最近活动</h2>
-                    <div class="space-y-4">
-                        <div class="flex items-start border-b pb-4">
-                            <div class="p-2 bg-blue-100 rounded-full text-blue-500 mr-3">
-                                <i class="fas fa-plus"></i>
-                            </div>
+                <!-- 分类管理页面 -->
+                <div id="categories-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                             <div>
-                                <p class="font-medium">新增菜品</p>
-                                <p class="text-gray-600 text-sm">水煮牛肉已添加到江湖小炒分类</p>
-                                <p class="text-gray-400 text-xs">2分钟前</p>
+                                <h2 class="text-2xl font-bold text-gray-800">分类管理</h2>
+                                <p class="text-gray-600 mt-1">管理菜单分类</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索分类..." class="search-input py-2 px-4 pr-10 rounded-lg">
+                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                </div>
+                                <button class="btn btn-primary font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-plus mr-2"></i>添加分类
+                                </button>
                             </div>
                         </div>
-                        <div class="flex items-start border-b pb-4">
-                            <div class="p-2 bg-green-100 rounded-full text-green-500 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">更新菜品</p>
-                                <p class="text-gray-600 text-sm">红烧肉价格已更新为48元</p>
-                                <p class="text-gray-400 text-xs">15分钟前</p>
+                        <div id="category-list-container">
+                            <!-- 分类列表将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-start">
-                            <div class="p-2 bg-yellow-100 rounded-full text-yellow-500 mr-3">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
+                    </div>
+                </div>
+
+                <!-- 订单管理页面 -->
+                <div id="orders-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                             <div>
-                                <p class="font-medium">新订单</p>
-                                <p class="text-gray-600 text-sm">桌号T-05提交了新订单</p>
-                                <p class="text-gray-400 text-xs">32分钟前</p>
+                                <h2 class="text-2xl font-bold text-gray-800">订单管理</h2>
+                                <p class="text-gray-600 mt-1">查看和处理订单</p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索订单..." class="search-input py-2 px-4 pr-10 rounded-lg">
+                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-outline font-medium py-2 px-4 rounded-lg flex items-center">
+                                        <i class="fas fa-filter mr-2"></i>筛选
+                                    </button>
+                                    <button class="btn btn-success font-medium py-2 px-4 rounded-lg flex items-center">
+                                        <i class="fas fa-sync-alt mr-2"></i>刷新
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium">全部</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">待处理</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">制作中</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">已完成</button>
+                        </div>
+                        <div id="order-list-container">
+                            <!-- 订单列表将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 服务请求页面 -->
+                <div id="services-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">服务请求</h2>
+                                <p class="text-gray-600 mt-1">处理客户服务请求</p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索请求..." class="search-input py-2 px-4 pr-10 rounded-lg">
+                                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="btn btn-outline font-medium py-2 px-4 rounded-lg flex items-center">
+                                        <i class="fas fa-filter mr-2"></i>筛选
+                                    </button>
+                                    <button class="btn btn-success font-medium py-2 px-4 rounded-lg flex items-center">
+                                        <i class="fas fa-sync-alt mr-2"></i>刷新
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium">全部</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">待处理</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">已处理</button>
+                        </div>
+                        <div id="service-request-list-container">
+                            <!-- 服务请求列表将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据库管理页面 -->
+                <div id="database-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">数据库管理</h2>
+                                <p class="text-gray-600 mt-1">数据库维护和管理</p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button class="btn btn-success font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-terminal mr-2"></i>SQL编辑器
+                                </button>
+                                <button class="btn btn-primary font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-save mr-2"></i>备份数据库
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-sm p-6 text-white">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-white bg-opacity-20 mr-4">
+                                        <i class="fas fa-database fa-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-blue-100">总表数</p>
+                                        <h3 class="text-2xl font-bold">5</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl shadow-sm p-6 text-white">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-white bg-opacity-20 mr-4">
+                                        <i class="fas fa-table fa-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-green-100">总记录数</p>
+                                        <h3 class="text-2xl font-bold">1,248</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="database-container">
+                            <!-- 数据库信息将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 性能监控页面 -->
+                <div id="monitoring-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">性能监控</h2>
+                                <p class="text-gray-600 mt-1">实时监控应用性能和警报</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-outline font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-cog mr-2"></i>设置
+                                </button>
+                                <button class="btn btn-success font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-sync-alt mr-2"></i>刷新数据
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                                        <i class="fas fa-heartbeat"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">系统可用性</p>
+                                        <h3 class="text-2xl font-bold">99.9%</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">平均响应时间</p>
+                                        <h3 class="text-2xl font-bold">120ms</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">吞吐量</p>
+                                        <h3 class="text-2xl font-bold">45/min</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center">
+                                    <div class="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">错误率</p>
+                                        <h3 class="text-2xl font-bold">0.1%</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="monitoring-container">
+                            <!-- 监控信息将通过JavaScript动态加载 -->
+                            <div class="flex justify-center items-center h-64">
+                                <div class="text-center">
+                                    <div class="spinner mx-auto mb-4"></div>
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 性能优化页面 -->
+                <div id="performance-page" class="page-content hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">性能优化</h2>
+                                <p class="text-gray-600 mt-1">优化应用性能</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-outline font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-history mr-2"></i>重置设置
+                                </button>
+                                <button class="btn btn-success font-medium py-2 px-4 rounded-lg flex items-center">
+                                    <i class="fas fa-magic mr-2"></i>应用优化
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">缓存管理</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-900">API响应缓存</p>
+                                            <p class="text-gray-500 text-sm">缓存API响应以提高性能</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer" checked>
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-900">图片懒加载</p>
+                                            <p class="text-gray-500 text-sm">延迟加载非关键图片</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer" checked>
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-900">数据压缩</p>
+                                            <p class="text-gray-500 text-sm">启用Gzip压缩减少传输大小</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer" checked>
+                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <button class="w-full btn btn-primary font-medium py-3 px-4 rounded-lg">
+                                        <i class="fas fa-broom mr-2"></i>清理缓存
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">性能统计</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">缓存命中率</span>
+                                        <span class="font-medium">87%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: 87%"></div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">图片懒加载率</span>
+                                        <span class="font-medium">92%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 92%"></div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">API响应时间</span>
+                                        <span class="font-medium">120ms</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-purple-600 h-2 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <button class="w-full btn btn-outline font-medium py-3 px-4 rounded-lg">
+                                        <i class="fas fa-sync-alt mr-2"></i>刷新统计
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">优化建议</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="flex items-start p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div class="mr-3 mt-1 text-blue-500">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-blue-800">启用CDN加速</p>
+                                        <p class="text-blue-600 text-sm mt-1">使用CDN可以显著提高静态资源加载速度，建议配置CDN服务。</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start p-4 bg-green-50 rounded-lg border border-green-200">
+                                    <div class="mr-3 mt-1 text-green-500">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-green-800">优化数据库索引</p>
+                                        <p class="text-green-600 text-sm mt-1">为常用查询字段添加索引可以大幅提升查询性能。</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <div class="mr-3 mt-1 text-yellow-500">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-yellow-800">减少HTTP请求</p>
+                                        <p class="text-yellow-600 text-sm mt-1">合并CSS和JavaScript文件，使用雪碧图减少图片请求次数。</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,14 +979,14 @@
 
     <script type="module">
         // 导入服务模块
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         import { authManager } from './src/services/auth.js';
-        import { performanceOptimizer } from './src/services/performance.js';
-        import { monitoringSystem } from './src/services/monitoring.js';
-        
-        // 初始化监控系统
-        monitoringSystem.startMonitoring();
-        monitoringSystem.recordPageView('dashboard');
+        import { menuHandler } from './src/services/menu.js';
+        import { categoryHandler } from './src/services/categories.js';
+        import { orderHandler } from './src/services/orders.js';
+        import { serviceHandler } from './src/services/services.js';
+        import { databaseHandler } from './src/services/database.js';
+        import { monitoringHandler } from './src/services/monitoring.js';
+        import { performanceHandler } from './src/services/performance.js';
         
         // 检查用户是否已登录
         const currentUser = authManager.getCurrentUser();
@@ -237,7 +1003,7 @@
         const toggleIcon = document.getElementById('toggle-icon');
         const toggleText = document.getElementById('toggle-text');
         const sidebarTitle = document.getElementById('sidebar-title');
-        const menuLinks = document.querySelectorAll('nav a');
+        const menuLinks = document.querySelectorAll('.nav-link');
         const logoutBtn = document.getElementById('logout-btn');
 
         toggleButton.addEventListener('click', () => {
@@ -249,7 +1015,7 @@
                 toggleIcon.classList.add('fa-arrow-right');
                 toggleText.textContent = '展开菜单';
                 sidebarTitle.classList.add('hidden');
-                document.querySelectorAll('nav span').forEach(span => {
+                document.querySelectorAll('.nav-text').forEach(span => {
                     span.classList.add('hidden');
                 });
             } else {
@@ -257,7 +1023,7 @@
                 toggleIcon.classList.add('fa-arrow-left');
                 toggleText.textContent = '收起菜单';
                 sidebarTitle.classList.remove('hidden');
-                document.querySelectorAll('nav span').forEach(span => {
+                document.querySelectorAll('.nav-text').forEach(span => {
                     span.classList.remove('hidden');
                 });
             }
@@ -267,71 +1033,129 @@
         menuLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
+                
+                // 更新活动状态
                 menuLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 
-                const page = link.querySelector('span').id.replace('-link', '');
-                updatePageContent(page);
+                // 获取页面名称
+                const page = link.getAttribute('data-page');
+                
+                // 显示对应页面
+                showPage(page);
+                
+                // 更新页面标题
+                updatePageTitle(page);
             });
         });
 
         // 退出登录功能
         logoutBtn.addEventListener('click', () => {
             authManager.logout();
-            window.location.href = 'login.html';
         });
 
-        // 更新页面内容的函数
-        function updatePageContent(page) {
+        // 显示页面的函数
+        function showPage(page) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page-content').forEach(pageEl => {
+                pageEl.classList.add('hidden');
+            });
+            
+            // 显示选中的页面
+            const pageElement = document.getElementById(`${page}-page`);
+            if (pageElement) {
+                pageElement.classList.remove('hidden');
+                
+                // 根据页面加载相应数据
+                loadPageData(page);
+            }
+        }
+
+        // 更新页面标题的函数
+        function updatePageTitle(page) {
             const pageTitle = document.getElementById('page-title');
             const pageSubtitle = document.getElementById('page-subtitle');
             
             switch(page) {
                 case 'dashboard':
-                    pageTitle.textContent = '仪表板';
+                    pageTitle.innerHTML = '<i class="fas fa-home mr-2 text-primary"></i><span>仪表板</span>';
                     pageSubtitle.textContent = '系统概览和统计信息';
                     break;
                 case 'menu':
-                    pageTitle.textContent = '菜单管理';
+                    pageTitle.innerHTML = '<i class="fas fa-utensils mr-2 text-primary"></i><span>菜单管理</span>';
                     pageSubtitle.textContent = '管理菜品和分类';
                     break;
                 case 'categories':
-                    pageTitle.textContent = '分类管理';
+                    pageTitle.innerHTML = '<i class="fas fa-list mr-2 text-primary"></i><span>分类管理</span>';
                     pageSubtitle.textContent = '管理菜单分类';
                     break;
                 case 'orders':
-                    pageTitle.textContent = '订单管理';
+                    pageTitle.innerHTML = '<i class="fas fa-shopping-cart mr-2 text-primary"></i><span>订单管理</span>';
                     pageSubtitle.textContent = '查看和处理订单';
                     break;
                 case 'services':
-                    pageTitle.textContent = '服务请求';
+                    pageTitle.innerHTML = '<i class="fas fa-concierge-bell mr-2 text-primary"></i><span>服务请求</span>';
                     pageSubtitle.textContent = '处理客户服务请求';
                     break;
                 case 'database':
-                    pageTitle.textContent = '数据库管理';
+                    pageTitle.innerHTML = '<i class="fas fa-database mr-2 text-primary"></i><span>数据库管理</span>';
                     pageSubtitle.textContent = '数据库维护和管理';
                     break;
                 case 'monitoring':
-                    pageTitle.textContent = '性能监控';
+                    pageTitle.innerHTML = '<i class="fas fa-chart-line mr-2 text-primary"></i><span>性能监控</span>';
                     pageSubtitle.textContent = '实时监控应用性能和警报';
                     break;
-                case 'users':
-                    pageTitle.textContent = '用户管理';
-                    pageSubtitle.textContent = '管理用户账户和权限';
+                case 'performance':
+                    pageTitle.innerHTML = '<i class="fas fa-tachometer-alt mr-2 text-primary"></i><span>性能优化</span>';
+                    pageSubtitle.textContent = '优化应用性能';
                     break;
             }
-            
-            // 记录页面浏览
-            monitoringSystem.recordPageView(page);
         }
 
-        // 模拟数据加载
-        document.addEventListener('DOMContentLoaded', () => {
-            // 模拟统计数据
+        // 加载页面数据的函数
+        function loadPageData(page) {
+            switch(page) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'menu':
+                    menuHandler.loadDishList('dish-list-container');
+                    break;
+                case 'categories':
+                    categoryHandler.loadCategoryList('category-list-container');
+                    break;
+                case 'orders':
+                    orderHandler.loadOrderList('order-list-container');
+                    break;
+                case 'services':
+                    serviceHandler.loadServiceRequestList('service-request-list-container');
+                    break;
+                case 'database':
+                    databaseHandler.loadTableList('database-container');
+                    break;
+                case 'monitoring':
+                    monitoringHandler.loadMonitoringData('monitoring-container');
+                    break;
+                case 'performance':
+                    performanceHandler.loadPerformanceSettings('performance-container');
+                    break;
+            }
+        }
+
+        // 加载仪表板数据
+        async function loadDashboardData() {
+            // 这里应该调用相应的API获取统计数据
+            // 暂时使用模拟数据
             document.getElementById('total-dishes').textContent = '128';
             document.getElementById('total-categories').textContent = '5';
             document.getElementById('today-orders').textContent = '24';
             document.getElementById('pending-services').textContent = '3';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 默认显示仪表板页面
+            showPage('dashboard');
         });
     </script>
 </body>
