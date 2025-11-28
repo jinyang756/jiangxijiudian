@@ -25,6 +25,9 @@ jobs:
       
     - name: Build project
       run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
@@ -33,3 +36,6 @@ jobs:
         vercel-org-id: team_j2tTU2rju1M82Tv3r64SmTPa
         vercel-project-id: prj_z9n4nIhOWw5uo5cDZrsxrkka2YoV
         working-directory: ./
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
