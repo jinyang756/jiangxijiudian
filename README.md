@@ -39,9 +39,9 @@ npm run build
 1. 复制 `.env.example` 文件并重命名为 `.env`
 2. 在 `.env` 文件中填入您的 Supabase 凭据：
    ```
-   VITE_APP_DB_URL=您的Supabase项目URL
-   VITE_APP_DB_POSTGRES_PASSWORD=您的Supabase anon key
-   VITE_APP_SUPABASE_STORAGE_URL=您的Supabase项目URL
+   VITE_SUPABASE_URL=您的Supabase项目URL
+   VITE_SUPABASE_ANON_KEY=您的Supabase anon key
+   VITE_SUPABASE_STORAGE_URL=您的Supabase项目URL
    ```
 
 获取凭据的方法：
@@ -89,8 +89,8 @@ vercel
 
 ### Vercel 环境变量配置
 在 Vercel 项目设置中添加以下环境变量：
-- `VITE_APP_DB_URL` = 您的 Supabase 项目 URL
-- `VITE_APP_DB_POSTGRES_PASSWORD` = 您的 Supabase anon key
+- `VITE_SUPABASE_URL` = 您的 Supabase 项目 URL
+- `VITE_SUPABASE_ANON_KEY` = 您的 Supabase anon key
 
 ## 项目结构
 ```

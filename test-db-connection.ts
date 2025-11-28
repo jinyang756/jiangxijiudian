@@ -13,8 +13,8 @@ async function testDatabaseConnection() {
   
   // 显示环境变量信息
   console.log('环境变量信息:');
-  console.log('  VITE_APP_DB_URL:', process.env.VITE_APP_DB_URL);
-  console.log('  VITE_APP_DB_POSTGRES_PASSWORD:', process.env.VITE_APP_DB_POSTGRES_PASSWORD ? 'SET' : 'NOT SET');
+  console.log('  VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL);
+  console.log('  VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
   console.log('');
   
   try {

@@ -9,7 +9,7 @@ export class NetworkMonitor {
 
   private constructor() {
     this.isOnline = navigator.onLine;
-    this.supabaseUrl = import.meta.env.VITE_APP_DB_URL || '';
+    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     this.setupEventListeners();
   }
 

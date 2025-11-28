@@ -54,6 +54,7 @@ const App: React.FC = () => {
     syncData: false
   });
   const [operationResult, setOperationResult] = useState<string>('');
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   // 引用
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,6 +64,10 @@ const App: React.FC = () => {
     return Object.values(cart).reduce((sum, count) => sum + count, 0);
   }, [cart]);
 
+  // 切换调试信息显示
+  const toggleDebugInfo = () => {
+    setShowDebugInfo(!showDebugInfo);
+  };
 
   // 获取当前页面数据
   const activePage = pages[currentPage];
@@ -669,25 +674,8 @@ const App: React.FC = () => {
                     <div className="bg-white p-6 rounded-lg shadow">
                       <h3 className="text-lg font-semibold mb-4">系统信息</h3>
                       <div className="space-y-2">
-                        <p>Supabase URL: {import.meta.env.VITE_APP_DB_URL ? '已设置' : '未设置'}</p>
-                        <p>Supabase Key: {import.meta.env.VITE_APP_DB_POSTGRES_PASSWORD ? '已设置' : '未设置'}</p>
-                      </div>
-                      <div className="mt-4">
-                        <h4 className="font-medium mb-2">菜单数据:</h4>
-                        <p>菜单分类数量: {menu.length}</p>
-                        <p>菜单数据状态: {menu.length > 0 ? '已加载' : '未加载'}</p>
-                        {menu.length > 0 && (
-                          <div className="mt-2">
-                            <h5 className="font-medium">分类详情:</h5>
-                            <ul className="list-disc pl-5">
-                              {menu.map((category, index) => (
-                                <li key={index}>
-                                  {category.titleZh} ({category.titleEn}) - {category.items?.length || 0} 个菜品
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                        <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
+                        <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
                       </div>
                     </div>
                   </div>
@@ -739,105 +727,138 @@ const App: React.FC = () => {
   }, [menu]);
 
   return (
-    <ErrorBoundary>
-      <div className="h-screen flex flex-col bg-gray-50">
-        {/* 主内容区 */}
-        <div className="flex-1 overflow-hidden">
-          {renderCurrentPage()}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-xl font-semibold text-gray-900">江西酒店智能菜单</h1>
+          <button
+            onClick={toggleDebugInfo}
+            className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors"
+          >
+            {showDebugInfo ? '隐藏调试信息' : '显示调试信息'}
+          </button>
         </div>
+      </header>
 
-        {/* 底部导航栏 */}
-        <BottomBar 
-          cartCount={cartCount}
-          onOpenMenu={() => setShowCategoryNav(true)}
-          onOpenSearch={() => setShowSearch(true)}
-          onOpenCart={() => setShowCart(true)}
-          onOpenInfo={() => setShowInfo(true)}
-          onOpenService={() => setShowService(true)}
-        />
+      {/* Debug Info Panel */}
+      {showDebugInfo && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-yellow-400 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              </svg>
+              <div className="text-sm text-yellow-700">
+                <p className="font-medium">调试信息</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+                  <p>环境: {import.meta.env.MODE || 'unknown'}</p>
+                  <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
+                  <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
+                  <p>API Base URL: {import.meta.env.VITE_API_BASE_URL || '/api'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-        {/* 分类导航 */}
-        <CategoryNav
-          isOpen={showCategoryNav}
-          onClose={() => setShowCategoryNav(false)}
-          categories={menu}
-          onSelectCategory={(key: string) => {
-            // Find the page index for this category
-            const categoryPageIndex = pages.findIndex(page => page.categoryKey === key);
-            if (categoryPageIndex !== -1) {
-              goToPage(categoryPageIndex);
-            }
-            // 关闭分类导航
-            setShowCategoryNav(false);
-          }}
-        />
-
-        {/* 购物车模态框 */}
-        {showCart && (
-          <CartModal
-            isOpen={showCart}
-            cart={cart}
-            itemsMap={itemsMap}
-            onAdd={addToCart}
-            onRemove={removeFromCart}
-            onUpdateQuantity={updateCartQuantity}
-            onClear={clearCart}
-            onClose={() => setShowCart(false)}
-            tableId="TABLE_1"
-            locationLabel="Table 1"
-          />
-        )}
-
-        {/* 搜索模态框 */}
-        {showSearch && (
-          <SearchOverlay
-            isOpen={showSearch}
-            menuData={menu}
-            cart={cart}
-            onAdd={addToCart}
-            onRemove={removeFromCart}
-            onClose={() => setShowSearch(false)}
-          />
-        )}
-
-        {/* 信息模态框 */}
-        {showInfo && (
-          <InfoModal 
-            isOpen={showInfo} 
-            onClose={() => setShowInfo(false)} 
-            onOpen={function (): void {
-              throw new Error('Function not implemented.');
-            }} 
-            tableId="TABLE_1" 
-            locationLabel="Table 1" 
-          />
-        )}
-
-        {/* 服务模态框 */}
-        {showService && (
-          <ServiceModal 
-            isOpen={showService}
-            onClose={() => setShowService(false)} 
-            tableId="TABLE_1"
-            locationLabel="Table 1"
-          />
-        )}
-
-        {/* 菜品详情模态框 */}
-        {showDishDetail && selectedDish && (
-          <DishDetailModal 
-            item={selectedDish}
-            onClose={() => {
-              setShowDishDetail(false);
-              setSelectedDish(null);
-            }}
-            quantity={cart[selectedDish.id] || 0}
-            onAdd={addToCart}
-            onRemove={removeFromCart}
-          />
-        )}
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {renderCurrentPage()}
       </div>
-    </ErrorBoundary>
+
+      {/* Bottom Navigation Bar */}
+      <BottomBar 
+        cartCount={cartCount}
+        onOpenMenu={() => setShowCategoryNav(true)}
+        onOpenSearch={() => setShowSearch(true)}
+        onOpenCart={() => setShowCart(true)}
+        onOpenInfo={() => setShowInfo(true)}
+        onOpenService={() => setShowService(true)}
+      />
+
+      {/* Category Navigation */}
+      <CategoryNav
+        isOpen={showCategoryNav}
+        onClose={() => setShowCategoryNav(false)}
+        categories={menu}
+        onSelectCategory={(key: string) => {
+          // Find the page index for this category
+          const categoryPageIndex = pages.findIndex(page => page.categoryKey === key);
+          if (categoryPageIndex !== -1) {
+            goToPage(categoryPageIndex);
+          }
+          // 关闭分类导航
+          setShowCategoryNav(false);
+        }}
+      />
+
+      {/* Cart Modal */}
+      {showCart && (
+        <CartModal
+          isOpen={showCart}
+          cart={cart}
+          itemsMap={itemsMap}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+          onUpdateQuantity={updateCartQuantity}
+          onClear={clearCart}
+          onClose={() => setShowCart(false)}
+          tableId="TABLE_1"
+          locationLabel="Table 1"
+        />
+      )}
+
+      {/* Search Overlay */}
+      {showSearch && (
+        <SearchOverlay
+          isOpen={showSearch}
+          menuData={menu}
+          cart={cart}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+          onClose={() => setShowSearch(false)}
+        />
+      )}
+
+      {/* Info Modal */}
+      {showInfo && (
+        <InfoModal 
+          isOpen={showInfo} 
+          onClose={() => setShowInfo(false)} 
+          onOpen={function (): void {
+            throw new Error('Function not implemented.');
+          }} 
+          tableId="TABLE_1" 
+          locationLabel="Table 1" 
+        />
+      )}
+
+      {/* Service Modal */}
+      {showService && (
+        <ServiceModal 
+          isOpen={showService}
+          onClose={() => setShowService(false)} 
+          tableId="TABLE_1"
+          locationLabel="Table 1"
+        />
+      )}
+
+      {/* Dish Detail Modal */}
+      {showDishDetail && selectedDish && (
+        <DishDetailModal 
+          item={selectedDish}
+          onClose={() => {
+            setShowDishDetail(false);
+            setSelectedDish(null);
+          }}
+          quantity={cart[selectedDish.id] || 0}
+          onAdd={addToCart}
+          onRemove={removeFromCart}
+        />
+      )}
+    </div>
   );
 };
 
