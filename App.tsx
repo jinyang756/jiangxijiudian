@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// App.tsx
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// App.tsx
 // 江西酒店智能菜单系统 - 前端展示页面与后台管理面板
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -233,6 +233,27 @@ const App: React.FC = () => {
   };
 
   // 添加一个函数来导航到首页
+  // const goToHomePage = () => {
+  //   goToPage(0);
+  // };
+
+  // 添加一个函数来导航到管理界面
+  const goToAdminPage = () => {
+    // 检查是否已经有管理页面，如果没有则添加一个
+    const adminPageIndex = pages.findIndex(page => page.type === 'admin');
+    if (adminPageIndex === -1) {
+      // 添加管理页面到页面数组
+      const newPages: PageData[] = [...pages, {
+        type: 'admin',
+        id: 'admin',
+        categoryKey: 'admin'
+      }];
+      setPages(newPages);
+      goToPage(newPages.length - 1);
+    } else {
+      goToPage(adminPageIndex);
+    }
+  };
 
   // 显示菜品详情
   const showDishDetails = (dish: MenuItem) => {
@@ -744,19 +765,27 @@ const App: React.FC = () => {
       {showDebugInfo && (
         <div className="bg-yellow-50 border-b border-yellow-200">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-yellow-400 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-              </svg>
-              <div className="text-sm text-yellow-700">
-                <p className="font-medium">调试信息</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
-                  <p>环境: {import.meta.env.MODE || 'unknown'}</p>
-                  <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
-                  <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
-                  <p>API Base URL: {import.meta.env.VITE_API_BASE_URL || '/api'}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-yellow-400 mr-2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                </svg>
+                <div className="text-sm text-yellow-700">
+                  <p className="font-medium">调试信息</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+                    <p>环境: {import.meta.env.MODE || 'unknown'}</p>
+                    <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
+                    <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
+                    <p>API Base URL: {import.meta.env.VITE_API_BASE_URL || '/api'}</p>
+                  </div>
                 </div>
               </div>
+              <button
+                onClick={goToAdminPage}
+                className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors"
+              >
+                管理界面
+              </button>
             </div>
           </div>
         </div>
