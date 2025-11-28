@@ -21,7 +21,10 @@
     "verify-menu-view-db": "psql -c \"SELECT viewname FROM pg_views WHERE viewname = 'menu_view';\"",
     "optimize-indexes": "echo '请查看 DATABASE_MAINTENANCE_GUIDE.md 获取索引优化指南'",
     "security-check": "echo '安全检查通过'",
-    "validate-env": "node scripts/validate-env.js"
+    "validate-env": "node scripts/validate-env.js",
+    "create:view": "npx tsx scripts/create-menu-view.ts",
+    "execute:sql": "npx tsx scripts/execute-sql.ts",
+    "create:view:direct": "npx tsx scripts/create-menu-view-direct.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.11",
