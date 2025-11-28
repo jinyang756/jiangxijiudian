@@ -34,21 +34,22 @@ async function testDatabaseConnection() {
       return false;
     }
     console.log('✅ 基本连接测试成功');
+    console.log('📊 返回数据:', data ? `${data.length} 条记录` : '无数据');
     
     // 2. 测试menu_view视图
     console.log('\n2. 测试menu_view视图...');
-    const { data: viewData, error: viewError } = await supabase
+    const viewResult = await supabase
       .from('menu_view')
       .select('*')
       .limit(1);
     
-    if (viewError) {
-      console.error('❌ menu_view视图测试失败:', viewError.message);
+    if (viewResult.error) {
+      console.error('❌ menu_view视图测试失败:', viewResult.error.message);
       console.log('💡 提示: 请确保已运行 sql/create-menu-view.sql 脚本创建视图');
       return false;
     }
     console.log('✅ menu_view视图测试成功');
-    console.log('📊 视图返回数据:', viewData ? `${viewData.length} 条记录` : '无数据');
+    console.log('📊 视图返回数据:', viewResult.data ? `${viewResult.data.length} 条记录` : '无数据');
     
     // 3. 测试API服务
     console.log('\n3. 测试API服务 getMenu 方法...');
