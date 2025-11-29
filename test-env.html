@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环境变量测试</title>
+</head>
+<body>
+    <h1>环境变量测试</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // 测试环境变量
+        const results = document.getElementById('results');
+        
+        results.innerHTML = `
+            <h2>Vite 环境变量检查</h2>
+            <p>VITE_SUPABASE_URL: ${import.meta.env.VITE_SUPABASE_URL || '未设置'}</p>
+            <p>VITE_SUPABASE_ANON_KEY: ${import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
+            <p>MODE: ${import.meta.env.MODE}</p>
+            <p>BASE_URL: ${import.meta.env.BASE_URL}</p>
+            <p>PROD: ${import.meta.env.PROD}</p>
+            <p>DEV: ${import.meta.env.DEV}</p>
+        `;
+        
+        // 测试Supabase连接
+        if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+            import('https://cdn.skypack.dev/@supabase/supabase-js').then(({ createClient }) => {
+                const supabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                );
+                
+                results.innerHTML += '<h2>Supabase 连接测试</h2><p>正在测试连接...</p>';
+                
+                // 测试存储访问
+                supabase.storage.from('admin-panel').list('', {
+                    limit: 10,
+                    offset: 0
+                }).then(({ data, error }) => {
+                    if (error) {
+                        results.innerHTML += `<p style="color: red;">存储访问失败: ${JSON.stringify(error)}</p>`;
+                    } else {
+                        results.innerHTML += `<p style="color: green;">存储访问成功</p>`;
+                        results.innerHTML += `<p>文件数量: ${data?.length || 0}</p>`;
+                        if (data && data.length > 0) {
+                            results.innerHTML += '<ul>';
+                            data.slice(0, 5).forEach(file => {
+                                results.innerHTML += `<li>${file.name}</li>`;
+                            });
+                            results.innerHTML += '</ul>';
+                        }
+                    }
+                });
+            }).catch(err => {
+                results.innerHTML += `<p style="color: red;">加载Supabase客户端失败: ${err.message}</p>`;
+            });
+        } else {
+            results.innerHTML += '<p style="color: red;">缺少Supabase环境变量</p>';
+        }
+    </script>
+</body>
+</html>
