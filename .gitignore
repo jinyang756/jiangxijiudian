@@ -66,3 +66,9 @@ supabase/.temp/
 dish-images/
 migrations/
 .env*.local
+
+# Diagnostic and security scripts
+*diagnostic*
+*test-env*
+*browser-diagnostics*
+*remove-sensitive-data*
