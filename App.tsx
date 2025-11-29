@@ -13,6 +13,7 @@ import DishDetailModal from './components/DishDetailModal';
 import ServiceModal from './components/ServiceModal';
 import SectionHeader from './components/SectionHeader';
 import { api } from './services/api';
+import { authManager } from './src/lib/auth';
 import { ImageLoader } from './src/lib/imageLoader';
 
 // Types for our Page system
@@ -547,15 +548,28 @@ const App: React.FC = () => {
         );
 
       case 'admin':
-        if (!isAuthenticated) {
-          return (
-            <div className="h-full flex flex-col items-center justify-center p-8">
-              <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-                <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">管理员登录</h2>
-                <div className="space-y-4">
+      // 增强管理面板访问控制，确保符合项目规范
+      // 项目规范：管理面板需Admin角色访问
+      const currentUser = authManager.getUserInfo();
+      const userRole = currentUser?.role || 'anonymous';
+      
+      // 检查用户是否已认证且具有admin角色
+      if (!isAuthenticated || userRole !== 'admin') {
+        // 未认证或非admin角色，显示访问被拒绝页面
+        return (
+          <div className="h-full flex flex-col items-center justify-center p-8">
+            <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+              <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">访问被拒绝</h2>
+              <div className="space-y-4">
+                <p className="text-gray-600 text-center">
+                  {isAuthenticated 
+                    ? "您的账户没有访问管理面板的权限。仅允许管理员角色访问。" 
+                    : "请先登录管理员账户以访问管理面板。"}
+                </p>
+                {!isAuthenticated && (
                   <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                      密码
+                      管理员密码
                     </label>
                     <input
                       type="password"
@@ -565,168 +579,176 @@ const App: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                       placeholder="请输入管理员密码"
                     />
+                    <button
+                      onClick={handleAdminLogin}
+                      className="w-full mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      登录
+                    </button>
                   </div>
+                )}
+                <div className="flex justify-center space-x-4">
                   <button
-                    onClick={handleAdminLogin}
-                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    onClick={() => goToPage(0)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                   >
-                    登录
+                    返回首页
                   </button>
                 </div>
               </div>
             </div>
-          );
-        }
-
-        return (
-          <div className="h-full flex flex-col">
-            <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
-              <h1 className="text-xl font-bold">管理面板</h1>
-              <button
-                onClick={handleAdminLogout}
-                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
-              >
-                登出
-              </button>
-            </div>
-            
-            <div className="flex flex-1 overflow-hidden">
-              {/* 侧边栏 */}
-              <div className="w-64 bg-gray-100 p-4">
-                <nav className="space-y-2">
-                  <button
-                    onClick={() => setAdminView('dashboard')}
-                    className={`w-full text-left px-4 py-2 rounded ${
-                      adminView === 'dashboard' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
-                    }`}
-                  >
-                    仪表板
-                  </button>
-                  <button
-                    onClick={() => setAdminView('menu')}
-                    className={`w-full text-left px-4 py-2 rounded ${
-                      adminView === 'menu' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
-                    }`}
-                  >
-                    菜单管理
-                  </button>
-                  <button
-                    onClick={() => setAdminView('orders')}
-                    className={`w-full text-left px-4 py-2 rounded ${
-                      adminView === 'orders' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
-                    }`}
-                  >
-                    订单管理
-                  </button>
-                  <button
-                    onClick={() => setAdminView('settings')}
-                    className={`w-full text-left px-4 py-2 rounded ${
-                      adminView === 'settings' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
-                    }`}
-                  >
-                    系统设置
-                  </button>
-                </nav>
-              </div>
-              
-              {/* 主内容区 */}
-              <div className="flex-1 overflow-y-auto p-6">
-                {adminView === 'dashboard' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">仪表板</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                      <div className="bg-white p-6 rounded-lg shadow">
-                        <h3 className="text-lg font-semibold mb-2">今日订单</h3>
-                        <p className="text-3xl font-bold text-red-600">24</p>
-                      </div>
-                      <div className="bg-white p-6 rounded-lg shadow">
-                        <h3 className="text-lg font-semibold mb-2">总销售额</h3>
-                        <p className="text-3xl font-bold text-green-600">¥2,480</p>
-                      </div>
-                      <div className="bg-white p-6 rounded-lg shadow">
-                        <h3 className="text-lg font-semibold mb-2">待处理服务</h3>
-                        <p className="text-3xl font-bold text-blue-600">3</p>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white p-6 rounded-lg shadow mb-8">
-                      <h3 className="text-lg font-semibold mb-4">数据库操作</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <button
-                            onClick={() => executeDbOperation('createView')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
-                          >
-                            创建菜单视图
-                          </button>
-                          <span className="text-gray-600">创建 menu_view 视图以优化菜单查询</span>
-                        </div>
-                        
-                        <div>
-                          <button
-                            onClick={() => executeDbOperation('updatePolicies')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
-                          >
-                            更新安全策略
-                          </button>
-                          <span className="text-gray-600">更新行级安全策略以允许数据插入</span>
-                        </div>
-                        
-                        <div>
-                          <button
-                            onClick={() => executeDbOperation('syncData')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
-                          >
-                            同步数据
-                          </button>
-                          <span className="text-gray-600">从本地数据同步到数据库</span>
-                        </div>
-                        
-                        {operationResult && (
-                          <div className="mt-4 p-4 bg-gray-100 rounded">
-                            <pre className="whitespace-pre-wrap text-sm">{operationResult}</pre>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white p-6 rounded-lg shadow">
-                      <h3 className="text-lg font-semibold mb-4">系统信息</h3>
-                      <div className="space-y-2">
-                        <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
-                        <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {adminView === 'menu' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">菜单管理</h2>
-                    <p>菜单管理功能正在开发中...</p>
-                  </div>
-                )}
-                
-                {adminView === 'orders' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">订单管理</h2>
-                    <p>订单管理功能正在开发中...</p>
-                  </div>
-                )}
-                
-                {adminView === 'settings' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">系统设置</h2>
-                    <p>系统设置功能正在开发中...</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         );
+      }
 
-      default:
+      // 用户已认证且具有admin角色，显示管理面板
+      return (
+        <div className="h-full flex flex-col">
+          <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold">管理面板</h1>
+            <button
+              onClick={handleAdminLogout}
+              className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
+            >
+              登出
+            </button>
+          </div>
+          
+          <div className="flex flex-1 overflow-hidden">
+            {/* 侧边栏 */}
+            <div className="w-64 bg-gray-100 p-4">
+              <nav className="space-y-2">
+                <button
+                  onClick={() => setAdminView('dashboard')}
+                  className={`w-full text-left px-4 py-2 rounded ${
+                    adminView === 'dashboard' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  仪表板
+                </button>
+                <button
+                  onClick={() => setAdminView('menu')}
+                  className={`w-full text-left px-4 py-2 rounded ${
+                    adminView === 'menu' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  菜单管理
+                </button>
+                <button
+                  onClick={() => setAdminView('orders')}
+                  className={`w-full text-left px-4 py-2 rounded ${
+                    adminView === 'orders' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  订单管理
+                </button>
+                <button
+                  onClick={() => setAdminView('settings')}
+                  className={`w-full text-left px-4 py-2 rounded ${
+                    adminView === 'settings' ? 'bg-red-600 text-white' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  系统设置
+                </button>
+              </nav>
+            </div>
+            
+            {/* 主内容区 */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {adminView === 'dashboard' && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">仪表板</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-semibold mb-2">今日订单</h3>
+                      <p className="text-3xl font-bold text-red-600">24</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-semibold mb-2">总销售额</h3>
+                      <p className="text-3xl font-bold text-green-600">¥2,480</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <h3 className="text-lg font-semibold mb-2">待处理服务</h3>
+                      <p className="text-3xl font-bold text-blue-600">3</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-lg shadow mb-8">
+                    <h3 className="text-lg font-semibold mb-4">数据库操作</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <button
+                          onClick={() => executeDbOperation('createView')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                        >
+                          创建菜单视图
+                        </button>
+                        <span className="text-gray-600">创建 menu_view 视图以优化菜单查询</span>
+                      </div>
+                      
+                      <div>
+                        <button
+                          onClick={() => executeDbOperation('updatePolicies')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                        >
+                          更新安全策略
+                        </button>
+                        <span className="text-gray-600">更新行级安全策略以允许数据插入</span>
+                      </div>
+                      
+                      <div>
+                        <button
+                          onClick={() => executeDbOperation('syncData')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
+                        >
+                          同步数据
+                        </button>
+                        <span className="text-gray-600">从本地数据同步到数据库</span>
+                      </div>
+                      
+                      {operationResult && (
+                        <div className="mt-4 p-4 bg-gray-100 rounded">
+                          <pre className="whitespace-pre-wrap text-sm">{operationResult}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">系统信息</h3>
+                    <div className="space-y-2">
+                      <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? '已设置' : '未设置'}</p>
+                      <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? '已设置' : '未设置'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {adminView === 'menu' && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">菜单管理</h2>
+                  <p>菜单管理功能正在开发中...</p>
+                </div>
+              )}
+              
+              {adminView === 'orders' && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">订单管理</h2>
+                  <p>订单管理功能正在开发中...</p>
+                </div>
+              )}
+              
+              {adminView === 'settings' && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">系统设置</h2>
+                  <p>系统设置功能正在开发中...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );default:
         return (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">页面类型未实现</p>
