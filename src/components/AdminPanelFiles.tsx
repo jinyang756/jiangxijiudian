@@ -12,7 +12,6 @@ export default function AdminPanelFiles({ bucket = 'admin-panel', prefix = '' })
   const listFiles = async () => {
     setLoading(true);
     setError(null);
-    console.log(`[AdminPanelFiles] 开始列出存储桶 "${bucket}" 中的文件`);
     
     try {
       const { data, error } = await supabase.storage.from(bucket).list(prefix, {
@@ -22,17 +21,13 @@ export default function AdminPanelFiles({ bucket = 'admin-panel', prefix = '' })
       });
       
       if (error) {
-        console.error(`[AdminPanelFiles] 列出文件时出错:`, error);
         throw error;
       }
-      
-      console.log(`[AdminPanelFiles] 成功获取到 ${data?.length || 0} 个文件:`, data);
       
       // 对每个文件获取 public URL
       const filesWithUrl = data.map((item) => {
         // item.name 是相对路径/文件名
         const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(item.name);
-        console.log(`[AdminPanelFiles] 文件 "${item.name}" 的公共URL:`, urlData?.publicUrl);
         
         return {
           ...item,
@@ -42,7 +37,6 @@ export default function AdminPanelFiles({ bucket = 'admin-panel', prefix = '' })
       
       setFiles(filesWithUrl);
     } catch (err: any) {
-      console.error('[AdminPanelFiles] List files error', err);
       setError(err.message || String(err));
     } finally {
       setLoading(false);
@@ -51,7 +45,6 @@ export default function AdminPanelFiles({ bucket = 'admin-panel', prefix = '' })
 
   useEffect(() => {
     listFiles();
-    // You could add a polling interval or realtime subscription if needed
   }, [bucket, prefix]);
 
   if (loading) return <div>加载中…</div>;
