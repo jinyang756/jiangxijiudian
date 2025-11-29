@@ -27,7 +27,8 @@
     "execute:sql": "npx tsx scripts/execute-sql.ts",
     "create:view:direct": "npx tsx scripts/create-menu-view-direct.ts",
     "db:migrate": "node scripts/run-migrations.js",
-    "db:migrate:push": "npx supabase db push"
+    "db:migrate:push": "npx supabase db push",
+    "dev:admin": "vite --host 0.0.0.0 --port 3001 --config vite.admin.config.ts"
   },
   "devDependencies": {
     "@types/node": "^20.19.25",
