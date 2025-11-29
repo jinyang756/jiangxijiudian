@@ -18,6 +18,13 @@
 - 更新README.md文件，确保与实际配置一致
 - 修正部署说明和环境变量配置指南
 - 添加管理面板部署问题解决方案
+- 添加Supabase Storage使用指南和示例
+
+### Supabase Storage集成
+- 创建React组件示例展示Supabase Storage API使用方法
+- 添加详细的Supabase Storage使用文档
+- 更新管理面板访问说明，使用Supabase Storage公共URL
+- 提供获取公共URL、列出文件、生成签名URL的完整示例
 
 ## v1.1.0 (2025-11-27)
 
