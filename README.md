@@ -90,6 +90,11 @@ const { data, error } = await supabase.storage
   .list('', { limit: 100, offset: 0 });
 ```
 
+### 管理面板文件展示组件
+项目中包含了一个完整的React组件示例，用于展示如何列出和访问管理面板文件：
+- 组件位置: [src/components/AdminPanelFiles.tsx](file:///c%3A/Users/88903/Desktop/%E6%B1%9F%E8%A5%BF%E9%85%92%E5%BA%97/src/components/AdminPanelFiles.tsx)
+- 使用示例: [src/AdminPanelDemo.tsx](file:///c%3A/Users/88903/Desktop/%E6%B1%9F%E8%A5%BF%E9%85%92%E5%BA%97/src/AdminPanelDemo.tsx)
+
 更多详细信息请参考 [Supabase Storage 使用指南](./SUPABASE_STORAGE_GUIDE.md) 和 [React 组件示例](./components/StorageExample.tsx)。
 
 ## 数据库设置
