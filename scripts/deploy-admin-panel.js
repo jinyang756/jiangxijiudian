@@ -65,10 +65,11 @@ async function deployAdminPanel() {
     console.log('📤 正在部署管理面板...');
     
     // 切换到admin-panel目录并部署
-    const deployCommand = `cd admin-panel && npx supabase deploy`;
-    execSync(deployCommand, { stdio: 'inherit' });
+    // 注意：Supabase静态站点部署需要通过Dashboard或API，CLI不直接支持
+    console.log('⚠️  注意：Supabase CLI不直接支持静态站点部署');
+    console.log('   请通过Supabase Dashboard手动上传文件');
     
-    console.log('✅ 管理面板部署成功!');
+    console.log('✅ 管理面板部署准备完成!');
     return true;
   } catch (error) {
     console.error('❌ 部署失败:', error.message);
@@ -77,10 +78,11 @@ async function deployAdminPanel() {
     console.log('\n📋 手动部署说明:');
     console.log('1. 登录Supabase:');
     console.log('   npx supabase login');
-    console.log('2. 部署静态文件:');
-    console.log('   cd admin-panel');
-    console.log('   npx supabase deploy');
-    console.log('3. 或者通过Supabase Dashboard手动上传文件');
+    console.log('2. 通过Supabase Dashboard手动上传文件:');
+    console.log('   - 登录到 https://app.supabase.com');
+    console.log('   - 选择您的项目');
+    console.log('   - 进入"静态站点"部分');
+    console.log('   - 上传admin-panel目录中的所有文件');
     
     return false;
   }
@@ -107,12 +109,11 @@ async function autoDeploy() {
     console.log('🔑 登录Supabase...');
     execSync(`npx supabase login --token ${supabaseToken}`, { stdio: 'inherit' });
     
-    // 部署管理面板
-    console.log('📤 部署管理面板...');
-    const deployCommand = `cd admin-panel && npx supabase deploy`;
-    execSync(deployCommand, { stdio: 'inherit' });
+    // 由于Supabase CLI不支持直接部署静态站点，我们提供说明
+    console.log('⚠️  注意：Supabase CLI不直接支持静态站点部署');
+    console.log('   请通过Supabase Dashboard手动上传文件或使用API');
     
-    console.log('✅ 管理面板自动化部署成功!');
+    console.log('✅ 管理面板自动化部署准备完成!');
     return true;
   } catch (error) {
     console.error('❌ 自动化部署失败:', error.message);
@@ -125,21 +126,19 @@ function generateDeploymentInstructions() {
   console.log('\n📋 Supabase静态网站托管部署说明');
   console.log('=====================================');
   
-  console.log('\n🔧 方法一：使用Supabase CLI（推荐）');
-  console.log('1. 安装Supabase CLI（如果尚未安装）:');
-  console.log('   npm install -g supabase');
-  console.log('2. 登录Supabase:');
-  console.log('   npx supabase login');
-  console.log('3. 部署管理面板:');
-  console.log('   cd admin-panel');
-  console.log('   npx supabase deploy');
-  
-  console.log('\n🌐 方法二：通过Supabase Dashboard');
+  console.log('\n🔧 方法一：通过Supabase Dashboard（推荐）');
   console.log('1. 登录到Supabase Dashboard: https://app.supabase.com');
   console.log('2. 选择您的项目');
   console.log('3. 进入"静态站点"部分');
   console.log('4. 上传admin-panel目录中的所有文件');
   console.log('5. 配置自定义域名（可选）');
+  
+  console.log('\n🔧 方法二：使用Supabase CLI（需要手动步骤）');
+  console.log('1. 安装Supabase CLI（如果尚未安装）:');
+  console.log('   npm install -g supabase');
+  console.log('2. 登录Supabase:');
+  console.log('   npx supabase login');
+  console.log('3. 注意：CLI不支持直接部署静态站点，需要手动上传');
   
   console.log('\n🔒 安全建议:');
   console.log('- 为管理面板设置身份验证');

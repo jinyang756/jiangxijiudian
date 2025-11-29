@@ -15,11 +15,19 @@ jobs:
         with:
           node-version: '18'
           
-      - name: Install Supabase CLI
-        run: npm install -g supabase
+      - name: Install dependencies
+        run: npm ci
         
-      - name: Login to Supabase
-        run: npx supabase login --token ${{ secrets.SUPABASE_TOKEN }}
+      - name: Build project
+        run: npm run build
         
-      - name: Deploy Admin Panel
-        run: cd admin-panel && npx supabase deploy
+      - name: Deploy Admin Panel Instructions
+        run: |
+          echo "⚠️ Supabase CLI does not support direct static site deployment"
+          echo "Please deploy the admin panel manually through the Supabase Dashboard"
+          echo "1. Go to https://app.supabase.com"
+          echo "2. Select your project"
+          echo "3. Navigate to 'Static Site Hosting'"
+          echo "4. Upload all files from the admin-panel directory"
+        env:
+          SUPABASE_TOKEN: ${{ secrets.SUPABASE_TOKEN }}
