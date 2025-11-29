@@ -67,7 +67,7 @@ vercel login
 
 #### 2. 部署前端应用
 ```bash
-# 构建并部署前端
+# 使用自定义部署脚本
 npm run deploy
 ```
 
@@ -81,18 +81,18 @@ vercel
 ```
 
 #### 3. 部署管理面板
+管理面板现在通过Supabase静态站点托管部署：
 ```bash
-# 进入管理面板目录
-cd admin-panel
-
-# 部署到 Vercel
-vercel
+# 通过Supabase Dashboard手动上传admin-panel目录中的文件
 ```
 
 ### 自动化部署
 本项目配置了 GitHub Actions 工作流，可以自动部署到 Vercel：
 1. 在 Vercel 账户中生成访问令牌
-2. 在 GitHub 仓库的 Secrets 中添加 `VERCEL_TOKEN`
+2. 在 GitHub 仓库的 Secrets 中添加以下变量：
+   - `VERCEL_TOKEN`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
 3. 推送代码到 main 分支即可自动触发部署
 
 ### Vercel 环境变量配置
@@ -157,6 +157,10 @@ npm run test:ui
 - 验证 Supabase 凭据
 - 检查网络连接
 - 确认 Supabase 项目配置
+
+### 管理面板部署问题
+- 注意：Supabase CLI不支持直接部署静态站点
+- 请通过Supabase Dashboard手动上传admin-panel目录中的文件
 
 ## 许可证
 MIT License
