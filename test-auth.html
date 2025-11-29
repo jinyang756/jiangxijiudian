@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理面板访问测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>管理面板访问测试</h1>
+        
+        <div class="section info">
+            <h2>测试说明</h2>
+            <p>此页面将测试管理面板的访问控制机制，确保只有具有admin角色的用户才能访问管理面板。</p>
+        </div>
+        
+        <div class="section" id="authSection">
+            <h2>1. 认证状态检查</h2>
+            <button onclick="checkAuthStatus()">检查认证状态</button>
+            <div id="authResults"></div>
+        </div>
+        
+        <div class="section" id="adminAccessSection">
+            <h2>2. 管理面板访问测试</h2>
+            <button onclick="testAdminAccess()">测试管理面板访问</button>
+            <div id="adminAccessResults"></div>
+        </div>
+        
+        <div class="section" id="roleCheckSection">
+            <h2>3. 用户角色检查</h2>
+            <button onclick="checkUserRole()">检查用户角色</button>
+            <div id="roleCheckResults"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 从Vite环境变量中获取配置
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        // 动态导入Supabase客户端
+        import('https://cdn.skypack.dev/@supabase/supabase-js').then(({ createClient }) => {
+            let supabase;
+            
+            if (supabaseUrl && supabaseAnonKey) {
+                supabase = createClient(supabaseUrl, supabaseAnonKey);
+            }
+            
+            // 检查认证状态
+            window.checkAuthStatus = async function() {
+                const results = document.getElementById('authResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法初始化Supabase客户端</p></div>';
+                    return;
+                }
+                
+                try {
+                    const { data: { session }, error } = await supabase.auth.getSession();
+                    
+                    let html = '<div class="section ';
+                    if (error) {
+                        html += 'error"><h3>认证状态检查失败:</h3>';
+                        html += `<p>错误信息: ${JSON.stringify(error)}</p>`;
+                    } else {
+                        if (session) {
+                            html += 'success"><h3>用户已认证:</h3>';
+                            html += `<p>用户ID: ${session.user.id}</p>`;
+                            html += `<p>用户邮箱: ${session.user.email}</p>`;
+                        } else {
+                            html += 'info"><h3>用户未认证:</h3>';
+                            html += `<p>当前为匿名访问状态</p>`;
+                        }
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                } catch (err) {
+                    results.innerHTML = `<div class="section error"><h3>认证状态检查异常:</h3><p>${err.message}</p></div>`;
+                }
+            };
+            
+            // 测试管理面板访问
+            window.testAdminAccess = async function() {
+                const results = document.getElementById('adminAccessResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法初始化Supabase客户端</p></div>';
+                    return;
+                }
+                
+                results.innerHTML = '<div class="section info"><p>正在测试管理面板访问...</p></div>';
+                
+                try {
+                    // 模拟检查用户是否有admin角色
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    
+                    if (sessionError) {
+                        throw sessionError;
+                    }
+                    
+                    if (!session) {
+                        results.innerHTML = '<div class="section error"><h3>访问被拒绝:</h3><p>需要登录才能访问管理面板</p></div>';
+                        return;
+                    }
+                    
+                    // 从用户元数据中获取角色
+                    const userRole = session.user.user_metadata?.role || 'readonly';
+                    
+                    let html = '<div class="section ';
+                    if (userRole === 'admin') {
+                        html += 'success"><h3>访问允许:</h3>';
+                        html += `<p>用户角色: ${userRole}</p>`;
+                        html += `<p>✅ 具有管理面板访问权限</p>`;
+                    } else {
+                        html += 'error"><h3>访问被拒绝:</h3>';
+                        html += `<p>用户角色: ${userRole}</p>`;
+                        html += `<p>❌ 需要admin角色才能访问管理面板</p>`;
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                } catch (err) {
+                    results.innerHTML = `<div class="section error"><h3>管理面板访问测试异常:</h3><p>${err.message}</p></div>`;
+                }
+            };
+            
+            // 检查用户角色
+            window.checkUserRole = async function() {
+                const results = document.getElementById('roleCheckResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法初始化Supabase客户端</p></div>';
+                    return;
+                }
+                
+                try {
+                    const { data: { session }, error } = await supabase.auth.getSession();
+                    
+                    let html = '<div class="section ';
+                    if (error) {
+                        html += 'error"><h3>用户角色检查失败:</h3>';
+                        html += `<p>错误信息: ${JSON.stringify(error)}</p>`;
+                    } else {
+                        if (session) {
+                            const userRole = session.user.user_metadata?.role || 'readonly';
+                            html += 'success"><h3>用户角色信息:</h3>';
+                            html += `<p>用户角色: ${userRole}</p>`;
+                        } else {
+                            html += 'info"><h3>匿名用户:</h3>';
+                            html += `<p>当前为匿名访问状态，无用户角色</p>`;
+                        }
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                } catch (err) {
+                    results.innerHTML = `<div class="section error"><h3>用户角色检查异常:</h3><p>${err.message}</p></div>`;
+                }
+            };
+        }).catch(err => {
+            document.getElementById('authResults').innerHTML = 
+                `<div class="section error"><p>❌ 无法加载Supabase客户端: ${err.message}</p></div>`;
+        });
+    </script>
+</body>
+</html>
