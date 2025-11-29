@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西酒店项目浏览器诊断</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>江西酒店项目浏览器诊断</h1>
+        
+        <div class="section info">
+            <h2>诊断说明</h2>
+            <p>此页面将帮助您诊断江西酒店项目的前端问题，包括环境变量、Supabase连接和存储访问等。</p>
+        </div>
+        
+        <div class="section" id="envSection">
+            <h2>1. 环境变量检查</h2>
+            <button onclick="checkEnvVars()">检查环境变量</button>
+            <div id="envResults"></div>
+        </div>
+        
+        <div class="section" id="supabaseSection">
+            <h2>2. Supabase连接测试</h2>
+            <button onclick="testSupabaseConnection()">测试Supabase连接</button>
+            <div id="supabaseResults"></div>
+        </div>
+        
+        <div class="section" id="storageSection">
+            <h2>3. 存储访问测试</h2>
+            <button onclick="testStorageAccess()">测试存储访问</button>
+            <div id="storageResults"></div>
+        </div>
+        
+        <div class="section" id="fileUrlsSection">
+            <h2>4. 文件URL测试</h2>
+            <button onclick="testFileUrls()">测试文件URL</button>
+            <div id="fileUrlsResults"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 从Vite环境变量中获取配置
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        // 动态导入Supabase客户端
+        import('https://cdn.skypack.dev/@supabase/supabase-js').then(({ createClient }) => {
+            let supabase;
+            
+            if (supabaseUrl && supabaseAnonKey) {
+                supabase = createClient(supabaseUrl, supabaseAnonKey);
+            }
+            
+            // 检查环境变量
+            window.checkEnvVars = function() {
+                const results = document.getElementById('envResults');
+                
+                let html = '<div class="section info"><h3>环境变量状态:</h3>';
+                
+                if (supabaseUrl) {
+                    html += `<p>✅ VITE_SUPABASE_URL: ${supabaseUrl}</p>`;
+                } else {
+                    html += `<p>❌ VITE_SUPABASE_URL: 未设置</p>`;
+                }
+                
+                if (supabaseAnonKey) {
+                    html += `<p>✅ VITE_SUPABASE_ANON_KEY: 已设置</p>`;
+                } else {
+                    html += `<p>❌ VITE_SUPABASE_ANON_KEY: 未设置</p>`;
+                }
+                
+                const requiredEnvVars = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY'];
+                const missingEnvVars = requiredEnvVars.filter(envVar => {
+                    if (envVar === 'VITE_SUPABASE_URL') return !supabaseUrl;
+                    if (envVar === 'VITE_SUPABASE_ANON_KEY') return !supabaseAnonKey;
+                    return false;
+                });
+                
+                if (missingEnvVars.length > 0) {
+                    html += `<p>❌ 缺少必需的环境变量: ${missingEnvVars.join(', ')}</p>`;
+                } else {
+                    html += `<p>✅ 所有必需的环境变量都已设置</p>`;
+                }
+                
+                html += '</div>';
+                results.innerHTML = html;
+            };
+            
+            // 测试Supabase连接
+            window.testSupabaseConnection = function() {
+                const results = document.getElementById('supabaseResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法测试Supabase连接 - 缺少必需的环境变量</p></div>';
+                    return;
+                }
+                
+                results.innerHTML = '<div class="section info"><p>正在测试Supabase连接...</p></div>';
+                
+                // 尝试一个简单的查询来测试连接
+                supabase.from('categories').select('id', { count: 'exact' })
+                    .then(({ data, error, count }) => {
+                        let html = '<div class="section ';
+                        if (error) {
+                            html += 'error"><h3>Supabase连接测试失败:</h3>';
+                            html += `<p>错误信息: ${JSON.stringify(error)}</p>`;
+                        } else {
+                            html += 'success"><h3>Supabase连接测试成功:</h3>';
+                            html += `<p>可以访问数据库表</p>`;
+                        }
+                        html += '</div>';
+                        results.innerHTML = html;
+                    })
+                    .catch(err => {
+                        results.innerHTML = `<div class="section error"><h3>Supabase连接测试异常:</h3><p>${err.message}</p></div>`;
+                    });
+            };
+            
+            // 测试存储访问
+            window.testStorageAccess = function() {
+                const results = document.getElementById('storageResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法测试存储访问 - 缺少必需的环境变量</p></div>';
+                    return;
+                }
+                
+                results.innerHTML = '<div class="section info"><p>正在测试存储桶访问...</p></div>';
+                
+                supabase.storage.from('admin-panel').list('', {
+                    limit: 10,
+                    offset: 0,
+                    sortBy: { column: 'name', order: 'asc' },
+                })
+                .then(({ data, error }) => {
+                    let html = '<div class="section ';
+                    if (error) {
+                        html += 'error"><h3>存储桶访问失败:</h3>';
+                        html += `<pre>${JSON.stringify(error, null, 2)}</pre>`;
+                    } else {
+                        html += 'success"><h3>存储桶访问成功:</h3>';
+                        html += `<p>文件数量: ${data?.length || 0}</p>`;
+                        if (data && data.length > 0) {
+                            html += '<h4>文件列表:</h4><ul>';
+                            data.slice(0, 5).forEach((file, index) => {
+                                html += `<li>${file.name} (${file.updated_at || 'N/A'})</li>`;
+                            });
+                            if (data.length > 5) {
+                                html += `<li>... 还有 ${data.length - 5} 个文件</li>`;
+                            }
+                            html += '</ul>';
+                        }
+                    }
+                    html += '</div>';
+                    results.innerHTML = html;
+                })
+                .catch(err => {
+                    results.innerHTML = `<div class="section error"><h3>存储访问测试异常:</h3><p>${err.message}</p></div>`;
+                });
+            };
+            
+            // 测试特定文件URL
+            window.testFileUrls = function() {
+                const results = document.getElementById('fileUrlsResults');
+                
+                if (!supabase) {
+                    results.innerHTML = '<div class="section error"><p>❌ 无法测试文件URL - 缺少必需的环境变量</p></div>';
+                    return;
+                }
+                
+                results.innerHTML = '<div class="section info"><p>正在生成文件URL...</p></div>';
+                
+                const testFiles = ['index.html', 'set-env.html'];
+                let html = '<div class="section success"><h3>文件URL测试:</h3>';
+                
+                testFiles.forEach(fileName => {
+                    const { data } = supabase.storage.from('admin-panel').getPublicUrl(fileName);
+                    html += `<p><strong>${fileName}:</strong></p>`;
+                    html += `<p><a href="${data?.publicUrl}" target="_blank">${data?.publicUrl}</a></p>`;
+                    html += `<p><button onclick="testUrlAccess('${data?.publicUrl}', '${fileName}')">测试访问</button> <span id="url-test-${fileName}"></span></p>`;
+                });
+                
+                html += '</div>';
+                results.innerHTML = html;
+            };
+            
+            // 测试URL访问
+            window.testUrlAccess = function(url, fileName) {
+                const resultElement = document.getElementById(`url-test-${fileName}`);
+                resultElement.innerHTML = '测试中...';
+                
+                // 使用fetch测试URL访问
+                fetch(url, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            resultElement.innerHTML = '✅ 可访问';
+                        } else {
+                            resultElement.innerHTML = `❌ 访问失败 (${response.status})`;
+                        }
+                    })
+                    .catch(err => {
+                        resultElement.innerHTML = `❌ 网络错误: ${err.message}`;
+                    });
+            };
+        }).catch(err => {
+            document.getElementById('envResults').innerHTML = 
+                `<div class="section error"><p>❌ 无法加载Supabase客户端: ${err.message}</p></div>`;
+        });
+    </script>
+</body>
+</html>
