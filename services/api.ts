@@ -21,6 +21,7 @@ interface DatabaseDish {
 }
 
 // 定义menu_view返回的数据类型（适配当前数据库结构）
+// 定义menu_view返回的数据类型（适配当前数据库结构）
 interface MenuViewRow {
   category_id: string;
   category_name: string;
@@ -62,23 +63,25 @@ export const api = {
         // 首先尝试使用 menu_view 视图获取菜单数据
         const { data: menuData, error: menuError } = await supabase
           .from('menu_view')
-          .select('category_id, category_name, items')
+          .select('*')
           .order('category_name');
 
         if (!menuError && menuData && menuData.length > 0) {
           // Transform the view data to App Data Structure
           const categories: MenuCategory[] = menuData.map((row: MenuViewRow) => {
             // Transform items to match MenuItem interface
-            const transformedItems: MenuItem[] = (row.items || []).map(item => ({
-              id: item.id,
-              zh: item.name || '',
-              en: item.name || '',
-              price: item.price || 0,
-              spicy: item.metadata?.spicy || false,
-              vegetarian: item.metadata?.vegetarian || false,
-              available: item.available !== undefined ? item.available : true,
-              imageUrl: item.metadata?.imageUrl || ''
-            }));
+            const transformedItems: MenuItem[] = (Array.isArray(row.items) ? row.items : [])
+              .filter((item): item is NonNullable<typeof item> => item !== null)
+              .map(item => ({
+                id: item.id,
+                zh: (item as any).name_zh || '',
+                en: (item as any).name_en || '',
+                price: Number((item as any).price) || 0,
+                spicy: Boolean((item as any).is_spicy) || false,
+                vegetarian: Boolean((item as any).is_vegetarian) || false,
+                available: item.available !== undefined ? Boolean(item.available) : true,
+                imageUrl: (item as any).image_url || ''
+              }));
 
             return {
               key: row.category_id,
@@ -87,6 +90,11 @@ export const api = {
               items: transformedItems,
             };
           });
+
+          // 只有当有分类数据时才返回，否则继续尝试其他方式
+          if (categories.length > 0) {
+            return categories;
+          }
 
           return categories;
         }
@@ -127,15 +135,15 @@ export const api = {
             key: category.id,
             titleZh: category.name,
             titleEn: category.name, // 暂时使用中文名称
-            items: categoryDishes.map((dish: DatabaseDish) => ({
+            items: categoryDishes.map((dish: any) => ({
               id: dish.id,
-              zh: dish.name,
-              en: dish.name,
-              price: dish.price || 0,
-              spicy: dish.metadata?.spicy || false,
-              vegetarian: dish.metadata?.vegetarian || false,
-              available: dish.available !== undefined ? dish.available : true,
-              imageUrl: dish.metadata?.imageUrl || ''
+              zh: dish.name_zh || dish.name || '',
+              en: dish.name_en || dish.name || '',
+              price: Number(dish.price) || 0,
+              spicy: Boolean(dish.is_spicy) || false,
+              vegetarian: Boolean(dish.is_vegetarian) || false,
+              available: dish.available !== undefined ? Boolean(dish.available) : true,
+              imageUrl: dish.image_url || ''
             }))
           };
         });

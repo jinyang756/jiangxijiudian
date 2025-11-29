@@ -32,7 +32,17 @@ export const createApiError = (
   const error = new Error(message) as ApiError;
   error.code = options.code;
   error.status = options.status;
-  error.retryable = options.retryable ?? false;
+  
+  // 如果显式设置了retryable，则使用该值
+  // 否则根据错误代码自动判断
+  if (options.retryable !== undefined) {
+    error.retryable = options.retryable;
+  } else if (options.code === ERROR_CODES.TIMEOUT || options.code === ERROR_CODES.NETWORK_ERROR) {
+    error.retryable = true;
+  } else {
+    error.retryable = false;
+  }
+  
   return error;
 };
 

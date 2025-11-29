@@ -1,9 +1,17 @@
 // test-db-simple.mjs
+
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase配置
-const supabaseUrl = 'https://kdlhyzsihflwkwumxzfw.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGh5enNpaGZsd2t3dW14emZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjQxMjAsImV4cCI6MjA3NDAwMDEyMH0.wABs6L4Eiosksya2nUoO1i7doO7tYHcuz8WZA1kx6G8';
+// 从环境变量获取 Supabase 配置
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://YOUR_SUPABASE_PROJECT.supabase.co';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+
+// 检查环境变量
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('YOUR_SUPABASE_PROJECT') || supabaseAnonKey.includes('YOUR_SUPABASE_ANON_KEY')) {
+  console.error('❌ 请设置 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY 环境变量');
+  console.error('   可以在 .env.local 文件中设置这些变量');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -23,7 +31,6 @@ async function testDatabase() {
     } else {
       console.log('✅ categories表查询成功');
       console.log('   返回记录数:', categories.length);
-      console.log('   数据:', JSON.stringify(categories, null, 2));
     }
     
     // 测试dishes表

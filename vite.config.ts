@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
       // 使用 esbuild 压缩，比 terser 快 20-40 倍
       minify: isProduction ? 'esbuild' : false,
       // 目标浏览器
-      target: 'es2015',
+      target: 'es2020',
       // CSS 代码分割
       cssCodeSplit: true,
       // 构建后清理输出目录
@@ -106,6 +106,8 @@ export default defineConfig(({ mode }) => {
         onwarn(warning, warn) {
           // 忽略 "this" 关键字的警告
           if (warning.code === 'THIS_IS_UNDEFINED') return;
+          // 忽略 import.meta 警告
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
           warn(warning);
         }
       },
@@ -132,7 +134,7 @@ export default defineConfig(({ mode }) => {
       // 保留类名（用于调试）
       keepNames: !isProduction,
       // 目标语法
-      target: 'es2015'
+      target: 'es2020'
     },
     
     // 优化依赖预构建

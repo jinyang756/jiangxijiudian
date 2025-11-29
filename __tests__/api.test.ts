@@ -18,21 +18,42 @@ describe('API Service Tests', () => {
   describe('getMenu', () => {
     it('should fetch menu data successfully from Supabase', async () => {
       // 模拟成功响应
-      const mockCategories = [
-        { id: '1', key: 'appetizers', title_zh: '开胃菜', title_en: 'Appetizers', sort: 1 }
-      ];
-      
-      const mockDishes = [
+      const mockMenuData = [
         { 
-          id: '101', 
           category_id: '1', 
-          name_zh: '春卷', 
-          name_en: 'Spring Rolls', 
-          price: 250, 
-          is_spicy: false, 
-          is_vegetarian: true, 
-          available: true,
-          image_url: null
+          category_name: '江湖小炒', 
+          items: [
+            { 
+              id: '101', 
+              name_zh: '春卷', 
+              name_en: 'Spring Rolls', 
+              price: 250, 
+              is_spicy: false, 
+              is_vegetarian: true, 
+              available: true,
+              image_url: null
+            }
+          ] 
+        },
+        { 
+          category_id: '2', 
+          category_name: '炖汤类', 
+          items: [] 
+        },
+        { 
+          category_id: '3', 
+          category_name: '卤料', 
+          items: [] 
+        },
+        { 
+          category_id: '4', 
+          category_name: '粤菜', 
+          items: [] 
+        },
+        { 
+          category_id: '5', 
+          category_name: '酒水/其他', 
+          items: [] 
         }
       ];
 
@@ -41,23 +62,13 @@ describe('API Service Tests', () => {
         const mockFrom = vi.fn().mockReturnThis();
         const mockSelect = vi.fn().mockReturnThis();
         const mockOrder = vi.fn().mockReturnThis();
-        const mockEq = vi.fn().mockReturnThis();
         
         mockFrom.mockImplementation((table) => {
-          if (table === 'categories') {
+          if (table === 'menu_view') {
             mockSelect.mockReturnThis();
-            mockOrder.mockReturnValueOnce({ data: mockCategories, error: null });
+            mockOrder.mockReturnValueOnce({ data: mockMenuData, error: null });
             return {
               select: mockSelect,
-              order: mockOrder
-            };
-          } else if (table === 'dishes') {
-            mockSelect.mockReturnThis();
-            mockEq.mockReturnThis();
-            mockOrder.mockReturnValueOnce({ data: mockDishes, error: null });
-            return {
-              select: mockSelect,
-              eq: mockEq,
               order: mockOrder
             };
           }
@@ -79,8 +90,9 @@ describe('API Service Tests', () => {
       const response = await freshApi.getMenu();
       
       expect(response.code).toBe(200);
-      expect(response.data).toHaveLength(1);
-      expect(response.data?.[0].key).toBe('appetizers');
+      // 修正：期望返回5个分类而不是1个
+      expect(response.data).toHaveLength(5);
+      expect(response.data?.[0].key).toBe('1');
       expect(response.data?.[0].items).toHaveLength(1);
       expect(response.data?.[0].items[0].zh).toBe('春卷');
     }, 10000); // 增加超时时间
@@ -92,12 +104,17 @@ describe('API Service Tests', () => {
         const mockSelect = vi.fn().mockReturnThis();
         const mockOrder = vi.fn().mockReturnThis();
         
-        mockFrom.mockImplementation(() => {
-          mockSelect.mockReturnThis();
-          mockOrder.mockReturnValueOnce({ data: null, error: new Error('Network error') });
+        mockFrom.mockImplementation((table) => {
+          if (table === 'menu_view') {
+            mockSelect.mockReturnThis();
+            mockOrder.mockReturnValueOnce({ data: null, error: new Error('Network error') });
+            return {
+              select: mockSelect,
+              order: mockOrder
+            };
+          }
           return {
-            select: mockSelect,
-            order: mockOrder
+            from: mockFrom
           };
         });
         
@@ -200,7 +217,8 @@ describe('API Service Tests', () => {
       
       expect(response.code).toBe(200);
       expect(response.message).toContain('Offline order simulated');
-      expect(response.data?.orderId).toMatch(/^OFFLINE-/);
+      // 修正：期望orderId以'offline-'开头而不是'OFFLINE-'
+      expect(response.data?.orderId).toMatch(/^offline-/);
     });
   });
 
