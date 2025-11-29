@@ -1,6 +1,6 @@
 // src/components/AdminPanelFiles.tsx
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 export default function AdminPanelFiles({ bucket = 'admin-panel', prefix = '' }) {

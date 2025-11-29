@@ -1,5 +1,4 @@
 // src/AdminPanelDemo.tsx
-import React from 'react';
 import AdminPanelFiles from './components/AdminPanelFiles';
 
 export default function AdminPanelDemo() {
